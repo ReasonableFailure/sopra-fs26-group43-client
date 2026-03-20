@@ -1,4 +1,4 @@
-"use client"; // For components that need React hooks and browser APIs, SSR (server side rendering) has to be disabled. Read more here: https://nextjs.org/docs/pages/building-your-application/rendering/server-side-rendering
+"use client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "antd";
@@ -18,8 +18,8 @@ export default function Home() {
           height={38}
           priority
         />
-        <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem" }}>
-          Group 43 - M2
+        <h1 style={{ fontSize: "36px", fontWeight: "bold", marginBottom: "1rem", color: "#22426b" }}>
+          Group 43
         </h1>
         <ol>
           <li>
@@ -48,9 +48,9 @@ export default function Home() {
 
         <div className={styles.ctas}>
           <Button
-            type="primary" // as defined in the ConfigProvider in [layout.tsx](./layout.tsx), all primary antd elements are colored #22426b, with buttons #75bd9d as override
-            color="red" // if a single/specific antd component needs yet a different color, it can be explicitly overridden in the component as shown here
-            variant="solid" // read more about the antd button and its options here: https://ant.design/components/button
+            type="primary"
+            color="red"
+            variant="solid"
             onClick={() =>
               globalThis.open(
                 "https://vercel.com/new",
