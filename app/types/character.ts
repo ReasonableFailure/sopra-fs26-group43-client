@@ -5,6 +5,7 @@ export interface Character {
   description: string | null;
   isAlive: boolean;
   actionPoints: number;
-  messageCount: number;
+  messageCount: number;    // how many messages already sent
+  messageSlots: number;    // total allowed messages, starts at 15
   secret: string | null;
 }
