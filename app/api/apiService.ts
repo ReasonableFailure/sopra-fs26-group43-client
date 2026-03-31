@@ -111,6 +111,33 @@ export class ApiService {
   }
 
   /**
+   * PUT request with Authorization header.
+   * @param endpoint - The API endpoint (e.g. "/users/123").
+   * @param data - The payload to update.
+   * @param token - The bearer token for authentication.
+   * @returns JSON data of type T.
+   */
+  public async putWithToken<T>(
+    endpoint: string,
+    data: unknown,
+    token: string,
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        ...this.defaultHeaders,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    return this.processResponse<T>(
+      res,
+      "An error occurred while updating the data.\n",
+    );
+  }
+
+  /**
    * DELETE request.
    * @param endpoint - The API endpoint (e.g. "/users/123").
    * @returns JSON data of type T.
