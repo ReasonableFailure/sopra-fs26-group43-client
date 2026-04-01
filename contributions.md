@@ -32,16 +32,16 @@ reason).
 
 ## Contributions Week 1 - [Begin Date] to [End Date]
 
-| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
-| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **Student**             | **Date**     | **Link to Commit** | **Description**                                            | **Relevance**                                                       |
+|-------------------------|--------------| ------------------ |------------------------------------------------------------|---------------------------------------------------------------------|
+| **[ReasonableFailure]** | [31.03.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/98] | [Re-implementation of M1 and extending User Profile editing] | [User is a basic prerequisite for all interaction with the website] |
+|                         | [01.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/99] | [Adding internal classes for Player Crud, including DTOs.] | [Basis for CRUD operations on the Players]                          |
+| **[@githubUser2]**      | [date]       | [Link to Commit 1] | [Brief description of the task]                            | [Why this contribution is relevant]                                 |
+|                         | [date]       | [Link to Commit 2] | [Brief description of the task]                            | [Why this contribution is relevant]                                 |
+| **[@githubUser3]**      | [date]       | [Link to Commit 1] | [Brief description of the task]                            | [Why this contribution is relevant]                                 |
+|                         | [date]       | [Link to Commit 2] | [Brief description of the task]                            | [Why this contribution is relevant]                                 |
+| **[@githubUser4]**      | [date]       | [Link to Commit 1] | [Brief description of the task]                            | [Why this contribution is relevant]                                 |
+|                         | [date]       | [Link to Commit 2] | [Brief description of the task]                            | [Why this contribution is relevant]                                 |
 
 ---
 
