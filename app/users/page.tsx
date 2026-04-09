@@ -20,9 +20,9 @@ const columns: TableProps<User>["columns"] = [
     key: "username",
   },
   {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
   },
   {
     title: "Id",
@@ -39,23 +39,32 @@ const Dashboard: React.FC = () => {
   // The hook returns an object with the value and two functions
   // Simply choose what you need from the hook:
   const {
-    // value: token, // is commented out because we dont need to know the token value for logout
-    // set: setToken, // is commented out because we dont need to set or update the token value
-    clear: clearToken, // all we need in this scenario is a method to clear the token
-  } = useLocalStorage<string>("token", ""); // if you wanted to select a different token, i.e "lobby", useLocalStorage<string>("lobby", "");
+    value: token,
+    clear: clearToken,
+  } = useLocalStorage<string>("token", "");
+  const {
+    value: userId,
+    clear: clearUserId,
+  } = useLocalStorage<string>("userId", "");
 
-  const handleLogout = (): void => {
-    // Clear token using the returned function 'clear' from the hook
-    clearToken();
-    router.push("/login");
+  const handleLogout = async (): Promise<void> => {
+    try {
+      if (userId && token) {
+        await apiService.postWithToken<void>(`/logout/${userId}`, {}, token);
+      }
+    } catch (error) {
+      console.error("Logout request failed:", error);
+    } finally {
+      clearToken();
+      clearUserId();
+      router.push("/login");
+    }
   };
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // apiService.get<User[]> returns the parsed JSON object directly,
-        // thus we can simply assign it to our users variable.
-        const users: User[] = await apiService.get<User[]>("/users");
+        const users: User[] = await apiService.getWithToken<User[]>("/users", token);
         setUsers(users);
         console.log("Fetched users:", users);
       } catch (error) {

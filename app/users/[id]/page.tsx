@@ -9,7 +9,7 @@ import { Button, Card, Descriptions, Form, Input } from "antd";
 
 interface EditFormFields {
   username: string;
-  name: string;
+  bio: string;
   password: string;
 }
 
@@ -30,7 +30,7 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const data = await apiService.get<User>(`/users/${id}`);
+        const data = await apiService.getWithToken<User>(`/users/${id}`, token);
         setUser(data);
       } catch (error) {
         if (error instanceof Error) {
@@ -40,12 +40,13 @@ const Profile: React.FC = () => {
     };
 
     if (id) fetchUser();
-  }, [apiService, id]);
+  }, [apiService, id, token]);
 
   const handleEdit = async (values: EditFormFields) => {
     try {
       await apiService.putWithToken<void>(`/users/${id}`, values, token);
-      router.push("/login");
+      setEditing(false);
+      router.refresh();
     } catch (error) {
       if (error instanceof Error) {
         alert(`Failed to update profile:\n${error.message}`);
@@ -71,7 +72,7 @@ const Profile: React.FC = () => {
           <Descriptions column={1}>
             <Descriptions.Item label="Id">{user.id}</Descriptions.Item>
             <Descriptions.Item label="Username">{user.username}</Descriptions.Item>
-            <Descriptions.Item label="Name">{user.name}</Descriptions.Item>
+            <Descriptions.Item label="Bio">{user.bio}</Descriptions.Item>
             <Descriptions.Item label="Status">{user.status}</Descriptions.Item>
           </Descriptions>
         )}
@@ -80,7 +81,7 @@ const Profile: React.FC = () => {
           <Form
             form={form}
             layout="vertical"
-            initialValues={{ username: user.username ?? "", name: user.name ?? "" }}
+            initialValues={{ username: user.username ?? "", bio: user.bio ?? "" }}
             onFinish={handleEdit}
           >
             <Form.Item
@@ -91,11 +92,10 @@ const Profile: React.FC = () => {
               <Input placeholder="Username" />
             </Form.Item>
             <Form.Item
-              name="name"
-              label="Name"
-              rules={[{ required: true, message: "Please enter your name" }]}
+              name="bio"
+              label="Bio"
             >
-              <Input placeholder="Name" />
+              <Input placeholder="Bio" />
             </Form.Item>
             <Form.Item
               name="password"

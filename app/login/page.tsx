@@ -9,8 +9,8 @@ import { Button, Form, Input } from "antd";
 // import styles from "@/styles/page.module.css";
 
 interface FormFieldProps {
-  label: string;
-  value: string;
+  username: string;
+  password: string;
 }
 
 const Login: React.FC = () => {
@@ -30,7 +30,7 @@ const Login: React.FC = () => {
   const handleLogin = async (values: FormFieldProps) => {
     try {
       // Call the API service and let it handle JSON serialization and error handling
-      const response = await apiService.post<User>("/users", values);
+      const response = await apiService.post<User>("/login", values);
 
       if (response.token) {
         setToken(response.token);
@@ -68,11 +68,11 @@ const Login: React.FC = () => {
           <Input placeholder="Enter username" />
         </Form.Item>
         <Form.Item
-          name="name"
-          label="Name"
-          rules={[{ required: true, message: "Please input your name!" }]}
+          name="password"
+          label="Password"
+          rules={[{ required: true, message: "Please input your password!" }]}
         >
-          <Input placeholder="Enter name" />
+          <Input.Password placeholder="Enter password" />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" className="login-button">
