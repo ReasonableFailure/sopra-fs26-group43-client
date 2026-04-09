@@ -45,12 +45,12 @@ reason).
 
 ---
 
-## Contributions Week 2 - [Begin Date] to [End Date]
+## Contributions Week 2 - '02-Apr-2026' to '08-Apr-2026'
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[HalaiRhea]** | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/e20f1e1c8640d97f2a042e8103d97087fd38931e)] | [created directive endpoints] | [Enables essential player interactions] |
+|                    | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/ba7e5be65a72f05d7f342a8027d94d1cb1625087)] | [added endpoints for messages and news] | [Enables broader range of game actions] |
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
