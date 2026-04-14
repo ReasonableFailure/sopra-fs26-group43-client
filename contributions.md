@@ -47,20 +47,21 @@ reason).
 
 ## Contributions Week 2 - '02-Apr-2026' to '08-Apr-2026'
 
-| **Student**             | **Date**      | **Link to Commit**                                                                                                                           | **Description**                         | **Relevance**                           |
-|-------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|-----------------------------------------|
-| **[HalaiRhea]**         | [04.04.2026]  | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/e20f1e1c8640d97f2a042e8103d97087fd38931e)]                           | [created directive endpoints]           | [Enables essential player interactions] |
-|                         | [04.04.2026]  | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/ba7e5be65a72f05d7f342a8027d94d1cb1625087)]                           | [added endpoints for messages and news] | [Enables broader range of game actions] |
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[HalaiRhea]** | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/e20f1e1c8640d97f2a042e8103d97087fd38931e)] | [created directive endpoints] | [Enables essential player interactions] |
+|                    | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/ba7e5be65a72f05d7f342a8027d94d1cb1625087)] | [added endpoints for messages and news] | [Enables broader range of game actions] |
 | **[ReasonableFailure]** | [06-Apr-2026] | [Link to Commit 1](https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/0cc67719dab3e05c82c5f12fc05e62248faef924)           | [delete cabinet files]                  | [Reduce Scope,in accordance with TA]    |
 |                         | [09-Apr-2026] | [Link to Commit 2](https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/101/changes/bf24492ec67f4ea460a5ec52212a2fee56e6b9c1) | [Brief description of the task]         | [Why this contribution is relevant]     |
-| **[@githubUser3]**      | [date]        | [Link to Commit 1]                                                                                                                           | [Brief description of the task]         | [Why this contribution is relevant]     |
-|                         | [date]        | [Link to Commit 2]                                                                                                                           | [Brief description of the task]         | [Why this contribution is relevant]     |
-| **[zeyuwang-uzh]**      | [04.08.2026]  | [[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b6ebfdf1b92ec01547309d4a6704239205766a69]]                           | [Created frontend classes]              | [Why this contribution is relevant]     |
-|                         | [date]        | [Link to Commit 2]                                                                                                                           | [Brief description of the task]         | [Why this contribution is relevant]     |
+| **[@yiruyang2025]** | [14.04.2026]    | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[zeyuwang-uzh]** | [04.08.2026]   | [[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b6ebfdf1b92ec01547309d4a6704239205766a69]] | [Created frontend classes] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
 
 ## Contributions Week 3 - '09-Apr-2026' to '15-Apr-2026'
+
 | **Student**              | **Date**      | **Link to Commit**                                                                                                                           | **Description**                                                                                                                                   | **Relevance**                                                                                                                                              |
 |--------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **[ReasonableFailure ]** | [14-Apr-2026] | [Link to Commit 1](https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/101/commits/a90b345d8d491a0cf950f463e7824e3d8d3ff6f6) | [assign user to player and basic crud operations for a Role(formerly Character)]                                                                  | [link between user and player class established, basis for all further logic. renaming of Character->Role due to naming conflict with java.lang.Character] |
@@ -76,11 +77,10 @@ _Continue with the same table format as above._
 ---
 
 ## Contributions Week 4 - '16-Apr-2026' to '22-Apr-2026'
-
-_Continue with the same table format as above._
 | **Student**              | **Date**      | **Link to Commit**                                                                                                                           | **Description**                                                                                                                                   | **Relevance**                                                                                                                                              |
 |--------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
+_Continue with the same table format as above._
 ---
 
 ## Contributions Week 5 - [Begin Date] to [End Date]
