@@ -51,16 +51,16 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **[HalaiRhea]** | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/e20f1e1c8640d97f2a042e8103d97087fd38931e)] | [created directive endpoints] | [Enables essential player interactions] |
 |                    | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/ba7e5be65a72f05d7f342a8027d94d1cb1625087)] | [added endpoints for messages and news] | [Enables broader range of game actions] |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@yiruyang2025]** | [14.04.2026]    | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[zeyuwang-uzh]** | [04.08.2026]   | [[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b6ebfdf1b92ec01547309d4a6704239205766a69]] | [Created frontend classes] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
 
-## Contributions Week 3 - [Begin Date] to [End Date]
+## Contributions Week 3 - '09-Apr-2026' to '15-Apr-2026'
 
 _Continue with the same table format as above._
 
