@@ -36,7 +36,7 @@ const Login: React.FC = () => {
         setToken(response.token);
       }
       if (response.id) {
-        setUserId(response.id);
+        setUserId(String(response.id));
       }
 
       // Navigate to the user overview
