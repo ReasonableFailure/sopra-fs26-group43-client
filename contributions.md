@@ -53,8 +53,8 @@ reason).
 |                    | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/ba7e5be65a72f05d7f342a8027d94d1cb1625087)] | [added endpoints for messages and news] | [Enables broader range of game actions] |
 | **[ReasonableFailure]** | [06-Apr-2026] | [Link to Commit 1](https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/0cc67719dab3e05c82c5f12fc05e62248faef924)           | [delete cabinet files]                  | [Reduce Scope,in accordance with TA]    |
 |                         | [09-Apr-2026] | [Link to Commit 2](https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/101/changes/bf24492ec67f4ea460a5ec52212a2fee56e6b9c1) | [Brief description of the task]         | [Why this contribution is relevant]     |
-| **[@yiruyang2025]** | [14.04.2026]    | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@yiruyang2025]** | [06.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/27] | [Implemented scenarios list page (app/scenarios/page.tsx): fetches GET /scenarios and renders scenario cards with title, description, status and navigation] | [Core entry point for users to explore available crisis scenarios and start interaction with the system] |
+|                    | [07.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/28] | [Implemented scenario detail page (app/scenarios/[id]/page.tsx): fetches scenario + characters and displays detailed view with character grid and join functionality] | [Provides detailed context and enables user participation in a selected scenario] |
 | **[zeyuwang-uzh]** | [04.08.2026]   | [[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b6ebfdf1b92ec01547309d4a6704239205766a69]] | [Created frontend classes] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
