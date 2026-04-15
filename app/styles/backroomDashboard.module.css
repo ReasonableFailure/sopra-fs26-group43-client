@@ -1,0 +1,334 @@
+/* ── Root ───────────────────────────────────────────── */
+.pageRoot {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fafbfc;
+}
+
+/* ── Navbar ─────────────────────────────────────────── */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+  padding: 0 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoMark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  flex-shrink: 0;
+}
+
+.navTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.navAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* ── Two-column body ────────────────────────────────── */
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.leftPanel {
+  width: 50%;
+  border-right: 1px solid #e5e7eb;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.rightPanel {
+  width: 50%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* ── Panel Header ───────────────────────────────────── */
+.panelHeader {
+  padding: 24px 32px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.panelTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.panelSubtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Directives Table ───────────────────────────────── */
+.tableHeader {
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 32px;
+  height: 51px;
+  flex-shrink: 0;
+}
+
+.tableHeaderCell {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.colPlayerName {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.colDirectiveTitle {
+  flex: 1;
+}
+
+.colStatus {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.tableRow {
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  height: 83px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.playerCell {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.playerAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.playerName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.directiveCell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.directiveTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.directiveDay {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.statusCell {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badgePending {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.badgeResponded {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.badgeRejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ── Messages Panel ─────────────────────────────────── */
+.messagesList {
+  padding: 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.messageCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+}
+
+.messageCardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.senderAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.senderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.senderName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.recipientLabel {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.messageBody {
+  font-size: 15px;
+  color: #111827;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.messageActions {
+  display: flex;
+  gap: 12px;
+}
+
+.approveBtn {
+  flex: 1;
+  height: 41px;
+  background: #059669 !important;
+  border-color: #059669 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+}
+
+.approveBtn:hover {
+  background: #047857 !important;
+  border-color: #047857 !important;
+}
+
+.rejectBtn {
+  flex: 1;
+  height: 41px;
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+}
+
+.rejectBtn:hover {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+/* ── Empty states ───────────────────────────────────── */
+.emptyState {
+  padding: 48px 32px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
