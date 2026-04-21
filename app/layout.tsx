@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { App as AntdApp, ConfigProvider, theme } from "antd";
+import { App as AntdApp, ConfigProvider } from "antd";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "@/styles/globals.css";
 
@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Group 43",
-  description: "sopra-fs26-template-client",
+  title: "Crisis Simulator",
+  description: "sopra-fs26-group43",
 };
 
 export default function RootLayout({
@@ -29,30 +29,33 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ConfigProvider
           theme={{
-            algorithm: theme.defaultAlgorithm,
             token: {
-              colorPrimary: "#22426b",
+              colorPrimary: "#6c5ce7",
               borderRadius: 8,
-              colorText: "#fff",
-              fontSize: 16,
-              colorBgContainer: "#16181D",
+              colorText: "#1a1a2e",
+              fontSize: 14,
+              colorBgContainer: "#ffffff",
+              colorBorder: "#e2e8f0",
+              colorTextSecondary: "#64748b",
             },
             components: {
               Button: {
-                colorPrimary: "#75bd9d",
-                algorithm: true,
+                colorPrimary: "#6c5ce7",
                 controlHeight: 38,
               },
               Input: {
-                colorBorder: "gray",
-                colorTextPlaceholder: "#888888",
-                algorithm: false,
+                colorBorder: "#e2e8f0",
+                colorTextPlaceholder: "#94a3b8",
               },
               Form: {
-                labelColor: "#fff",
-                algorithm: theme.defaultAlgorithm,
+                labelColor: "#1a1a2e",
               },
-              Card: {},
+              Card: {
+                colorBgContainer: "#ffffff",
+              },
+              Table: {
+                colorBgContainer: "#ffffff",
+              },
             },
           }}
         >
