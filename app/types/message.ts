@@ -1,14 +1,18 @@
 export interface Message {
   id: number | null;
-  senderId: number | null;
+  title: string | null;
+  body: string | null;
+  createdAt: string | null;
+  status: string | null;
+  creatorId: number | null;
   recipientId: number | null;
-  bodyText: string | null;
-  senderName: string | null;
-  recipientName: string | null;
 }
 
-export interface MessagePostDTO {
-  senderId: number;
-  recipientId: number;
-  bodyText: string;
+export interface Directive {
+  id: number | null;
+  title: string | null;
+  body: string | null;
+  createdAt: string | null;
+  status: string | null;
+  creatorId: number | null;
 }
