@@ -84,7 +84,8 @@ reason).
 |                    | 20.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6, ✨ [Production demo](https://sopra-fs26-group43-client.vercel.app/) | Implemented dynamic character and cabinet creation logic with add/remove functionality, form state management, and real-time mockup rendering of entered data in the UI.            | Enables interactive scenario configuration and reflects complex nested data structures (characters and cabinets), which are core components of the system design.     |
 |                    | 21.04.2026   | ✨ [M3 Demo Video](https://drive.google.com/file/d/1ErROXdVXRvhBhzlcuqPgnYuWZ_CHMIHY/view?usp=sharing)                                                                                       | Finalized all M2 report frontend prototype pages in the local development environment and successfully closed all client-side class issues marked as "Done".                        | Ensures full UI coverage for M2 requirements and resolves all outstanding architectural issues in the client repository.                                               |
 
-_Continue with the same table format as above._
+| **[@HalaiRhea]** | 18.04.2026   | [https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/2a27a07f494d3913441ac23368b7bc374379bdda]|added mastodon integration| API integration which enables access of messages|
+|                    | 21.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/fd9efca944cacc4226f6cdbd772093061a9671cc| created interlocutors endpoint| Enables a user to access list of characters a character has messaged with|
 
 ---
 
