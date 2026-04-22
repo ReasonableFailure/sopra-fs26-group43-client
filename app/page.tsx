@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -26,22 +26,25 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [initials, setInitials] = useState("JD");
 
-  useEffect(() => {
+  const fetchScenarios = useCallback(() => {
     if (!token) return;
     setLoading(true);
     apiService.get<Scenario[]>("/scenarios", token)
       .then(data => setScenarios(data))
       .catch(() => setScenarios([]))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, apiService]);
 
-  useEffect(() => {
+  const fetchUser = useCallback(() => {
     if (userId && token) {
       apiService.get<{ username: string }>(`/users/${userId}`, token)
         .then(u => { if (u.username) setInitials(u.username.slice(0, 2).toUpperCase()); })
         .catch(() => {});
     }
-  }, [userId, token]);
+  }, [userId, token, apiService]);
+
+  useEffect(() => { fetchScenarios(); }, [fetchScenarios]);
+  useEffect(() => { fetchUser(); }, [fetchUser]);
 
   const displayScenarios = scenarios.length > 0 ? scenarios.map(s => ({
     id: s.id as number, title: s.title || "", description: s.description || "", date: `Day ${s.dayNumber}`,
@@ -50,7 +53,6 @@ export default function Home() {
   return (
     <div style={{ background: "#f8fafc", minHeight: "100vh" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 16px" }}>
-        {/* Nav */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0", borderBottom: "1px solid #e2e8f0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ background: "#6c5ce7", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -70,12 +72,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-
         <div style={{ paddingTop: 24 }}>
           <Title level={3} style={{ color: "#1a1a2e", marginBottom: 4 }}>Created Scenarios</Title>
           <Text style={{ color: "#64748b" }}>Review previously created scenarios</Text>
         </div>
-
         {loading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><Spin size="large" /></div>
         ) : displayScenarios.length === 0 ? (
@@ -111,8 +111,6 @@ export default function Home() {
             )}
           />
         )}
-
-        {/* Demo Navigation - visible links to all pages */}
         <Divider />
         <div style={{ paddingBottom: 32 }}>
           <Text strong style={{ color: "#1a1a2e", fontSize: 14 }}>Demo Navigation (All Pages)</Text>
