@@ -4,10 +4,10 @@ export interface Message {
   id: number | null;
   title: string | null;
   body: string | null;
-  createdAt: string | null;  // ISO timestamp
+  createdAt: string | null;
   status: CommsStatus | null;
-  creatorId: number | null;  // character id — matches backend field name "creator"
-  recipientId: number | null; // character id
+  creatorId: number | null;
+  recipientId: number | null;
 }
 
 /** POST /messages */
@@ -19,8 +19,13 @@ export interface MessagePostDTO {
   scenarioId: number;
 }
 
-/** PUT /messages/{id} — backroomer approves or rejects */
+/** PUT /messages/{id} */
 export interface MessagePutDTO {
   status: CommsStatus;
-  reason: string | null;
+}
+
+/** GET /messages/scenario/{scenarioId}/pairs */
+export interface MessagePairDTO {
+  roleAId: number;
+  roleBId: number;
 }

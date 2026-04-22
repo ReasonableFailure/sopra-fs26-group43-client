@@ -53,7 +53,7 @@ function statusLabel(directive: Directive): { text: string; className: string } 
 }
 
 export default function PlayerDashboardPage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -80,7 +80,7 @@ export default function PlayerDashboardPage() {
   const loading = staticLoading || directivesLoading;
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
   }, [isAuthenticated, router]);
@@ -112,13 +112,13 @@ export default function PlayerDashboardPage() {
     return () => { cancelled = true; };
   }, [enabled, scenarioId, token, characterService, scenarioService]);
 
-  if (!isAuthenticated) return null;
+  if (!authReady || !isAuthenticated) return null;
 
   const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
 
   // Filter directives to the selected character
   const myDirectives = (directives ?? []).filter(
-    (d) => d.creator?.id === characterId,
+    (d) => d.creatorId === characterId,
   );
 
   const exchangeRate = scenario?.exchangeRate ?? 10;
@@ -171,7 +171,7 @@ export default function PlayerDashboardPage() {
                   type="primary"
                   size="small"
                   onClick={() =>
-                    router.push(`/scenarios/${scenarioId}/player/directive/new`)
+                    router.push(`/scenarios/${scenarioId}/player/communicate?type=directive`)
                   }
                 >
                   New Directive
@@ -187,14 +187,22 @@ export default function PlayerDashboardPage() {
                   myDirectives.map((d) => {
                     const { text, className } = statusLabel(d);
                     return (
-                      <div key={d.id} className={styles.directiveCard}>
+                      <div
+                        key={d.id}
+                        className={styles.directiveCard}
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          router.push(
+                            `/scenarios/${scenarioId}/player/directives/${d.id}`,
+                          )
+                        }
+                      >
                         <div className={styles.directiveRow}>
                           <p className={styles.directiveTitle}>
                             {d.title ?? d.body ?? "Untitled"}
                           </p>
                           {d.createdAt && (
                             <span className={styles.directiveDay}>
-                              {/* createdAt is ISO string; we just show it raw for now */}
                               {d.createdAt.slice(0, 10)}
                             </span>
                           )}
@@ -309,11 +317,11 @@ export default function PlayerDashboardPage() {
                         className={styles.messageBtn}
                         onClick={() =>
                           router.push(
-                            `/scenarios/${scenarioId}/player/message/new?to=${char.id}`,
+                            `/scenarios/${scenarioId}/player/characters/${char.id}`,
                           )
                         }
                       >
-                        Message
+                        View
                       </Button>
                     </div>
                   ))

@@ -18,7 +18,7 @@ export interface CharacterPostDTO {
   description: string | null;
   portrait: string | null;
   secret: string | null;
-  cabinetId: number;
+  cabinetId?: number;
   scenarioId: number;
 }
 

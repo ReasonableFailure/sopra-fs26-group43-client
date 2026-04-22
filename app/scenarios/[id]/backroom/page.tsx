@@ -34,7 +34,7 @@ function DirectiveBadge({ status }: { status: CommsStatus | null }) {
 }
 
 export default function BackroomDashboardPage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -55,16 +55,40 @@ export default function BackroomDashboardPage() {
     enabled,
   );
 
-  const { data: messages, loading: messagesLoading } = usePolling<Message[]>(
-    () => messageService.getMessagesByScenario(scenarioId, token),
-    5000,
-    enabled,
-  );
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+
+    const fetchMessages = async () => {
+      setMessagesLoading(true);
+      try {
+        const pairs = await messageService.getMessagePairsByScenario(scenarioId, token);
+        const arrays = await Promise.all(
+          pairs.map((p) => messageService.getMessagesBetween(p.roleAId, p.roleBId, token)),
+        );
+        if (!cancelled) setMessages(arrays.flat());
+      } catch {
+        // silently ignore
+      } finally {
+        if (!cancelled) setMessagesLoading(false);
+      }
+    };
+
+    fetchMessages();
+    const intervalId = setInterval(fetchMessages, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [enabled, scenarioId, token, messageService]);
 
   const loading = directivesLoading || messagesLoading;
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
   }, [isAuthenticated, router]);
@@ -78,7 +102,7 @@ export default function BackroomDashboardPage() {
     return () => { cancelled = true; };
   }, [enabled, scenarioId, token, characterService]);
 
-  if (!isAuthenticated) return null;
+  if (!authReady || !isAuthenticated) return null;
 
   const pendingMessages = (messages ?? []).filter((m) => m.status === CommsStatus.PENDING || m.status === null);
 
@@ -91,7 +115,7 @@ export default function BackroomDashboardPage() {
     if (messageId === null) return;
     setActionLoading(messageId);
     try {
-      await messageService.updateMessage(messageId, { status, reason: null }, token);
+      await messageService.updateMessage(messageId, { status }, token);
     } catch {
       // silently ignore — message stays in list
     } finally {
@@ -150,10 +174,10 @@ export default function BackroomDashboardPage() {
                 <div key={directive.id} className={styles.tableRow}>
                   <div className={`${styles.playerCell} ${styles.colPlayerName}`}>
                     <div className={styles.playerAvatar}>
-                      {initials(directive.creator?.name ?? null)}
+                      {initials(characterName(directive.creatorId ?? null))}
                     </div>
                     <span className={styles.playerName}>
-                      {directive.creator?.name ?? "Unknown"}
+                      {characterName(directive.creatorId ?? null)}
                     </span>
                   </div>
 

@@ -41,7 +41,7 @@ function CharacterCard({ character, cabinetName, onSelect }: CharacterCardProps)
 }
 
 export default function GameLobbyPage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -57,7 +57,7 @@ export default function GameLobbyPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
   }, [isAuthenticated, router]);
@@ -94,7 +94,7 @@ export default function GameLobbyPage() {
     };
   }, [token, scenarioId, characterService, cabinetService]);
 
-  if (!isAuthenticated) return null;
+  if (!authReady || !isAuthenticated) return null;
 
   const getCabinetName = (cabinetId: number | null): string => {
     if (cabinetId === null) return "";

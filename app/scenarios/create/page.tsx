@@ -2,39 +2,86 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Form, Input, InputNumber, theme } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import {
+  Avatar, Button, ConfigProvider, Form, Input, InputNumber,
+  Modal, Space, theme,
+} from "antd";
+import { DeleteOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
+import { CharacterService } from "@/api/characterService";
 import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import type { ScenarioPostDTO } from "@/types/scenario";
 import styles from "@/styles/createScenario.module.css";
 
-interface FormValues {
+interface ScenarioFormValues {
   title: string;
   description: string;
   exchangeRate: number;
 }
 
+interface CharacterFormValues {
+  name: string;
+  title: string;
+  description: string;
+  secret: string;
+}
+
+interface DraftCharacter {
+  key: number;
+  name: string;
+  title: string;
+  description: string;
+  secret: string;
+}
+
 export default function CreateScenarioPage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
-  const { addDirectedScenario } = useDirectedScenarios();
-  const [form] = Form.useForm<FormValues>();
+  const characterService = useMemo(() => new CharacterService(api), [api]);
+  const { addDirectedScenario } = useDirectedScenarios(userId);
+
+  const [form] = Form.useForm<ScenarioFormValues>();
+  const [characterForm] = Form.useForm<CharacterFormValues>();
   const [submitting, setSubmitting] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [characters, setCharacters] = useState<DraftCharacter[]>([]);
+  const [nextKey, setNextKey] = useState(0);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
   }, [isAuthenticated, router]);
 
-  if (!isAuthenticated) return null;
+  const openModal = () => {
+    characterForm.resetFields();
+    setModalOpen(true);
+  };
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleAddCharacter = (values: CharacterFormValues) => {
+    setCharacters((prev) => [
+      ...prev,
+      {
+        key: nextKey,
+        name: values.name,
+        title: values.title ?? "",
+        description: values.description ?? "",
+        secret: values.secret ?? "",
+      },
+    ]);
+    setNextKey((k) => k + 1);
+    setModalOpen(false);
+  };
+
+  const handleRemoveCharacter = (key: number) => {
+    setCharacters((prev) => prev.filter((c) => c.key !== key));
+  };
+
+  const handleSubmit = async (values: ScenarioFormValues) => {
     const data: ScenarioPostDTO = {
       title: values.title,
       description: values.description ?? null,
@@ -44,6 +91,21 @@ export default function CreateScenarioPage() {
     try {
       const created = await scenarioService.createScenario(data, token);
       addDirectedScenario(created.id);
+      await Promise.all(
+        characters.map((c) =>
+          characterService.createCharacter(
+            {
+              name: c.name,
+              title: c.title || null,
+              description: c.description || null,
+              portrait: null,
+              secret: c.secret || null,
+              scenarioId: created.id,
+            },
+            token,
+          ),
+        ),
+      );
       router.push(`/scenarios/${created.id}`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to create scenario");
@@ -66,17 +128,9 @@ export default function CreateScenarioPage() {
           fontSize: 14,
         },
         components: {
-          Button: {
-            colorPrimary: "#4f46e5",
-            algorithm: true,
-          },
-          Form: {
-            labelColor: "#111827",
-            labelFontSize: 14,
-          },
-          InputNumber: {
-            algorithm: true,
-          },
+          Button: { colorPrimary: "#4f46e5", algorithm: true },
+          Form: { labelColor: "#111827", labelFontSize: 14 },
+          InputNumber: { algorithm: true },
         },
       }}
     >
@@ -114,21 +168,51 @@ export default function CreateScenarioPage() {
                   <Input.TextArea rows={4} placeholder="Describe the scenario" />
                 </Form.Item>
 
+                {/* Characters */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
-                    <h3 className={styles.sectionTitle}>Characters</h3>
-                    <Button
-                      type="primary"
-                      onClick={() => alert("Add Character (not yet implemented)")}
-                    >
+                    <h3 className={styles.sectionTitle}>
+                      Characters
+                      {characters.length > 0 && (
+                        <span className={styles.sectionCount}>{characters.length}</span>
+                      )}
+                    </h3>
+                    <Button type="primary" onClick={openModal}>
                       Add Character
                     </Button>
                   </div>
-                  <p className={styles.sectionEmpty}>
-                    {`No characters added yet. Click "Add Character" to get started.`}
-                  </p>
+
+                  {characters.length === 0 ? (
+                    <p className={styles.sectionEmpty}>
+                      {`No characters added yet. Click "Add Character" to get started.`}
+                    </p>
+                  ) : (
+                    <div className={styles.characterList}>
+                      {characters.map((c) => (
+                        <div key={c.key} className={styles.characterRow}>
+                          <div className={styles.characterAvatar}>
+                            {c.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div className={styles.characterInfo}>
+                            <span className={styles.characterName}>{c.name}</span>
+                            {c.title && (
+                              <span className={styles.characterMeta}>{c.title}</span>
+                            )}
+                          </div>
+                          <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleRemoveCharacter(c.key)}
+                            aria-label={`Remove ${c.name}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
+                {/* Cabinets */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <h3 className={styles.sectionTitle}>Cabinets</h3>
@@ -144,16 +228,11 @@ export default function CreateScenarioPage() {
                   </p>
                 </div>
 
-                <Form.Item
-                  name="exchangeRate"
-                  label="Message Cost"
-                  initialValue={0}
-                >
-                  <InputNumber
-                    min={0}
-                    addonAfter="credits"
-                    style={{ width: "100%" }}
-                  />
+                <Form.Item name="exchangeRate" label="Message Cost" initialValue={0}>
+                  <Space.Compact style={{ width: "100%" }}>
+                    <InputNumber min={0} style={{ flex: 1 }} />
+                    <Input value="credits" disabled style={{ width: 80 }} />
+                  </Space.Compact>
                 </Form.Item>
                 <p className={styles.fieldHint}>Cost per message in this scenario</p>
 
@@ -168,6 +247,47 @@ export default function CreateScenarioPage() {
           </div>
         </main>
       </div>
+
+      {/* Add Character Modal */}
+      <Modal
+        title="Add Character"
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        footer={null}
+        destroyOnHidden
+      >
+        <Form
+          form={characterForm}
+          layout="vertical"
+          onFinish={handleAddCharacter}
+          style={{ marginTop: 16 }}
+        >
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Please enter the character's name" }]}
+          >
+            <Input placeholder="e.g. President Johnson" />
+          </Form.Item>
+
+          <Form.Item name="title" label="Title">
+            <Input placeholder="e.g. Head of State" />
+          </Form.Item>
+
+          <Form.Item name="description" label="Description">
+            <Input.TextArea rows={3} placeholder="Public-facing character description" />
+          </Form.Item>
+
+          <Form.Item name="secret" label="Secret">
+            <Input.TextArea rows={3} placeholder="Hidden information only this player can see" />
+          </Form.Item>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 8 }}>
+            <Button onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button type="primary" htmlType="submit">Add</Button>
+          </div>
+        </Form>
+      </Modal>
     </ConfigProvider>
   );
 }
