@@ -47,20 +47,21 @@ reason).
 
 ## Contributions Week 2 - '02-Apr-2026' to '08-Apr-2026'
 
-| **Student**             | **Date**      | **Link to Commit**                                                                                                                           | **Description**                         | **Relevance**                           |
-|-------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|-----------------------------------------|
-| **[HalaiRhea]**         | [04.04.2026]  | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/e20f1e1c8640d97f2a042e8103d97087fd38931e)]                           | [created directive endpoints]           | [Enables essential player interactions] |
-|                         | [04.04.2026]  | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/ba7e5be65a72f05d7f342a8027d94d1cb1625087)]                           | [added endpoints for messages and news] | [Enables broader range of game actions] |
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[HalaiRhea]** | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/e20f1e1c8640d97f2a042e8103d97087fd38931e)] | [created directive endpoints] | [Enables essential player interactions] |
+|                    | [04.04.2026]   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/ba7e5be65a72f05d7f342a8027d94d1cb1625087)] | [added endpoints for messages and news] | [Enables broader range of game actions] |
 | **[ReasonableFailure]** | [06-Apr-2026] | [Link to Commit 1](https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/0cc67719dab3e05c82c5f12fc05e62248faef924)           | [delete cabinet files]                  | [Reduce Scope,in accordance with TA]    |
 |                         | [09-Apr-2026] | [Link to Commit 2](https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/101/changes/bf24492ec67f4ea460a5ec52212a2fee56e6b9c1) | [Brief description of the task]         | [Why this contribution is relevant]     |
-| **[@githubUser3]**      | [date]        | [Link to Commit 1]                                                                                                                           | [Brief description of the task]         | [Why this contribution is relevant]     |
-|                         | [date]        | [Link to Commit 2]                                                                                                                           | [Brief description of the task]         | [Why this contribution is relevant]     |
-| **[zeyuwang-uzh]**      | [04.08.2026]  | [[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b6ebfdf1b92ec01547309d4a6704239205766a69]]                           | [Created frontend classes]              | [Why this contribution is relevant]     |
-|                         | [date]        | [Link to Commit 2]                                                                                                                           | [Brief description of the task]         | [Why this contribution is relevant]     |
+| **[@yiruyang2025]** | [06.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/27] | [Implemented scenarios list page (app/scenarios/page.tsx): fetches GET /scenarios and renders scenario cards with title, description, status and navigation] | [Core entry point for users to explore available crisis scenarios and start interaction with the system] |
+|                    | [07.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/28] | [Implemented scenario detail page (app/scenarios/[id]/page.tsx): fetches scenario + characters and displays detailed view with character grid and join functionality] | [Provides detailed context and enables user participation in a selected scenario] |
+| **[zeyuwang-uzh]** | [08.04.2026]   | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b6ebfdf1b92ec01547309d4a6704239205766a69] | [Created frontend classes] | [Finished up types required in frontend] |
+|                    | [08.04.2026]   | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/edc75ea079f4bba85f6e05e1674d8490299b1958] | [Add apiService layers] | [Essential for communication with backend] |
 
 ---
 
 ## Contributions Week 3 - '09-Apr-2026' to '15-Apr-2026'
+
 | **Student**              | **Date**      | **Link to Commit**                                                                                                                           | **Description**                                                                                                                                   | **Relevance**                                                                                                                                              |
 |--------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **[ReasonableFailure ]** | [14-Apr-2026] | [Link to Commit 1](https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/101/commits/a90b345d8d491a0cf950f463e7824e3d8d3ff6f6) | [assign user to player and basic crud operations for a Role(formerly Character)]                                                                  | [link between user and player class established, basis for all further logic. renaming of Character->Role due to naming conflict with java.lang.Character] |
@@ -70,28 +71,63 @@ reason).
 |                    | [15.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/21] | [Integrated frontend message limiting logic (useMessageLimiting hook + MessageLimitIndicator component) into scenario flow] | [Ensures controlled communication flow and enforces system constraints during gameplay] |
 | **[@githubUser3]**       | [date]        | [Link to Commit 1]                                                                                                                           | [Brief description of the task]                                                                                                                   | [Why this contribution is relevant]                                                                                                                        |
 | **[@githubUser3]**       | [date]        | [Link to Commit 2]                                                                                                                           | [Brief description of the task]                                                                                                                   | [Why this contribution is relevant]                                                                                                                        |
-| **[@githubUser4]**       | [date]        | [Link to Commit 1]                                                                                                                           | [Brief description of the task]                                                                                                                   | [Why this contribution is relevant]                                                                                                                        |
-| **[@githubUser4]**       | [date]        | [Link to Commit 2]                                                                                                                           | [Brief description of the task]                                                                                                                   | [Why this contribution is relevant]                                                                                                                        |
-_Continue with the same table format as above._
+| **[zeyuwang-uzh]**       | [15.04.2026]        | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b1f51219fbf3e53e751e60a9aa36e495ee1be240]                                                                                                                           | [Add hooks for scenario selection and characters]                                                                                                                   | [Essential reusable stateful logic]                                                                                                                        |
+| **[zeyuwang-uzh]**       | [15.04.2026]        | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/0f8997b48d1cda7b326176ec12668af76e992937]                                                                                                                           | [Add 6 pages to frontend]                                                                                                                   | [Essential UI implementations]                                                                                                                        |
 
 ---
 
 ## Contributions Week 4 - '16-Apr-2026' to '22-Apr-2026'
 
-_Continue with the same table format as above._
-| **Student**              | **Date**      | **Link to Commit**                                                                                                                           | **Description**                                                                                                                                   | **Relevance**                                                                                                                                              |
-| **[@yiruyang2025]** | [18.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6] | [Implemented full scenario creation frontend mockup (app/scenarios/create/page.tsx), including navigation flow from homepage, form rendering, input handling, and Save/Cancel actions with client-side state persistence and routing back to scenarios view] | [Provides complete end-to-end user flow for creating scenarios and navigating between views, enabling a functional UI demo without backend dependency] |
-|                    | [20.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6], [https://sopra-fs26-group43-client.vercel.app/] | [Implemented dynamic character and cabinet creation logic with add/remove functionality, form state management, and real-time mockup rendering of entered data in the UI] | [Enables interactive scenario configuration and reflects complex nested data structures (characters and cabinets), which are core components of the system design] |
-|--------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Student**         | **Date**   | **Link to Commit / Issue / Demo**                                                                                                           | **Description**                                                                                                                                                                                            | **Relevance**                                                                                                                                                    |
+|---------------------|------------|---------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[@yiruyang2025]** | 18.04.2026 | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6                                                                     | Implemented full scenario creation frontend mockup (app/scenarios/create/page.tsx), including navigation flow, form rendering, input handling, and Save/Cancel actions with client-side state persistence. | Provides complete end-to-end user flow for creating scenarios and navigating between views, enabling a functional UI demo without backend dependency.            |
+|                     | 20.04.2026 | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6, ✨ [Production demo](https://sopra-fs26-group43-client.vercel.app/) | Implemented dynamic character and cabinet creation logic with add/remove functionality, form state management, and real-time mockup rendering of entered data in the UI.                                   | Enables interactive scenario configuration and reflects complex nested data structures (characters and cabinets), which are core components of the system design. |
+|                     | 21.04.2026 | ✨ [M3 Demo Video](https://drive.google.com/file/d/1ErROXdVXRvhBhzlcuqPgnYuWZ_CHMIHY/view?usp=sharing)                                       | Finalized all M2 report frontend prototype pages in the local development environment and successfully closed all client-side class issues marked as "Done".                                               | Ensures full UI coverage for M2 requirements and resolves all outstanding architectural issues in the client repository.                                         |
+| **[@HalaiRhea]**    | 18.04.2026 | [https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/2a27a07f494d3913441ac23368b7bc374379bdda]                            | added mastodon integration                                                                                                                                                                                 |  API integration which enables access of messages                                                                                                                |
+|                     | 21.04.2026 | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/fd9efca944cacc4226f6cdbd772093061a9671cc                              | created interlocutors endpoint                                                                                                                                                                             | Enables a user to access list of characters a character has messaged with                                                                                        |
+|**[@reasonableFailure]**| xx.04.2026 |[Link to commit 1](https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/107)| add retrieving Roles by scenario and or cabinet association for ease of display                                                                                                                            | Closes issue 27                                                                                                                                                  |
+| |xx.04.2026|[Link to commit 2](https://github.com/ReasonableFailure/sopra-fs26-group43-server/pull/109)| Role-Based authorization via tokens                                                                                                                                                                        | Required for basic scenario creation functionality                                                                                                               |
 
 ---
 
-## Contributions Week 5 - [Begin Date] to [End Date]
 
-_Continue with the same table format as above._
+## Contributions Week 5 - 23-Apr-2026 to 29-Apr-2026
+
+
+| **Student**         | **Date**     | **Link to Commit**                                                                 | **Description**                                                                                                                                 | **Relevance**                                                                                                                                          |
+|--------------------|--------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[@yiruyang2025]** | 19.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/8, https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/9 | Implemented Directive frontend class and added "New Directive" button on player dashboard, including UI interaction and state handling.       | Enables players to create directives within the scenario flow, forming a key interaction mechanism in gameplay.                                       |
+|                    | 21.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/17, https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/26 | Implemented frontend message class and news class, defining structured data models for communication and information updates in the system.    | Provides core data structures for messaging and news features, which are essential for communication and scenario progression logic.                  |
 
 ---
 
 ## Contributions Week 6 - [Begin Date] to [End Date]
 
 _Continue with the same table format as above._
+
+---
+
+## Contributions Week 7 - [Begin Date] to [End Date]
+
+_Continue with the same table format as above._
+
+
+---
+
+## Contributions Week 8 - [Begin Date] to [End Date]
+
+_Continue with the same table format as above._
+
+
+---
+
+## Contributions Week 9 - [Begin Date] to [End Date]
+
+_Continue with the same table format as above._
+
+
+
+---
+
+
+
