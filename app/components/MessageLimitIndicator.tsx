@@ -23,7 +23,7 @@ const MessageLimitIndicator: React.FC<MessageLimitIndicatorProps> = ({
     return null;
   }
 
-  const remaining = character.messageSlots - character.messageCount;
+  const remaining = 15 - character.messageCount;
   const points = character.actionPoints;
 
   return (
