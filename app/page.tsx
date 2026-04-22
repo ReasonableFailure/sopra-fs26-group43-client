@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { Scenario } from "@/types/scenario";
-import { Button, List, Card, Typography, Spin, Empty } from "antd";
+import { Button, List, Card, Typography, Spin, Empty, Divider } from "antd";
 import { PlusOutlined, EyeOutlined, SettingOutlined, CalendarOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -43,11 +43,9 @@ export default function Home() {
     }
   }, [userId, token]);
 
-  const displayScenarios = scenarios.length > 0 ? scenarios : DEMO_SCENARIOS.map(s => ({
-    id: s.id, title: s.title, description: s.description, active: false, dayNumber: 0, exchangeRate: 10,
-  }));
-
-  const DEMO_DATES: Record<number, string> = { 1: "January 15, 2024", 2: "January 14, 2024", 3: "January 12, 2024", 4: "January 10, 2024", 5: "January 8, 2024" };
+  const displayScenarios = scenarios.length > 0 ? scenarios.map(s => ({
+    id: s.id as number, title: s.title || "", description: s.description || "", date: `Day ${s.dayNumber}`,
+  })) : DEMO_SCENARIOS;
 
   return (
     <div style={{ background: "#f8fafc", minHeight: "100vh" }}>
@@ -61,11 +59,11 @@ export default function Home() {
             <Text strong style={{ fontSize: 16, color: "#1a1a2e" }}>Scenario Manager</Text>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => token ? router.push("/scenarios/create") : router.push("/login")}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/scenarios/create")}>
               Create New Scenario
             </Button>
             <div
-              onClick={() => token ? router.push(`/users/${userId}`) : router.push("/login")}
+              onClick={() => router.push(token ? `/users/${userId}` : "/login")}
               style={{ width: 36, height: 36, borderRadius: "50%", background: "#6c5ce7", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontWeight: 700, fontSize: 13 }}
             >
               {initials}
@@ -95,13 +93,13 @@ export default function Home() {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div style={{ flex: 1 }}>
-                    <Text strong style={{ fontSize: 15, color: "#1a1a2e" }}>{s.title || "Untitled"}</Text>
+                    <Text strong style={{ fontSize: 15, color: "#1a1a2e" }}>{s.title}</Text>
                     <br />
-                    <Text style={{ fontSize: 13, color: "#64748b" }}>{s.description || ""}</Text>
+                    <Text style={{ fontSize: 13, color: "#64748b" }}>{s.description}</Text>
                     <br />
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
                       <CalendarOutlined style={{ color: "#6c5ce7", fontSize: 12 }} />
-                      <Text style={{ fontSize: 12, color: "#6c5ce7" }}>{DEMO_DATES[s.id as number] || `Day ${s.dayNumber}`}</Text>
+                      <Text style={{ fontSize: 12, color: "#6c5ce7" }}>{s.date}</Text>
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -113,6 +111,25 @@ export default function Home() {
             )}
           />
         )}
+
+        {/* Demo Navigation - visible links to all pages */}
+        <Divider />
+        <div style={{ paddingBottom: 32 }}>
+          <Text strong style={{ color: "#1a1a2e", fontSize: 14 }}>Demo Navigation (All Pages)</Text>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+            <Button size="small" onClick={() => router.push("/login")}>Login / Register</Button>
+            <Button size="small" onClick={() => router.push("/scenarios/create")}>Create Scenario</Button>
+            <Button size="small" onClick={() => router.push("/lobby?scenarioId=5")}>Game Lobby</Button>
+            <Button size="small" onClick={() => router.push("/news?scenarioId=5")}>News Feed</Button>
+            <Button size="small" onClick={() => router.push("/director?scenarioId=5")}>Director Dashboard</Button>
+            <Button size="small" onClick={() => router.push("/player?scenarioId=5")}>Player Dashboard</Button>
+            <Button size="small" onClick={() => router.push("/backroom?scenarioId=5")}>Backroom Dashboard</Button>
+            <Button size="small" onClick={() => router.push("/editor?scenarioId=5")}>Editor / Comm Form</Button>
+            <Button size="small" onClick={() => router.push("/chat?scenarioId=5&with=0")}>Chat / Comm Log</Button>
+            <Button size="small" onClick={() => router.push("/directive/1")}>Directive Detail</Button>
+            <Button size="small" onClick={() => router.push("/scenarios/5")}>Scenario Detail</Button>
+          </div>
+        </div>
       </div>
     </div>
   );
