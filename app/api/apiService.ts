@@ -9,7 +9,6 @@ export class ApiService {
     this.baseURL = getApiDomain();
     this.defaultHeaders = {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
     };
   }
 

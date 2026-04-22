@@ -2,9 +2,9 @@ export interface Scenario {
   id: number;
   title: string;
   description: string | null;
-  isActive: boolean;
-  day: number;
-  exchangeRate: number; // likes → action points conversion rate
+  active: boolean;
+  dayNumber: number;
+  exchangeRate: number;
 }
 
 /** POST /scenarios */
@@ -19,5 +19,6 @@ export interface ScenarioPutDTO {
   title?: string;
   description?: string;
   exchangeRate?: number;
-  isActive?: boolean;
+  active?: boolean;
+  dayNumber?: number;
 }

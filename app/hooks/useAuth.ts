@@ -10,10 +10,11 @@ export const useAuth = () => {
   const api = useApi();
   const userService = useMemo(() => new UserService(api), [api]);
 
-  const { value: token, set: setToken, clear: clearToken } = useLocalStorage<string>("token", "");
-  const { value: userId, set: setUserId, clear: clearUserId } = useLocalStorage<number>("userId", 0);
+  const { value: token, set: setToken, clear: clearToken, ready: tokenReady } = useLocalStorage<string>("token", "");
+  const { value: userId, set: setUserId, clear: clearUserId, ready: userIdReady } = useLocalStorage<number>("userId", 0);
 
   const isAuthenticated = !!token;
+  const authReady = tokenReady && userIdReady;
 
   const register = useCallback(async (data: UserPostDTO) => {
     const user = await userService.register(data);
@@ -37,5 +38,5 @@ export const useAuth = () => {
     clearUserId();
   }, [userService, token, userId, clearToken, clearUserId]);
 
-  return { token, userId, isAuthenticated, register, login, logout };
+  return { token, userId, isAuthenticated, authReady, register, login, logout };
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Avatar,
@@ -10,7 +10,9 @@ import {
   theme,
 } from "antd";
 import {
-  StopOutlined,
+  CaretRightFilled,
+  CloseCircleOutlined,
+  PauseCircleOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,8 +25,8 @@ import styles from "@/styles/directorDashboard.module.css";
 type GameStatus = "stopped" | "running" | "frozen";
 
 function deriveStatus(scenario: Scenario): GameStatus {
-  if (!scenario.isActive && scenario.day === 0) return "stopped";
-  if (scenario.isActive) return "running";
+  if (!scenario.active && scenario.dayNumber === 0) return "stopped";
+  if (scenario.active) return "running";
   return "frozen";
 }
 
@@ -52,8 +54,20 @@ const STATUS_DESC: Record<GameStatus, string> = {
   frozen: "All submissions are disabled",
 };
 
+const STATUS_ICON: Record<GameStatus, React.ReactNode> = {
+  stopped: <CloseCircleOutlined style={{ fontSize: 24, color: "#ef4444" }} />,
+  running: <CaretRightFilled style={{ fontSize: 24, color: "#10b981" }} />,
+  frozen: <PauseCircleOutlined style={{ fontSize: 24, color: "#3b82f6" }} />,
+};
+
+const STATUS_ICON_BG: Record<GameStatus, string> = {
+  stopped: "#fef2f2",
+  running: "#ecfdf5",
+  frozen: "#eff6ff",
+};
+
 export default function DirectorDashboardPage() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -70,12 +84,12 @@ export default function DirectorDashboardPage() {
   );
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
   }, [isAuthenticated, router]);
 
-  if (!isAuthenticated) return null;
+  if (!authReady || !isAuthenticated) return null;
 
   const status: GameStatus = scenario ? deriveStatus(scenario) : "stopped";
 
@@ -127,31 +141,28 @@ export default function DirectorDashboardPage() {
 
               <div className={styles.topRow}>
                 {/* Game Status */}
-                <div className={styles.card}>
+                <div className={`${styles.card} ${styles.statusCard}`} style={{ position: "relative" }}>
+                  <div
+                    className={styles.statusIconBox}
+                    style={{ background: STATUS_ICON_BG[status] }}
+                  >
+                    {STATUS_ICON[status]}
+                  </div>
                   <p className={styles.cardLabel}>Game Status</p>
                   <div className={styles.statusValue}>
-                    <StopOutlined
-                      style={{
-                        fontSize: 28,
-                        color:
-                          status === "running"
-                            ? "#10b981"
-                            : status === "frozen"
-                            ? "#3b82f6"
-                            : "#ef4444",
-                      }}
-                    />
                     <span className={`${styles.statusText} ${styles[status]}`}>
                       {STATUS_LABEL[status]}
                     </span>
                   </div>
-                  <div className={styles.statusBadge}>
-                    <span className={`${styles.dot} ${STATUS_DOT[status]}`} />
-                    {STATUS_BADGE_TEXT[status]}
+                  <div className={styles.statusFooter}>
+                    <div className={styles.statusBadge}>
+                      <span className={`${styles.dot} ${STATUS_DOT[status]}`} />
+                      {STATUS_BADGE_TEXT[status]}
+                    </div>
+                    <p className={styles.statusDescription}>
+                      {STATUS_DESC[status]}
+                    </p>
                   </div>
-                  <p className={styles.statusDescription}>
-                    {STATUS_DESC[status]}
-                  </p>
                 </div>
 
                 {/* Game Controls */}
@@ -162,19 +173,23 @@ export default function DirectorDashboardPage() {
                       type="primary"
                       className={styles.startBtn}
                       block
+                      icon={<CaretRightFilled />}
                       onClick={() => alert("Start Game — not yet implemented")}
                     >
                       Start Game
                     </Button>
                     <div className={styles.controlsRow}>
                       <Button
-                        style={{ borderColor: "#3b82f6", color: "#3b82f6" }}
+                        className={styles.freezeBtn}
+                        icon={<PauseCircleOutlined />}
                         onClick={() => alert("Freeze Game — not yet implemented")}
                       >
                         Freeze Game
                       </Button>
                       <Button
                         danger
+                        type="primary"
+                        icon={<CloseCircleOutlined />}
                         onClick={() => alert("End Game — not yet implemented")}
                       >
                         End Game
@@ -191,7 +206,7 @@ export default function DirectorDashboardPage() {
                   <Button
                     type="link"
                     style={{ color: "#4f46e5", padding: 0 }}
-                    onClick={() => alert("See All News — not yet implemented")}
+                    onClick={() => router.push(`/scenarios/${scenarioId}/news`)}
                   >
                     See All News →
                   </Button>

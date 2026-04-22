@@ -59,18 +59,18 @@ function ScenarioCard({ scenario, isDirector }: { scenario: Scenario; isDirector
 }
 
 export default function ScenariosPage() {
-  const { token, isAuthenticated } = useAuth();
-  const { isDirector } = useDirectedScenarios();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { isDirector } = useDirectedScenarios(userId);
   const router = useRouter();
   const { scenarios, loading, error } = useScenarios(token);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
   }, [isAuthenticated, router]);
 
-  if (!isAuthenticated) return null;
+  if (!authReady || !isAuthenticated) return null;
 
   return (
     <ConfigProvider

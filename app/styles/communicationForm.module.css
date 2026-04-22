@@ -1,0 +1,120 @@
+/* ── Root ───────────────────────────────────────────── */
+.pageRoot {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+/* ── Navbar ─────────────────────────────────────────── */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+  padding: 0 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoMark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  flex-shrink: 0;
+}
+
+.navTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.navAvatar {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
+  font-weight: 600 !important;
+}
+
+/* ── Page body ──────────────────────────────────────── */
+.pageBody {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 32px 24px 48px;
+}
+
+/* ── Card ───────────────────────────────────────────── */
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 800px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 16px;
+}
+
+.cardTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+}
+
+.cardSubtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Form ───────────────────────────────────────────── */
+.formBody {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+.cardFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  border-top: 1px solid #e5e7eb;
+}

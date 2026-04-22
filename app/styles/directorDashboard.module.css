@@ -97,11 +97,9 @@
 }
 
 .cardLabel {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: #6b7280;
   margin-bottom: 16px;
 }
 
@@ -113,10 +111,30 @@
 }
 
 /* Game Status card */
+.statusCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.statusFooter {
+  margin-top: auto;
+}
+
+.statusIconBox {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .statusValue {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -126,16 +144,10 @@
   line-height: 1;
 }
 
-.statusText.stopped {
-  color: #ef4444;
-}
-
-.statusText.running {
-  color: #10b981;
-}
-
+.statusText.stopped,
+.statusText.running,
 .statusText.frozen {
-  color: #3b82f6;
+  color: #111827;
 }
 
 .statusBadge {
@@ -193,6 +205,18 @@
 
 .controlsRow > * {
   flex: 1;
+  height: 48px !important;
+}
+
+.freezeBtn {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.freezeBtn:hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
 }
 
 /* Recent Activity card */
