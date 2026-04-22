@@ -3,32 +3,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
-import { InfoCircleOutlined, StarFilled, UserOutlined } from "@ant-design/icons";
+import { InfoCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { CharacterService } from "@/api/characterService";
-import { CabinetService } from "@/api/cabinetService";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
 import type { Character } from "@/types/character";
-import type { Cabinet } from "@/types/cabinet";
 import styles from "@/styles/lobby.module.css";
 
 interface CharacterCardProps {
   character: Character;
-  cabinetName: string;
   onSelect: () => void;
 }
 
-function CharacterCard({ character, cabinetName, onSelect }: CharacterCardProps) {
+function CharacterCard({ character, onSelect }: CharacterCardProps) {
   return (
     <div className={styles.characterCard} onClick={onSelect} role="button" tabIndex={0}>
       <h3 className={styles.characterName}>{character.name}</h3>
-      {cabinetName && (
-        <div className={styles.cabinetRow}>
-          <StarFilled className={styles.starIcon} />
-          <span className={styles.cabinetName}>{cabinetName}</span>
-        </div>
-      )}
       <p className={styles.characterDesc}>
         {character.description ?? "No description provided."}
       </p>
@@ -48,11 +39,9 @@ export default function GameLobbyPage() {
   const api = useApi();
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
-  const cabinetService = useMemo(() => new CabinetService(api), [api]);
   const { setCharacterId } = useSelectedCharacter(scenarioId);
 
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [cabinets, setCabinets] = useState<Cabinet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,13 +60,9 @@ export default function GameLobbyPage() {
       setLoading(true);
       setError(null);
       try {
-        const [chars, cabs] = await Promise.all([
-          characterService.getCharactersByScenario(scenarioId, token),
-          cabinetService.getCabinetsByScenario(scenarioId, token),
-        ]);
+        const chars = await characterService.getCharactersByScenario(scenarioId, token);
         if (!cancelled) {
           setCharacters(chars);
-          setCabinets(cabs);
         }
       } catch (err) {
         if (!cancelled) {
@@ -92,14 +77,9 @@ export default function GameLobbyPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, scenarioId, characterService, cabinetService]);
+  }, [token, scenarioId, characterService]);
 
   if (!authReady || !isAuthenticated) return null;
-
-  const getCabinetName = (cabinetId: number | null): string => {
-    if (cabinetId === null) return "";
-    return cabinets.find((c) => c.id === cabinetId)?.cabinetName ?? "";
-  };
 
   const handleSelectCharacter = (character: Character) => {
     if (character.id === null) return;
@@ -162,7 +142,6 @@ export default function GameLobbyPage() {
                 <CharacterCard
                   key={character.id ?? character.name}
                   character={character}
-                  cabinetName={getCabinetName(character.cabinetId)}
                   onSelect={() => handleSelectCharacter(character)}
                 />
               ))}

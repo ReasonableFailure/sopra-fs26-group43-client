@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { UserService } from "@/api/userService";
 import { User } from "@/types/user";
 import { Button, Card, Descriptions, Form, Input } from "antd";
 
@@ -16,7 +17,8 @@ interface EditFormFields {
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const apiService = useApi();
+  const api = useApi();
+  const userService = useMemo(() => new UserService(api), [api]);
 
   const { value: token } = useLocalStorage<string>("token", "");
   const { value: userId } = useLocalStorage<string>("userId", "");
@@ -30,7 +32,7 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const data = await apiService.getWithToken<User>(`/users/${id}`, token);
+        const data = await userService.getUser(Number(id), token);
         setUser(data);
       } catch (error) {
         if (error instanceof Error) {
@@ -40,11 +42,11 @@ const Profile: React.FC = () => {
     };
 
     if (id) fetchUser();
-  }, [apiService, id, token]);
+  }, [userService, id, token]);
 
   const handleEdit = async (values: EditFormFields) => {
     try {
-      await apiService.putWithToken<void>(`/users/${id}`, values, token);
+      await userService.updateUser(Number(id), values, token);
       setEditing(false);
       router.refresh();
     } catch (error) {

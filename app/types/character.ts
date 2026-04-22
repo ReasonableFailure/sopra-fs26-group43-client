@@ -8,7 +8,6 @@ export interface Character {
   isAlive: boolean;
   actionPoints: number;
   messageCount: number;
-  cabinetId: number | null;
 }
 
 /** POST /characters */
@@ -18,7 +17,6 @@ export interface CharacterPostDTO {
   description: string | null;
   portrait: string | null;
   secret: string | null;
-  cabinetId?: number;
   scenarioId: number;
 }
 

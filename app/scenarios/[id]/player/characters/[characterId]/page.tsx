@@ -7,17 +7,14 @@ import {
   CalendarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ExclamationCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
 import { CharacterService } from "@/api/characterService";
-import { CabinetService } from "@/api/cabinetService";
 import { MessageService } from "@/api/messageService";
 import type { Character } from "@/types/character";
-import type { Cabinet } from "@/types/cabinet";
 import type { Message } from "@/types/message";
 import { CommsStatus } from "@/types/directive";
 import styles from "@/styles/characterProfile.module.css";
@@ -45,13 +42,11 @@ export default function CharacterProfilePage() {
 
   const api = useApi();
   const characterService = useMemo(() => new CharacterService(api), [api]);
-  const cabinetService = useMemo(() => new CabinetService(api), [api]);
   const messageService = useMemo(() => new MessageService(api), [api]);
 
   const { characterId: myCharacterId } = useSelectedCharacter(scenarioId);
 
   const [targetCharacter, setTargetCharacter] = useState<Character | null>(null);
-  const [cabinet, setCabinet] = useState<Cabinet | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -66,31 +61,20 @@ export default function CharacterProfilePage() {
 
     const fetchData = async () => {
       try {
-        const [chars, cabinets, msgs] = await Promise.all([
-          characterService.getCharactersByScenario(scenarioId, token),
-          cabinetService.getCabinetsByScenario(scenarioId, token),
-          messageService.getMessagesByScenario(scenarioId, token),
-        ]);
+        const chars = await characterService.getCharactersByScenario(scenarioId, token);
+        if (cancelled) return;
+        setTargetCharacter(chars.find((c) => c.id === targetCharId) ?? null);
+
+        const msgs = myCharacterId
+          ? await messageService.getMessagesBetween(myCharacterId, targetCharId, token)
+          : [];
         if (cancelled) return;
 
-        const char = chars.find((c) => c.id === targetCharId) ?? null;
-        setTargetCharacter(char);
-
-        if (char?.cabinetId) {
-          setCabinet(cabinets.find((c) => c.id === char.cabinetId) ?? null);
-        }
-
-        const filtered = msgs
-          .filter(
-            (m) =>
-              (m.creatorId === myCharacterId && m.recipientId === targetCharId) ||
-              (m.creatorId === targetCharId && m.recipientId === myCharacterId),
-          )
-          .sort((a, b) => {
-            if (!a.createdAt || !b.createdAt) return 0;
-            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          });
-        setMessages(filtered);
+        const sorted = [...msgs].sort((a, b) => {
+          if (!a.createdAt || !b.createdAt) return 0;
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        });
+        setMessages(sorted);
       } catch {
         // silently degrade
       } finally {
@@ -100,7 +84,7 @@ export default function CharacterProfilePage() {
 
     fetchData();
     return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, targetCharId, myCharacterId, token, characterService, cabinetService, messageService]);
+  }, [isAuthenticated, scenarioId, targetCharId, myCharacterId, token, characterService, messageService]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -167,13 +151,6 @@ export default function CharacterProfilePage() {
                 </div>
 
                 <div className={styles.fieldGroup}>
-                  <p className={styles.fieldLabel}>Cabinet</p>
-                  <p className={styles.cabinetValue}>
-                    {cabinet?.cabinetName ?? "—"}
-                  </p>
-                </div>
-
-                <div className={styles.fieldGroup}>
                   <p className={styles.fieldLabel}>Status</p>
                   <span
                     className={
@@ -236,18 +213,6 @@ export default function CharacterProfilePage() {
 
                         <p className={styles.messageBody}>{msg.body}</p>
 
-                        {isMine &&
-                          (msg.status === CommsStatus.FAILED ||
-                            msg.status === CommsStatus.REJECTED) &&
-                          msg.reason && (
-                            <div className={styles.failureBox}>
-                              <div className={styles.failureHeader}>
-                                <ExclamationCircleOutlined />
-                                <span>Failure Reason</span>
-                              </div>
-                              <p className={styles.failureReason}>{msg.reason}</p>
-                            </div>
-                          )}
                       </div>
                     );
                   })

@@ -13,18 +13,18 @@ export class UserService {
   }
 
   getUser(id: number, token: string): Promise<User> {
-    return this.api.getWithToken<User>(`/users/${id}`, token);
+    return this.api.getWithToken<User>(`/users/${id}`, `Bearer ${token}`);
   }
 
   getAllUsers(token: string): Promise<User[]> {
-    return this.api.getWithToken<User[]>("/users", token);
+    return this.api.getWithToken<User[]>("/users", `Bearer ${token}`);
   }
 
   updateUser(id: number, data: UserPutDTO, token: string): Promise<void> {
-    return this.api.putWithToken<void>(`/users/${id}`, data, token);
+    return this.api.putWithToken<void>(`/users/${id}`, data, `Bearer ${token}`);
   }
 
   logout(id: number, token: string): Promise<void> {
-    return this.api.postWithToken<void>(`/logout/${id}`, {}, token);
+    return this.api.postWithToken<void>(`/logout/${id}`, {}, `Bearer ${token}`);
   }
 }

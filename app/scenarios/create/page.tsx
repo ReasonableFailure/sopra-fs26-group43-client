@@ -91,21 +91,23 @@ export default function CreateScenarioPage() {
     try {
       const created = await scenarioService.createScenario(data, token);
       addDirectedScenario(created.id);
-      await Promise.all(
-        characters.map((c) =>
-          characterService.createCharacter(
-            {
-              name: c.name,
-              title: c.title || null,
-              description: c.description || null,
-              portrait: null,
-              secret: c.secret || null,
-              scenarioId: created.id,
-            },
-            token,
+      if (created.directorToken && characters.length > 0) {
+        await Promise.all(
+          characters.map((c) =>
+            characterService.createCharacter(
+              {
+                name: c.name,
+                title: c.title || null,
+                description: c.description || null,
+                portrait: null,
+                secret: c.secret || null,
+                scenarioId: created.id,
+              },
+              created.directorToken!,
+            ),
           ),
-        ),
-      );
+        );
+      }
       router.push(`/scenarios/${created.id}`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to create scenario");
@@ -150,7 +152,7 @@ export default function CreateScenarioPage() {
             <div className={styles.pageHeader}>
               <h1 className={styles.heading}>Create New Scenario</h1>
               <p className={styles.subheading}>
-                Define a new scenario with cabinets, characters, and settings
+                Define a new scenario with characters and settings
               </p>
             </div>
 
@@ -210,22 +212,6 @@ export default function CreateScenarioPage() {
                       ))}
                     </div>
                   )}
-                </div>
-
-                {/* Cabinets */}
-                <div className={styles.section}>
-                  <div className={styles.sectionHeader}>
-                    <h3 className={styles.sectionTitle}>Cabinets</h3>
-                    <Button
-                      type="primary"
-                      onClick={() => alert("Add Cabinet (not yet implemented)")}
-                    >
-                      Add Cabinet
-                    </Button>
-                  </div>
-                  <p className={styles.sectionEmpty}>
-                    {`No cabinets added yet. Click "Add Cabinet" to get started.`}
-                  </p>
                 </div>
 
                 <Form.Item name="exchangeRate" label="Message Cost" initialValue={0}>

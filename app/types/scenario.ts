@@ -5,6 +5,7 @@ export interface Scenario {
   active: boolean;
   dayNumber: number;
   exchangeRate: number;
+  directorToken?: string; // returned by backend once ScenarioGetDTO includes it
 }
 
 /** POST /scenarios */

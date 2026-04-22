@@ -8,7 +8,7 @@ export class CharacterService {
     return this.api.getWithToken<Character[]>(`/characters/${scenarioId}`, token);
   }
 
-  createCharacter(dto: CharacterPostDTO, token: string): Promise<Character> {
-    return this.api.postWithToken<Character>("/characters", dto, token);
+  createCharacter(dto: CharacterPostDTO, directorToken: string): Promise<Character> {
+    return this.api.postWithToken<Character>("/characters", dto, `Director ${directorToken}`);
   }
 }
