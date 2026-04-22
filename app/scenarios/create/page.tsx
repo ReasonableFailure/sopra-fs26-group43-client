@@ -256,15 +256,18 @@ export default function CreateScenarioPage() {
             <Input placeholder="e.g. President Johnson" />
           </Form.Item>
 
-          <Form.Item name="title" label="Title">
+          <Form.Item name="title" label="Title"
+            rules={[{ required: true, message: "Please enter the character's title" }]}>
             <Input placeholder="e.g. Head of State" />
           </Form.Item>
 
-          <Form.Item name="description" label="Description">
+          <Form.Item name="description" label="Description"
+            rules={[{ required: true, message: "Please enter the character's description" }]}>
             <Input.TextArea rows={3} placeholder="Public-facing character description" />
           </Form.Item>
 
-          <Form.Item name="secret" label="Secret">
+          <Form.Item name="secret" label="Secret"
+            rules={[{ required: true, message: "Please enter the character's secret" }]}>
             <Input.TextArea rows={3} placeholder="Hidden information only this player can see" />
           </Form.Item>
 
