@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 export function usePolling<T>(
-  fetcher: () => Promise<T>,
+  fetcher: () => Promise<T>, //TODO: implement
   intervalMs: number,
   enabled: boolean = true,
 ): { data: T | null; loading: boolean; error: string | null } {
