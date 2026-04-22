@@ -74,26 +74,54 @@ reason).
 | **[zeyuwang-uzh]**       | [15.04.2026]        | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b1f51219fbf3e53e751e60a9aa36e495ee1be240]                                                                                                                           | [Add hooks for scenario selection and characters]                                                                                                                   | [Essential reusable stateful logic]                                                                                                                        |
 | **[zeyuwang-uzh]**       | [15.04.2026]        | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/0f8997b48d1cda7b326176ec12668af76e992937]                                                                                                                           | [Add 6 pages to frontend]                                                                                                                   | [Essential UI implementations]                                                                                                                        |
 
-
-
 ---
 
 ## Contributions Week 4 - '16-Apr-2026' to '22-Apr-2026'
-| **Student**        | **Date**     | **Link to Commit**                                                                                                                             | **Description**                                                                                                                                   | **Relevance**                                                                                                                                              |
-|--------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **[@yiruyang2025]** | [18.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6]                                                                      | [Implemented full scenario creation frontend mockup (app/scenarios/create/page.tsx), including navigation flow from homepage, form rendering, input handling, and Save/Cancel actions with client-side state persistence and routing back to scenarios view] | [Provides complete end-to-end user flow for creating scenarios and navigating between views, enabling a functional UI demo without backend dependency] |
-|                    | [20.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6], [https://sopra-fs26-group43-client.vercel.app/]                    | [Implemented dynamic character and cabinet creation logic with add/remove functionality, form state management, and real-time mockup rendering of entered data in the UI] | [Enables interactive scenario configuration and reflects complex nested data structures (characters and cabinets), which are core components of the system design] |
 
-
+| **Student**         | **Date**     | **Link to Commit / Issue / Demo**                                                                 | **Description**                                                                                                                                                                      | **Relevance**                                                                                                                                                          |
+|--------------------|--------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[@yiruyang2025]** | 18.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6                          | Implemented full scenario creation frontend mockup (app/scenarios/create/page.tsx), including navigation flow, form rendering, input handling, and Save/Cancel actions with client-side state persistence. | Provides complete end-to-end user flow for creating scenarios and navigating between views, enabling a functional UI demo without backend dependency.                 |
+|                    | 20.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/6, https://sopra-fs26-group43-client.vercel.app/ | Implemented dynamic character and cabinet creation logic with add/remove functionality, form state management, and real-time mockup rendering of entered data in the UI.            | Enables interactive scenario configuration and reflects complex nested data structures (characters and cabinets), which are core components of the system design.     |
+|                    | 21.04.2026   | Demo Video                                                                                       | Finalized all M2 report frontend prototype pages in the local development environment and successfully closed all client-side class issues marked as "Done".                        | Ensures full UI coverage for M2 requirements and resolves all outstanding architectural issues in the client repository.                                               |
 _Continue with the same table format as above._
 ---
 
-## Contributions Week 5 - [Begin Date] to [End Date]
+## Contributions Week 5 - 23-Apr-2026 to 29-Apr-2026
 
-_Continue with the same table format as above._
-
+| **Student**         | **Date**     | **Link to Commit / Issue**                                                                 | **Description**                                                                                                                                                                                                 | **Relevance**                                                                                                                                                                                                 |
+|--------------------|--------------|-------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[@yiruyang2025]** | 23.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/11                 | Implemented directives list page for Backroomer dashboard (app/backroomer/directives/page.tsx), including data fetching, list rendering, and state synchronization with backend API.                         | Provides centralized overview of all user directives, enabling monitoring and management of player actions, which is essential for system observability and coordination logic.                              |
+|                    | 28.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/12                 | Implemented individual directive response page with structured UI components, dynamic routing, and state handling for displaying directive details and responses.                                           | Enables detailed inspection and interaction with directive responses, forming a critical component of user feedback loops and scenario progression.                                                         |
+|                    | 29.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/11, https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/12 | Refactored directive-related frontend architecture by introducing reusable components, improving state management consistency, and aligning data flow between list and detail views.                        | Improves maintainability and scalability of directive-related features, ensuring consistent data flow and supporting future extensions of scenario interaction logic.                                       |
 ---
 
 ## Contributions Week 6 - [Begin Date] to [End Date]
 
 _Continue with the same table format as above._
+
+---
+
+## Contributions Week 7 - [Begin Date] to [End Date]
+
+_Continue with the same table format as above._
+
+
+---
+
+## Contributions Week 8 - [Begin Date] to [End Date]
+
+_Continue with the same table format as above._
+
+
+---
+
+## Contributions Week 9 - [Begin Date] to [End Date]
+
+_Continue with the same table format as above._
+
+
+
+---
+
+
+
