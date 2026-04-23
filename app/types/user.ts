@@ -32,3 +32,23 @@ export interface UserPutDTO {
   password?: string;
   bio?: string;
 }
+
+/** POST /users – register a new account */
+export interface UserPostDTO {
+  username: string;
+  password: string;
+  bio?: string;
+}
+
+/** POST /login */
+export interface UserLoginDTO {
+  username: string;
+  password: string;
+}
+
+/** PUT /users/{id} */
+export interface UserPutDTO {
+  username?: string;
+  password?: string;
+  bio?: string;
+}
