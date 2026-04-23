@@ -18,7 +18,7 @@ interface RegisterFields {
   bio?: string;
 }
 
-const Login: React.FC = () => {
+const LoginPage: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
   const [loginForm] = Form.useForm<LoginFields>();
@@ -155,4 +155,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default LoginPage;
