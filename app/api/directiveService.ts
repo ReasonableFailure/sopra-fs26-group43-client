@@ -1,5 +1,5 @@
 import { ApiService } from "@/api/apiService";
-import type { Directive, DirectivePostDTO } from "@/types/directive";
+import type { Directive, DirectivePostDTO, DirectivePutDTO } from "@/types/directive";
 
 export class DirectiveService {
   constructor(private api: ApiService) {}
@@ -14,5 +14,9 @@ export class DirectiveService {
 
   createDirective(dto: DirectivePostDTO, token: string): Promise<Directive> {
     return this.api.postWithToken<Directive>("/directives", dto, token);
+  }
+
+  updateDirective(directiveId: number, dto: DirectivePutDTO, token: string): Promise<void> {
+    return this.api.putWithToken<void>(`/directives/${directiveId}`, dto, token);
   }
 }

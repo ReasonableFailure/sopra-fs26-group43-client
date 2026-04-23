@@ -44,7 +44,7 @@ function statusLabel(directive: Directive): { text: string; className: string } 
     case CommsStatus.ACCEPTED:
       return { text: "Approved", className: styles.accepted };
     case CommsStatus.REJECTED:
-      return { text: `Rejected: ${directive.body ?? ""}`, className: styles.rejected };
+      return { text: "Rejected", className: styles.rejected };
     case CommsStatus.FAILED:
       return { text: "Failed", className: styles.rejected };
     default:

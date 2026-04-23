@@ -25,12 +25,12 @@ function initials(name: string | null): string {
 
 function DirectiveBadge({ status }: { status: CommsStatus | null }) {
   if (status === CommsStatus.ACCEPTED) {
-    return <span className={`${styles.badge} ${styles.badgeResponded}`}>responded</span>;
+    return <span className={`${styles.badge} ${styles.badgeResponded}`}>Approved</span>;
   }
   if (status === CommsStatus.REJECTED) {
-    return <span className={`${styles.badge} ${styles.badgeRejected}`}>rejected</span>;
+    return <span className={`${styles.badge} ${styles.badgeRejected}`}>Denied</span>;
   }
-  return <span className={`${styles.badge} ${styles.badgePending}`}>pending</span>;
+  return <span className={`${styles.badge} ${styles.badgePending}`}>Pending</span>;
 }
 
 export default function BackroomDashboardPage() {
@@ -156,8 +156,17 @@ export default function BackroomDashboardPage() {
             {/* ── Left: Directives ── */}
             <div className={styles.leftPanel}>
               <div className={styles.panelHeader}>
-                <h2 className={styles.panelTitle}>Directives</h2>
-                <p className={styles.panelSubtitle}>Review and manage player directives</p>
+                <div>
+                  <h2 className={styles.panelTitle}>Directives</h2>
+                  <p className={styles.panelSubtitle}>Review and manage player directives</p>
+                </div>
+                <Button
+                  type="primary"
+                  size="small"
+                  onClick={() => router.push(`/scenarios/${scenarioId}/backroom/communicate?type=news_story`)}
+                >
+                  New Story
+                </Button>
               </div>
 
               <div className={styles.tableHeader}>
@@ -171,7 +180,20 @@ export default function BackroomDashboardPage() {
               )}
 
               {(directives ?? []).map((directive) => (
-                <div key={directive.id} className={styles.tableRow}>
+                <div
+                  key={directive.id}
+                  className={styles.tableRow}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    if (directive.status === CommsStatus.PENDING || directive.status === null) {
+                      router.push(
+                        `/scenarios/${scenarioId}/backroom/communicate?type=response&directiveId=${directive.id}`,
+                      );
+                    } else {
+                      router.push(`/scenarios/${scenarioId}/backroom/directives/${directive.id}`);
+                    }
+                  }}
+                >
                   <div className={`${styles.playerCell} ${styles.colPlayerName}`}>
                     <div className={styles.playerAvatar}>
                       {initials(characterName(directive.creatorId ?? null))}

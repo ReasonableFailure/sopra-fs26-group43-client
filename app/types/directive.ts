@@ -34,6 +34,7 @@ export interface DirectiveGetDTO {
   createdAt: string;
   creatorId: number;
   status: CommsStatus;
+  response: string | null;
 }
 
 /** PUT /directives/{id} */
