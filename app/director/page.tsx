@@ -1,7 +1,11 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Card, Typography, List, Tag } from "antd";
+import { Button, Card, Typography, List, Modal, Form, Input, message } from "antd";
 import { SettingOutlined, PlayCircleOutlined, PauseCircleOutlined, CloseCircleOutlined, StopOutlined } from "@ant-design/icons";
+import { useState, useMemo } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useApi } from "@/hooks/useApi";
+import { ScenarioService } from "@/api/scenarioService";
 
 const { Title, Text } = Typography;
 
@@ -16,6 +20,30 @@ export default function DirectorPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const scenarioId = searchParams.get("scenarioId") || "5";
+  const { token } = useAuth();
+  const api = useApi();
+  const scenarioService = useMemo(() => new ScenarioService(api), [api]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
+
+  const handleSubmitMastodon = async () => {
+    try {
+      const values = await form.validateFields();
+
+      await scenarioService.updateMastodonConfig(
+        Number(scenarioId),
+        values,
+        `Director ${token}`
+      );
+
+      message.success("Mastodon configuration saved");
+      setIsModalOpen(false);
+      form.resetFields();
+    } catch (err) {
+      message.error("Failed to update Mastodon configuration");
+    }
+  };
 
   return (
     <div style={{ background: "#f8fafc", minHeight: "100vh" }}>
@@ -31,8 +59,17 @@ export default function DirectorPage() {
         </div>
 
         <div style={{ paddingTop: 24 }}>
-          <Title level={2} style={{ color: "#1a1a2e", marginBottom: 4 }}>The Trojan War</Title>
-          <Text style={{ color: "#64748b" }}>Monitor readiness and control game state</Text>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div><Title level={2} style={{ color: "#1a1a2e", marginBottom: 4 }}> The Trojan War </Title> 
+            <Text style={{ color: "#64748b" }}>Monitor readiness and control game state</Text>
+          </div>
+            <Button
+              type="default"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Add Mastodon Account
+            </Button>
+          </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 24 }}>
@@ -89,6 +126,31 @@ export default function DirectorPage() {
           />
         </Card>
       </div>
+      <Modal
+        title="Mastodon Account"
+        open={isModalOpen}
+        onOk={handleSubmitMastodon}
+        onCancel={() => setIsModalOpen(false)}
+        okText="Save"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Mastodon Base URL"
+            name="mastodonBaseUrl"
+            rules={[{ required: true, message: "Please enter the base URL" }]}
+          >
+            <Input placeholder="https://mastodon.social" />
+          </Form.Item>
+
+          <Form.Item
+            label="Access Token"
+            name="mastodonAccessToken"
+            rules={[{ required: true, message: "Please enter the access token" }]}
+          >
+            <Input placeholder="Your access token" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }
