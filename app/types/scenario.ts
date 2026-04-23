@@ -26,3 +26,18 @@ export interface ScenarioPutDTO {
   active?: boolean;
   dayNumber?: number;
 }
+
+/** PUT /scenarios/{id} */
+export interface ScenarioPutDTO {
+  title?: string;
+  description?: string;
+  exchangeRate?: number;
+  active?: boolean;
+  dayNumber?: number;
+}
+
+/** /scenarios/{scenarioId}/mastodon */
+export interface ScenarioMastodonDTO {
+  mastodonBaseUrl: string;
+  mastodonAccessToken: string;
+}
