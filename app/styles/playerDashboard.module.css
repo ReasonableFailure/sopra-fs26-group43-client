@@ -210,76 +210,44 @@
   margin: 0 0 6px;
 }
 
-/* Action Points section */
-.actionPointsHeader {
-  margin-bottom: 4px;
-}
-
-.apCards {
+/* Likes & Messages metrics */
+.metricsRow {
   display: flex;
-  align-items: center;
-  gap: 0;
+  gap: 16px;
   margin-top: 16px;
 }
 
-.apCard {
+.metricCard {
+  flex: 1;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 20px 24px;
-  min-width: 158px;
-  text-align: center;
-}
-
-.apLabel {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 8px;
-}
-
-.apValue {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
-}
-
-.apArrow {
-  flex: 1;
+  padding: 28px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 0 8px;
+  text-align: center;
 }
 
-.apArrowLine {
-  width: 100%;
-  height: 2px;
-  background: #111827;
-  position: relative;
-  margin: 4px 0;
+.metricLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 12px;
 }
 
-.apArrowLine::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: -4px;
-  border-left: 8px solid #111827;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-}
-
-.apBuyButton {
-  border-radius: 20px !important;
-}
-
-.apExchangeText {
-  font-size: 15px;
+.metricValue {
+  font-size: 48px;
+  font-weight: 700;
   color: #111827;
+  margin: 0;
+  line-height: 1;
+}
+
+.buyButton {
+  margin-top: 20px !important;
+  border-radius: 20px !important;
 }
 
 /* ── Right sidebar: Character List ──────────────────── */

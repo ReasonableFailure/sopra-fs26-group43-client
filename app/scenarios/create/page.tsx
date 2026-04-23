@@ -19,6 +19,7 @@ interface ScenarioFormValues {
   title: string;
   description: string;
   exchangeRate: number;
+  initialMessageCount: number;
 }
 
 interface CharacterFormValues {
@@ -85,7 +86,8 @@ export default function CreateScenarioPage() {
     const data: ScenarioPostDTO = {
       title: values.title,
       description: values.description ?? null,
-      exchangeRate: values.exchangeRate ?? 0,
+      exchangeRate: values.exchangeRate,
+      initialMessageCount: values.initialMessageCount,
     };
     setSubmitting(true);
     try {
@@ -214,13 +216,26 @@ export default function CreateScenarioPage() {
                   )}
                 </div>
 
-                <Form.Item name="exchangeRate" label="Message Cost" initialValue={0}>
+                <Form.Item
+                  name="exchangeRate"
+                  label="Message Cost"
+                  rules={[{ required: true, message: "Please enter the message cost" }]}
+                >
                   <Space.Compact style={{ width: "100%" }}>
-                    <InputNumber min={0} style={{ flex: 1 }} />
-                    <Input value="credits" disabled style={{ width: 80 }} />
+                    <InputNumber min={0} style={{ flex: 1 }} placeholder="0" />
+                    <Input value="likes" disabled style={{ width: 72 }} />
                   </Space.Compact>
                 </Form.Item>
-                <p className={styles.fieldHint}>Cost per message in this scenario</p>
+                <p className={styles.fieldHint}>Likes required to buy a message</p>
+
+                <Form.Item
+                  name="initialMessageCount"
+                  label="Starting Messages"
+                  rules={[{ required: true, message: "Please enter the starting message count" }]}
+                >
+                  <InputNumber min={0} style={{ width: "100%" }} placeholder="15" />
+                </Form.Item>
+                <p className={styles.fieldHint}>Number of messages each player starts with</p>
 
                 <div className={styles.formFooter}>
                   <Button onClick={() => router.push("/scenarios")}>Cancel</Button>

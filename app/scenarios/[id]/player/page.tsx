@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
+import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
 import { BellOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -68,6 +68,9 @@ export default function PlayerDashboardPage() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [staticLoading, setStaticLoading] = useState(true);
+  const [likes, setLikes] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -112,17 +115,31 @@ export default function PlayerDashboardPage() {
     return () => { cancelled = true; };
   }, [enabled, scenarioId, token, characterService, scenarioService]);
 
-  if (!authReady || !isAuthenticated) return null;
-
   const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
 
-  // Filter directives to the selected character
+  useEffect(() => {
+    if (selectedCharacter) {
+      setLikes(selectedCharacter.actionPoints ?? 0);
+      setMessageCount(selectedCharacter.messageCount ?? 0);
+    }
+  }, [selectedCharacter?.id, selectedCharacter?.actionPoints, selectedCharacter?.messageCount]);
+
+  if (!authReady || !isAuthenticated) return null;
+
   const myDirectives = (directives ?? []).filter(
     (d) => d.creatorId === characterId,
   );
 
   const exchangeRate = scenario?.exchangeRate ?? 10;
-  const actionPoints = selectedCharacter?.actionPoints ?? 0;
+
+  const handleBuyMessage = () => {
+    if (likes < exchangeRate) {
+      messageApi.warning(`You need ${exchangeRate} likes to purchase a message.`);
+      return;
+    }
+    setLikes((prev) => prev - exchangeRate);
+    setMessageCount((prev) => prev + 1);
+  };
 
   return (
     <ConfigProvider
@@ -143,6 +160,7 @@ export default function PlayerDashboardPage() {
       }}
     >
       <div className={styles.pageRoot}>
+        {contextHolder}
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
@@ -250,36 +268,24 @@ export default function PlayerDashboardPage() {
                 </div>
               </div>
 
-              {/* My Action Points */}
-              <div className={styles.actionPointsHeader}>
-                <h2 className={styles.sectionHeading}>My Action Points</h2>
-                <p className={styles.sectionSubheading}>
-                  Purchase action points with likes to your pronouncements
-                </p>
-              </div>
-
-              <div className={styles.apCards}>
-                <div className={styles.apCard}>
-                  <p className={styles.apLabel}>Likes</p>
-                  <p className={styles.apValue}>0</p>
-                </div>
-
-                <div className={styles.apArrow}>
+              {/* My Likes & My Messages */}
+              <div className={styles.metricsRow}>
+                <div className={styles.metricCard}>
+                  <p className={styles.metricLabel}>My Likes</p>
+                  <p className={styles.metricValue}>{likes}</p>
                   <Button
-                    className={styles.apBuyButton}
-                    onClick={() => alert("Buy action points — not yet implemented")}
+                    type="primary"
+                    className={styles.buyButton}
+                    disabled={likes < exchangeRate}
+                    onClick={handleBuyMessage}
                   >
-                    Buy
+                    Buy a message with {exchangeRate} Like{exchangeRate !== 1 ? "s" : ""}
                   </Button>
-                  <div className={styles.apArrowLine} />
-                  <span className={styles.apExchangeText}>
-                    with {exchangeRate} likes
-                  </span>
                 </div>
 
-                <div className={styles.apCard}>
-                  <p className={styles.apLabel}>Action Points</p>
-                  <p className={styles.apValue}>{actionPoints}</p>
+                <div className={styles.metricCard}>
+                  <p className={styles.metricLabel}>My Messages</p>
+                  <p className={styles.metricValue}>{messageCount}</p>
                 </div>
               </div>
             </main>

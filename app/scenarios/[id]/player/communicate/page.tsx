@@ -203,7 +203,7 @@ export default function CommunicationFormPage() {
                       disabled
                       options={[
                         commType === "directive"
-                          ? { value: "backroomer", label: "Backroomer" }
+                          ? { value: "backroomer", label: "Backroom" }
                           : { value: "all", label: "All" },
                       ]}
                       style={{ width: "100%" }}
