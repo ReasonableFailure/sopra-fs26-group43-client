@@ -66,10 +66,6 @@ export default function CommunicationFormPage() {
     return () => { cancelled = true; };
   }, [isAuthenticated, scenarioId, token, characterService]);
 
-  // Reset recipient selection when communication type changes
-  useEffect(() => {
-    setRecipientId(null);
-  }, [commType]);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -108,18 +104,20 @@ export default function CommunicationFormPage() {
           { title, body: content, creatorId: characterId, recipientId: recipientId!, scenarioId },
           token,
         );
+        router.push(`/scenarios/${scenarioId}/player/characters/${recipientId}`);
       } else if (commType === "directive") {
         await directiveService.createDirective(
           { title, body: content, creatorId: characterId, scenarioId },
           token,
         );
+        router.push(`/scenarios/${scenarioId}/player`);
       } else {
         await newsService.createPronouncement(
           { title, body: content, scenarioId, authorId: characterId },
           token,
         );
+        router.push(`/scenarios/${scenarioId}/player`);
       }
-      router.push(`/scenarios/${scenarioId}/player`);
     } catch (err) {
       const detail = err instanceof Error ? err.message : "Submission failed. Please try again.";
       messageApi.error(detail);
@@ -182,7 +180,7 @@ export default function CommunicationFormPage() {
                   <Select
                     options={commTypeOptions}
                     value={commType}
-                    onChange={(v) => setCommType(v as CommType)}
+                    onChange={(v) => { setCommType(v as CommType); setRecipientId(null); }}
                     style={{ width: "100%" }}
                   />
                 </div>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { FileTextOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
@@ -28,7 +28,7 @@ function DirectiveBadge({ status }: { status: CommsStatus | null }) {
     return <span className={`${styles.badge} ${styles.badgeResponded}`}>Approved</span>;
   }
   if (status === CommsStatus.REJECTED) {
-    return <span className={`${styles.badge} ${styles.badgeRejected}`}>Denied</span>;
+    return <span className={`${styles.badge} ${styles.badgeRejected}`}>Rejected</span>;
   }
   return <span className={`${styles.badge} ${styles.badgePending}`}>Pending</span>;
 }
@@ -156,17 +156,8 @@ export default function BackroomDashboardPage() {
             {/* ── Left: Directives ── */}
             <div className={styles.leftPanel}>
               <div className={styles.panelHeader}>
-                <div>
-                  <h2 className={styles.panelTitle}>Directives</h2>
-                  <p className={styles.panelSubtitle}>Review and manage player directives</p>
-                </div>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={() => router.push(`/scenarios/${scenarioId}/backroom/communicate?type=news_story`)}
-                >
-                  New Story
-                </Button>
+                <h2 className={styles.panelTitle}>Directives</h2>
+                <p className={styles.panelSubtitle}>Review and manage player directives</p>
               </div>
 
               <div className={styles.tableHeader}>
@@ -219,6 +210,36 @@ export default function BackroomDashboardPage() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* ── Center: News Feed ── */}
+            <div className={styles.centerPanel}>
+              <div className={styles.panelHeader}>
+                <h2 className={styles.panelTitle}>News Feed</h2>
+                <p className={styles.panelSubtitle}>Publish stories to all players</p>
+              </div>
+
+              <div className={styles.newsFeedBody}>
+                <div className={styles.newsFeedIcon}>
+                  <FileTextOutlined />
+                </div>
+                <p className={styles.newsFeedTitle}>News Feed coming soon</p>
+                <p className={styles.newsFeedSub}>
+                  News stories will appear here once the Mastodon integration is connected.
+                </p>
+              </div>
+
+              <div className={styles.newStoryFooter}>
+                <Button
+                  type="primary"
+                  className={styles.newStoryBtn}
+                  onClick={() =>
+                    router.push(`/scenarios/${scenarioId}/backroom/communicate?type=news_story`)
+                  }
+                >
+                  Post a New Story
+                </Button>
+              </div>
             </div>
 
             {/* ── Right: Pending Messages ── */}

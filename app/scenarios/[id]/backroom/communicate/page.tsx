@@ -14,6 +14,7 @@ import { CommsStatus } from "@/types/directive";
 import styles from "@/styles/communicationForm.module.css";
 
 type CommType = "response" | "news_story";
+type Outcome = "approve" | "reject";
 
 export default function BackroomCommunicatePage() {
   const { token, isAuthenticated, authReady } = useAuth();
@@ -34,6 +35,7 @@ export default function BackroomCommunicatePage() {
 
   const [commType, setCommType] = useState<CommType>(preselectedType);
   const [selectedDirectiveId, setSelectedDirectiveId] = useState<number | null>(preselectedDirectiveId);
+  const [selectedOutcome, setSelectedOutcome] = useState<Outcome | null>(null);
   const [directives, setDirectives] = useState<Directive[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,9 +85,13 @@ export default function BackroomCommunicatePage() {
 
   const selectedDirective = directives.find((d) => d.id === selectedDirectiveId) ?? null;
 
-  const handleResponse = async (status: CommsStatus) => {
+  const handleRespond = async () => {
     if (!selectedDirectiveId) {
       messageApi.error("Please select a directive to respond to.");
+      return;
+    }
+    if (!selectedOutcome) {
+      messageApi.error("Please select Approve or Reject.");
       return;
     }
     if (!content.trim()) {
@@ -96,7 +102,10 @@ export default function BackroomCommunicatePage() {
     try {
       await directiveService.updateDirective(
         selectedDirectiveId,
-        { status, response: content },
+        {
+          status: selectedOutcome === "approve" ? CommsStatus.ACCEPTED : CommsStatus.REJECTED,
+          response: content,
+        },
         token,
       );
       router.push(`/scenarios/${scenarioId}/backroom`);
@@ -175,6 +184,7 @@ export default function BackroomCommunicatePage() {
                     onChange={(v) => {
                       setCommType(v as CommType);
                       setSelectedDirectiveId(null);
+                      setSelectedOutcome(null);
                       setContent("");
                       setTitle("");
                     }}
@@ -192,7 +202,7 @@ export default function BackroomCommunicatePage() {
                   {commType === "response" ? (
                     <Select
                       value={selectedDirectiveId ?? undefined}
-                      onChange={(v) => setSelectedDirectiveId(v)}
+                      onChange={(v) => { setSelectedDirectiveId(v); setSelectedOutcome(null); }}
                       options={directiveOptions}
                       placeholder="Select a pending directive"
                       style={{ width: "100%" }}
@@ -208,23 +218,65 @@ export default function BackroomCommunicatePage() {
                   )}
                 </div>
 
-                {/* Directive context (response type only) */}
+                {/* Directive content — borderless, read-only */}
                 {commType === "response" && selectedDirective && (
                   <div className={styles.fieldGroup}>
                     <label className={styles.label}>Directive Content</label>
                     <Input.TextArea
                       value={selectedDirective.body ?? ""}
                       readOnly
-                      rows={4}
-                      style={{ resize: "none", background: "#f9fafb", color: "#374151" }}
+                      autoSize={{ minRows: 1 }}
+                      variant="borderless"
+                      style={{ resize: "none", color: "#374151", padding: "4px 0" }}
                     />
+                  </div>
+                )}
+
+                {/* Approve / Reject toggle (response type only) */}
+                {commType === "response" && (
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Decision</label>
+                    <div style={{ display: "flex", gap: 12 }}>
+                      <Button
+                        style={{
+                          flex: 1,
+                          height: 44,
+                          fontWeight: 600,
+                          background: selectedOutcome === "approve" ? "#059669" : "transparent",
+                          borderColor: "#059669",
+                          color: selectedOutcome === "approve" ? "#ffffff" : "#059669",
+                        }}
+                        onClick={() =>
+                          setSelectedOutcome(selectedOutcome === "approve" ? null : "approve")
+                        }
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        style={{
+                          flex: 1,
+                          height: 44,
+                          fontWeight: 600,
+                          background: selectedOutcome === "reject" ? "#dc2626" : "transparent",
+                          borderColor: "#dc2626",
+                          color: selectedOutcome === "reject" ? "#ffffff" : "#dc2626",
+                        }}
+                        onClick={() =>
+                          setSelectedOutcome(selectedOutcome === "reject" ? null : "reject")
+                        }
+                      >
+                        Reject
+                      </Button>
+                    </div>
                   </div>
                 )}
 
                 {/* Title (news story only) */}
                 {commType === "news_story" && (
                   <div className={styles.fieldGroup}>
-                    <label className={styles.label}>Title <span style={{ color: "#ef4444" }}>*</span></label>
+                    <label className={styles.label}>
+                      Title <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
                     <Input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
@@ -233,7 +285,7 @@ export default function BackroomCommunicatePage() {
                   </div>
                 )}
 
-                {/* Content */}
+                {/* Response message / content */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>
                     {commType === "response" ? "Response Message" : "Content"}{" "}
@@ -259,22 +311,9 @@ export default function BackroomCommunicatePage() {
                   Cancel
                 </Button>
                 {commType === "response" ? (
-                  <>
-                    <Button
-                      danger
-                      loading={submitting}
-                      onClick={() => handleResponse(CommsStatus.REJECTED)}
-                    >
-                      Deny
-                    </Button>
-                    <Button
-                      type="primary"
-                      loading={submitting}
-                      onClick={() => handleResponse(CommsStatus.ACCEPTED)}
-                    >
-                      Approve
-                    </Button>
-                  </>
+                  <Button type="primary" loading={submitting} onClick={handleRespond}>
+                    Respond
+                  </Button>
                 ) : (
                   <Button type="primary" loading={submitting} onClick={handleNewsStory}>
                     Publish News

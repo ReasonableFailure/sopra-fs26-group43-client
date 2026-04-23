@@ -19,7 +19,7 @@ interface ScenarioFormValues {
   title: string;
   description: string;
   exchangeRate: number;
-  initialMessageCount: number;
+  startingMessageCount: number;
 }
 
 interface CharacterFormValues {
@@ -87,7 +87,7 @@ export default function CreateScenarioPage() {
       title: values.title,
       description: values.description ?? null,
       exchangeRate: values.exchangeRate,
-      initialMessageCount: values.initialMessageCount,
+      startingMessageCount: values.startingMessageCount,
     };
     setSubmitting(true);
     try {
@@ -229,7 +229,7 @@ export default function CreateScenarioPage() {
                 <p className={styles.fieldHint}>Likes required to buy a message</p>
 
                 <Form.Item
-                  name="initialMessageCount"
+                  name="startingMessageCount"
                   label="Starting Messages"
                   rules={[{ required: true, message: "Please enter the starting message count" }]}
                 >

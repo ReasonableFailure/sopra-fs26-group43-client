@@ -150,6 +150,15 @@ export default function CharacterProfilePage() {
                   </p>
                 </div>
 
+                {targetCharId === myCharacterId && (
+                  <div className={styles.fieldGroup}>
+                    <p className={styles.fieldLabel}>Secret</p>
+                    <p className={styles.fieldValue}>
+                      {targetCharacter?.secret ?? "No secret assigned."}
+                    </p>
+                  </div>
+                )}
+
                 <div className={styles.fieldGroup}>
                   <p className={styles.fieldLabel}>Status</p>
                   <span
@@ -227,7 +236,7 @@ export default function CharacterProfilePage() {
                   className={styles.newMessageBtn}
                   onClick={() =>
                     router.push(
-                      `/scenarios/${scenarioId}/player/communicate?recipient=${targetCharId}`,
+                      `/scenarios/${scenarioId}/player/communicate?type=direct_message&recipient=${targetCharId}`,
                     )
                   }
                 >

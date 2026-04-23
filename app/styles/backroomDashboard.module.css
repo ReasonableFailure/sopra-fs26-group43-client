@@ -64,7 +64,17 @@
 }
 
 .leftPanel {
-  width: 50%;
+  width: 33.33%;
+  border-right: 1px solid #e5e7eb;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.centerPanel {
+  flex: 1;
   border-right: 1px solid #e5e7eb;
   background: #ffffff;
   display: flex;
@@ -73,11 +83,65 @@
 }
 
 .rightPanel {
-  width: 50%;
+  width: 33.33%;
   background: #ffffff;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* ── News Feed (center panel) ───────────────────────── */
+.newsFeedBody {
+  flex: 1;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  text-align: center;
+  gap: 8px;
+}
+
+.newsFeedIcon {
+  font-size: 32px;
+  color: #d1d5db;
+  margin-bottom: 4px;
+}
+
+.newsFeedTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0;
+}
+
+.newsFeedSub {
+  font-size: 14px;
+  margin: 0;
+}
+
+.newStoryFooter {
+  flex-shrink: 0;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 20px 24px;
+}
+
+.newStoryBtn {
+  width: 100% !important;
+  height: 48px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  background: #4f46e5 !important;
+  border-color: #4f46e5 !important;
+}
+
+.newStoryBtn:hover {
+  background: #4338ca !important;
+  border-color: #4338ca !important;
 }
 
 /* ── Panel Header ───────────────────────────────────── */

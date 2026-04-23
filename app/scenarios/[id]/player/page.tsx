@@ -187,7 +187,6 @@ export default function PlayerDashboardPage() {
                 <h2 className={styles.sidebarTitle}>My Directives</h2>
                 <Button
                   type="primary"
-                  size="small"
                   onClick={() =>
                     router.push(`/scenarios/${scenarioId}/player/communicate?type=directive`)
                   }
@@ -300,37 +299,44 @@ export default function PlayerDashboardPage() {
                 {characters.length === 0 ? (
                   <p className={styles.emptyCharacters}>No characters loaded.</p>
                 ) : (
-                  characters.map((char, index) => (
-                    <div key={char.id ?? char.name} className={styles.characterRow}>
-                      <div
-                        className={styles.characterAvatar}
-                        style={{ background: avatarGradient(index) }}
-                        aria-label={char.name ?? "Character"}
-                      >
-                        {initials(char.name)}
-                      </div>
-                      <div className={styles.characterInfo}>
-                        <p className={styles.characterName}>
-                          {char.name ?? "Unknown"}
-                        </p>
-                        {char.title && (
-                          <p className={styles.characterMeta}>{char.title}</p>
-                        )}
-                      </div>
-                      <Button
-                        type="primary"
-                        size="small"
-                        className={styles.messageBtn}
-                        onClick={() =>
-                          router.push(
-                            `/scenarios/${scenarioId}/player/characters/${char.id}`,
-                          )
-                        }
-                      >
-                        View
-                      </Button>
-                    </div>
-                  ))
+                  [...characters]
+                    .sort((a, b) => (a.id === characterId ? -1 : b.id === characterId ? 1 : 0))
+                    .map((char, index) => {
+                      const isMe = char.id === characterId;
+                      return (
+                        <div key={char.id ?? char.name} className={styles.characterRow}>
+                          <div
+                            className={styles.characterAvatar}
+                            style={{ background: avatarGradient(index) }}
+                            aria-label={char.name ?? "Character"}
+                          >
+                            {initials(char.name)}
+                          </div>
+                          <div className={styles.characterInfo}>
+                            <p className={styles.characterName}>
+                              {char.name ?? "Unknown"}
+                              {isMe && (
+                                <span className={styles.youBadge}>You</span>
+                              )}
+                            </p>
+                            {char.title && (
+                              <p className={styles.characterMeta}>{char.title}</p>
+                            )}
+                          </div>
+                          <Button
+                            type="primary"
+                            className={styles.messageBtn}
+                            onClick={() =>
+                              router.push(
+                                `/scenarios/${scenarioId}/player/characters/${char.id}`,
+                              )
+                            }
+                          >
+                            View
+                          </Button>
+                        </div>
+                      );
+                    })
                 )}
               </div>
             </aside>
