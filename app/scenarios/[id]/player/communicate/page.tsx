@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Input, Select, Spin, theme } from "antd";
+import { Avatar, Button, ConfigProvider, Input, message, Select, Spin, theme } from "antd";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
@@ -71,6 +71,8 @@ export default function CommunicationFormPage() {
     setRecipientId(null);
   }, [commType]);
 
+  const [messageApi, contextHolder] = message.useMessage();
+
   if (!authReady || !isAuthenticated) return null;
 
   const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
@@ -86,8 +88,18 @@ export default function CommunicationFormPage() {
     .map((c) => ({ value: c.id!, label: c.name ?? `Character ${c.id}` }));
 
   const handleSubmit = async () => {
-    if (!characterId || !title.trim() || !content.trim()) return;
-    if (commType === "direct_message" && !recipientId) return;
+    if (!characterId) {
+      messageApi.error("No character selected. Please go back to the lobby and select a character first.");
+      return;
+    }
+    if (!title.trim() || !content.trim()) {
+      messageApi.error("Title and message content are required.");
+      return;
+    }
+    if (commType === "direct_message" && !recipientId) {
+      messageApi.error("Please select a recipient.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -108,8 +120,9 @@ export default function CommunicationFormPage() {
         );
       }
       router.push(`/scenarios/${scenarioId}/player`);
-    } catch {
-      // silently degrade — backend errors don't break the UI
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : "Submission failed. Please try again.";
+      messageApi.error(detail);
     } finally {
       setSubmitting(false);
     }
@@ -134,6 +147,7 @@ export default function CommunicationFormPage() {
       }}
     >
       <div className={styles.pageRoot}>
+        {contextHolder}
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
