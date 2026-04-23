@@ -1,58 +1,120 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { UserService } from "@/api/userService";
 import { User } from "@/types/user";
-import { Button, Card, Avatar, Tag, Typography, Spin } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Button, Card, Descriptions, Form, Input } from "antd";
 
-const { Title, Text } = Typography;
+interface EditFormFields {
+  username: string;
+  bio: string;
+  password: string;
+}
 
 const Profile: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const apiService = useApi();
+  const api = useApi();
+  const userService = useMemo(() => new UserService(api), [api]);
+
   const { value: token } = useLocalStorage<string>("token", "");
+  const { value: userId } = useLocalStorage<string>("userId", "");
+
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [form] = Form.useForm<EditFormFields>();
+
+  const isOwner = userId === id;
 
   useEffect(() => {
-    if (!token) { router.push("/login"); return; }
-    apiService.get<User>(`/users/${id}`, token)
-      .then(data => setUser(data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
-  }, [id, token]);
+    const fetchUser = async () => {
+      try {
+        const data = await userService.getUser(Number(id), token);
+        setUser(data);
+      } catch (error) {
+        if (error instanceof Error) {
+          alert(`Failed to load user profile:\n${error.message}`);
+        }
+      }
+    };
 
-  if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 80 }}><Spin size="large" /></div>;
+    if (id) fetchUser();
+  }, [userService, id, token]);
 
-  const initials = user?.username ? user.username.slice(0, 2).toUpperCase() : "??";
+  const handleEdit = async (values: EditFormFields) => {
+    try {
+      await userService.updateUser(Number(id), values, token);
+      setEditing(false);
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(`Failed to update profile:\n${error.message}`);
+      }
+    }
+  };
 
   return (
-    <div style={{ background: "#f8fafc", minHeight: "100vh", padding: 32 }}>
-      <div style={{ maxWidth: 500, margin: "0 auto" }}>
-        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()} style={{ marginBottom: 16 }}>Back</Button>
-        <Card style={{ border: "1px solid #e2e8f0", borderRadius: 16, background: "#fff" }} bodyStyle={{ padding: 32, textAlign: "center" }}>
-          <Avatar size={80} style={{ background: "#6c5ce7", fontSize: 28, fontWeight: 700 }}>{initials}</Avatar>
-          <Title level={3} style={{ color: "#1a1a2e", marginTop: 16, marginBottom: 4 }}>{user?.username || "Unknown"}</Title>
-          <Tag color={user?.status === "ONLINE" ? "green" : "default"}>{user?.status || "OFFLINE"}</Tag>
-          {user?.bio && (
-            <div style={{ marginTop: 16, textAlign: "left", borderTop: "1px solid #e2e8f0", paddingTop: 16 }}>
-              <Text strong style={{ color: "#1a1a2e" }}>Bio</Text>
-              <br />
-              <Text style={{ color: "#64748b" }}>{user.bio}</Text>
-            </div>
-          )}
-          {user?.creationDate && (
-            <div style={{ marginTop: 12, textAlign: "left" }}>
-              <Text strong style={{ color: "#1a1a2e" }}>Member since</Text>
-              <br />
-              <Text style={{ color: "#64748b" }}>{new Date(user.creationDate).toLocaleDateString()}</Text>
-            </div>
-          )}
-        </Card>
-      </div>
+    <div className="card-container">
+      <Card
+        title="User Profile"
+        loading={!user}
+        className="dashboard-container"
+        extra={
+          isOwner && !editing && (
+            <Button type="default" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+          )
+        }
+      >
+        {user && !editing && (
+          <Descriptions column={1}>
+            <Descriptions.Item label="Id">{user.id}</Descriptions.Item>
+            <Descriptions.Item label="Username">{user.username}</Descriptions.Item>
+            <Descriptions.Item label="Bio">{user.bio}</Descriptions.Item>
+            <Descriptions.Item label="Status">{user.status}</Descriptions.Item>
+          </Descriptions>
+        )}
+
+        {user && editing && (
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{ username: user.username ?? "", bio: user.bio ?? "" }}
+            onFinish={handleEdit}
+          >
+            <Form.Item
+              name="username"
+              label="Username"
+              rules={[{ required: true, message: "Please enter a username" }]}
+            >
+              <Input placeholder="Username" />
+            </Form.Item>
+            <Form.Item
+              name="bio"
+              label="Bio"
+            >
+              <Input placeholder="Bio" />
+            </Form.Item>
+            <Form.Item
+              name="password"
+              label="New Password"
+              rules={[{ required: true, message: "Please enter a new password" }]}
+            >
+              <Input.Password placeholder="New password" />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" style={{ marginRight: 8 }}>
+                Save
+              </Button>
+              <Button onClick={() => setEditing(false)}>Cancel</Button>
+            </Form.Item>
+          </Form>
+        )}
+      </Card>
     </div>
   );
 };

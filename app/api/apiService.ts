@@ -60,9 +60,85 @@ export class ApiService {
     return this.processResponse<T>(res, "An error occurred while updating the data.");
   }
 
-  public async delete<T>(endpoint: string, token?: string | null): Promise<T> {
+  /**
+   * GET request with Authorization header.
+   * @param endpoint - The API endpoint (e.g. "/users").
+   * @param token - The auth token.
+   * @returns JSON data of type T.
+   */
+  public async getWithToken<T>(endpoint: string, token: string): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { ...this.defaultHeaders, Authorization: token },
+    });
+    return this.processResponse<T>(res, "An error occurred while fetching the data.\n");
+  }
+
+  /**
+   * POST request with Authorization header.
+   * @param endpoint - The API endpoint.
+   * @param data - The payload to post.
+   * @param token - The auth token.
+   * @returns JSON data of type T.
+   */
+  public async postWithToken<T>(endpoint: string, data: unknown, token: string): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { ...this.defaultHeaders, Authorization: token },
+      body: JSON.stringify(data),
+    });
+    return this.processResponse<T>(res, "An error occurred while posting the data.\n");
+  }
+
+  /**
+   * PUT request with Authorization header.
+   * @param endpoint - The API endpoint (e.g. "/users/123").
+   * @param data - The payload to update.
+   * @param token - The auth token.
+   * @returns JSON data of type T.
+   */
+  public async putWithToken<T>(
+    endpoint: string,
+    data: unknown,
+    token: string,
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { ...this.defaultHeaders, Authorization: token },
+      body: JSON.stringify(data),
+    });
+    return this.processResponse<T>(
+      res,
+      "An error occurred while updating the data.\n",
+    );
+  }
+
+  /**
+   * DELETE request.
+   * @param endpoint - The API endpoint (e.g. "/users/123").
+   * @returns JSON data of type T.
+   */
+  public async delete<T>(endpoint: string): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     const res = await fetch(url, { method: "DELETE", headers: this.getHeaders(token) });
     return this.processResponse<T>(res, "An error occurred while deleting the data.");
+  }
+
+  /**
+   * DELETE request with Authorization header.
+   * @param endpoint - The API endpoint.
+   * @param token - The auth token.
+   * @returns JSON data of type T.
+   */
+  public async deleteWithToken<T>(endpoint: string, token: string): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: { ...this.defaultHeaders, Authorization: token },
+    });
+    return this.processResponse<T>(res, "An error occurred while deleting the data.\n");
   }
 }
