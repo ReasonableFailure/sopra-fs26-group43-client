@@ -11,6 +11,7 @@ export interface User {
   bio: string | null;
   playing: boolean | null;
   creationDate: string | null;
+  isPlaying: boolean;
 }
 
 /** POST /users – register a new account */
