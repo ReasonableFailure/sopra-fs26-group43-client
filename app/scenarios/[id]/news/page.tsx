@@ -38,10 +38,12 @@ function TypeBadge({ isPronouncement }: { isPronouncement: boolean }) {
 interface FeedCardProps {
   item: NewsGetDTO;
   authorName: string | null;
+  onLike: (newsId: number) => void;
 }
 
-function FeedCard({ item, authorName }: FeedCardProps) {
+function FeedCard({ item, authorName, onLike }: FeedCardProps) {
   const isPronouncement = item.authorId !== null;
+
   return (
     <div className={styles.card}>
       <div className={styles.cardTop}>
@@ -59,8 +61,19 @@ function FeedCard({ item, authorName }: FeedCardProps) {
           {timeAgo(item.createdAt)}
         </span>
       </div>
+
       <h2 className={styles.cardTitle}>{item.title}</h2>
       <p className={styles.cardBody}>{item.body}</p>
+      {isPronouncement && (
+        <div className={styles.likeRow}>
+          <span className={styles.likeCount}>
+            👍 {item.likes ?? 0}
+          </span>
+          <Button size="small" onClick={() => onLike(item.id)}>
+            Like
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -81,6 +94,7 @@ export default function NewsPage() {
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("all");
+  const myRoleId = 1; // TODO: make this work
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
@@ -120,6 +134,24 @@ export default function NewsPage() {
     if (filter === "pronouncement") return item.authorId !== null;
     return true;
   });
+
+  const handleLike = async (newsId: number) => {
+    try {
+      if (!token || !myRoleId) return;
+
+      const updated = await newsService.likeNews(newsId, myRoleId, token);
+
+      // Update local state (important for responsiveness)
+      setNewsItems(prev =>
+        prev.map(item =>
+          item.id === newsId ? updated : item
+        )
+      );
+
+    } catch (e) {
+      console.error("Like failed", e);
+    }
+  };
 
   return (
     <ConfigProvider
@@ -183,6 +215,7 @@ export default function NewsPage() {
                     key={item.id}
                     item={item}
                     authorName={authorName(item.authorId)}
+                    onLike={handleLike}
                   />
                 ))}
               </div>

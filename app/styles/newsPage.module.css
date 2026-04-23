@@ -189,6 +189,18 @@
   -webkit-box-orient: vertical;
 }
 
+.likeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.likeCount {
+  color: #6b7280;
+  font-size: 13px;
+}
+
 /* Responsive */
 @media (max-width: 760px) {
   .navbar {
