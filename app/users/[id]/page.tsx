@@ -115,7 +115,10 @@ const Profile: React.FC = () => {
           </Form>
         )}
       </Card>
-    </div>
+        <div style={{ marginTop: 16 }}>
+          <Button onClick={() => router.back()}>Back</Button>
+        </div>
+      </div>
   );
 };
 
