@@ -93,7 +93,7 @@ export default function CreateScenarioPage() {
     try {
       const created = await scenarioService.createScenario(data, token);
       addDirectedScenario(created.id);
-      if (created.directorToken && characters.length > 0) {
+      if (created.directorToken && characters.length > 0) { //the association of tokens must always be with a human or class that represents a human, like player, Role, Director, Backroomer or User.
         await Promise.all(
           characters.map((c) =>
             characterService.createCharacter(
