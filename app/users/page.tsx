@@ -94,6 +94,9 @@ const Dashboard: React.FC = () => {
                 style: { cursor: "pointer" },
               })}
             />
+            <Button onClick={() => router.push("/")} style={{ marginRight: 8 }}>
+              Back to Home
+            </Button>
             <Button onClick={handleLogout} type="primary">
               Logout
             </Button>
