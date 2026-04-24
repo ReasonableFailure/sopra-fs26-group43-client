@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Avatar,
@@ -77,11 +77,17 @@ export default function DirectorDashboardPage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
-  const { data: scenario, loading, error, refetch } = usePolling<Scenario>(
+  const { data: polledScenario, loading, error } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, token),
     5000,
     enabled,
   );
+
+  const [scenario, setScenario] = useState<Scenario | null>(null);
+
+  useEffect(() => {
+    if (polledScenario) setScenario(polledScenario);
+  }, [polledScenario]);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
@@ -95,14 +101,15 @@ export default function DirectorDashboardPage() {
         await scenarioService.updateScenario(scenarioId, { active: true, dayNumber: (scenario?.dayNumber ?? 0) + 1 }, token);
       } else if (action === "freeze") {
         await scenarioService.updateScenario(scenarioId, { active: false }, token);
-      } else if (action === "end") {
+      } else {
         await scenarioService.updateScenario(scenarioId, { active: false, dayNumber: 0 }, token);
       }
-      refetch();
+      const updated = await scenarioService.getScenarioById(scenarioId, token);
+      setScenario(updated);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Action failed");
     }
-  }, [scenarioService, scenarioId, scenario, token, refetch]);
+  }, [scenarioService, scenarioId, scenario, token]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -155,12 +162,8 @@ export default function DirectorDashboardPage() {
               </div>
 
               <div className={styles.topRow}>
-                {/* Game Status */}
                 <div className={`${styles.card} ${styles.statusCard}`} style={{ position: "relative" }}>
-                  <div
-                    className={styles.statusIconBox}
-                    style={{ background: STATUS_ICON_BG[status] }}
-                  >
+                  <div className={styles.statusIconBox} style={{ background: STATUS_ICON_BG[status] }}>
                     {STATUS_ICON[status]}
                   </div>
                   <p className={styles.cardLabel}>Game Status</p>
@@ -174,13 +177,10 @@ export default function DirectorDashboardPage() {
                       <span className={`${styles.dot} ${STATUS_DOT[status]}`} />
                       {STATUS_BADGE_TEXT[status]}
                     </div>
-                    <p className={styles.statusDescription}>
-                      {STATUS_DESC[status]}
-                    </p>
+                    <p className={styles.statusDescription}>{STATUS_DESC[status]}</p>
                   </div>
                 </div>
 
-                {/* Game Controls */}
                 <div className={styles.card}>
                   <p className={styles.cardLabel}>Game Controls</p>
                   <div className={styles.controlsGrid}>
@@ -214,7 +214,6 @@ export default function DirectorDashboardPage() {
                 </div>
               </div>
 
-              {/* Recent Activity */}
               <div className={styles.activityCard}>
                 <div className={styles.activityHeader}>
                   <span className={styles.cardTitle}>Recent Activity</span>
@@ -227,9 +226,7 @@ export default function DirectorDashboardPage() {
                   </Button>
                 </div>
                 <div className={styles.activityList}>
-                  <p className={styles.emptyActivity}>
-                    No recent activity yet.
-                  </p>
+                  <p className={styles.emptyActivity}>No recent activity yet.</p>
                 </div>
               </div>
             </div>
