@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Avatar,
@@ -77,7 +77,7 @@ export default function DirectorDashboardPage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
-  const { data: scenario, loading, error } = usePolling<Scenario>(
+  const { data: scenario, loading, error, refetch } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, token),
     5000,
     enabled,
@@ -87,7 +87,22 @@ export default function DirectorDashboardPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
+
+  const handleGameAction = useCallback(async (action: "start" | "freeze" | "end") => {
+    try {
+      if (action === "start") {
+        await scenarioService.updateScenario(scenarioId, { active: true, dayNumber: (scenario?.dayNumber ?? 0) + 1 }, token);
+      } else if (action === "freeze") {
+        await scenarioService.updateScenario(scenarioId, { active: false }, token);
+      } else if (action === "end") {
+        await scenarioService.updateScenario(scenarioId, { active: false, dayNumber: 0 }, token);
+      }
+      refetch();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Action failed");
+    }
+  }, [scenarioService, scenarioId, scenario, token, refetch]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -174,7 +189,7 @@ export default function DirectorDashboardPage() {
                       className={styles.startBtn}
                       block
                       icon={<CaretRightFilled />}
-                      onClick={() => alert("Start Game — not yet implemented")}
+                      onClick={() => handleGameAction("start")}
                     >
                       Start Game
                     </Button>
@@ -182,7 +197,7 @@ export default function DirectorDashboardPage() {
                       <Button
                         className={styles.freezeBtn}
                         icon={<PauseCircleOutlined />}
-                        onClick={() => alert("Freeze Game — not yet implemented")}
+                        onClick={() => handleGameAction("freeze")}
                       >
                         Freeze Game
                       </Button>
@@ -190,7 +205,7 @@ export default function DirectorDashboardPage() {
                         danger
                         type="primary"
                         icon={<CloseCircleOutlined />}
-                        onClick={() => alert("End Game — not yet implemented")}
+                        onClick={() => handleGameAction("end")}
                       >
                         End Game
                       </Button>
