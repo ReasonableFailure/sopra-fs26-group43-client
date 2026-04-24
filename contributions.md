@@ -1,5 +1,7 @@
 # Contributions
 
+## Group 43
+
 Every member has to complete at least 2 meaningful tasks per week, where a
 single development task should have a granularity of 0.5-1 day. The completed
 tasks have to be shown in the weekly TA meetings. You have one "Joker" to miss
