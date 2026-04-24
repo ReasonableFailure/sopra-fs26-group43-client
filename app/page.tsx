@@ -67,7 +67,7 @@ export default function Home() {
   }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
-    if (error && error.includes("500")) { handleStaleSession(); }
+    if (error && (error.includes("500") || error.includes("401"))) { handleStaleSession(); }
   }, [error, handleStaleSession]);
 
   if (!authReady || !isAuthenticated) return null;
@@ -97,7 +97,7 @@ export default function Home() {
               <h1 className={styles.heading}>Created Scenarios</h1>
               <p className={styles.subheading}>Review previously created scenarios</p>
             </div>
-            {error && !error.includes("500") && <p className={styles.errorText}>{error}</p>}
+            {error && !(error.includes("500") || error.includes("401")) && <p className={styles.errorText}>{error}</p>}
             <Spin spinning={loading}>
               <div className={styles.cardList}>
                 {!loading && scenarios?.length === 0 && <p className={styles.emptyText}>No scenarios yet. Create your first one above.</p>}
