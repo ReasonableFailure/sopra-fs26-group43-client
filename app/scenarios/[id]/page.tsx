@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Avatar,
@@ -8,6 +8,10 @@ import {
   ConfigProvider,
   Spin,
   theme,
+  Modal,
+  Form,
+  Input,
+  message,
 } from "antd";
 import {
   CaretRightFilled,
@@ -74,24 +78,46 @@ export default function DirectorDashboardPage() {
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: scenario, loading, error } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, token),
     5000,
-    enabled,
+    enabled
   );
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
+
+  const status: GameStatus = scenario ? deriveStatus(scenario) : "stopped";
 
   if (!authReady || !isAuthenticated) return null;
 
-  const status: GameStatus = scenario ? deriveStatus(scenario) : "stopped";
+  const handleSubmitMastodon = async () => {
+    try {
+      const values = await form.validateFields();
+
+      await scenarioService.updateMastodonConfig(
+        scenarioId,
+        values,
+        `Director ${token}`
+      );
+
+      messageApi.success("Mastodon configuration saved");
+      setIsModalOpen(false);
+      form.resetFields();
+    } catch {
+      messageApi.error("Failed to update Mastodon configuration");
+    }
+  };
 
   return (
     <ConfigProvider
@@ -111,6 +137,7 @@ export default function DirectorDashboardPage() {
         },
       }}
     >
+      {contextHolder}
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
@@ -131,12 +158,28 @@ export default function DirectorDashboardPage() {
               {error && <p style={{ color: "#dc2626" }}>{error}</p>}
 
               <div className={styles.pageHeader}>
-                <h1 className={styles.scenarioTitle}>
-                  {scenario?.title ?? "Loading…"}
-                </h1>
-                <p className={styles.scenarioSubtitle}>
-                  Monitor readiness and control game state
-                </p>
+                <div>
+                  <h1 className={styles.scenarioTitle}>
+                    {scenario?.title ?? "Loading…"}
+                  </h1>
+                  <p className={styles.scenarioSubtitle}>
+                    Monitor readiness and control game state
+                  </p>
+                </div>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => setIsModalOpen(true)}
+                  style={{
+                    backgroundColor: "#4f46e5",
+                    borderColor: "#4f46e5",
+                    height: 48,
+                    paddingInline: 24,
+                    fontWeight: 600,
+                  }}
+                >
+                  Add Mastodon Account
+                </Button>
               </div>
 
               <div className={styles.topRow}>
@@ -220,6 +263,31 @@ export default function DirectorDashboardPage() {
             </div>
           </Spin>
         </main>
+        <Modal
+        title="Mastodon Account"
+        open={isModalOpen}
+        onOk={handleSubmitMastodon}
+        onCancel={() => setIsModalOpen(false)}
+        okText="Save"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label={<span style={{ color: "#111827" }}>Mastodon Base URL</span>}
+            name="mastodonBaseUrl"
+            rules={[{ required: true, message: "Please enter the base URL" }]}
+          >
+            <Input placeholder="https://mastodon.social" />
+          </Form.Item>
+
+          <Form.Item
+            label={<span style={{ color: "#111827" }}>Access Token</span>}
+            name="mastodonAccessToken"
+            rules={[{ required: true, message: "Please enter the access token" }]}
+          >
+            <Input placeholder="Your access token" />
+          </Form.Item>
+        </Form>
+      </Modal>
       </div>
     </ConfigProvider>
   );

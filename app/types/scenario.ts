@@ -26,3 +26,8 @@ export interface ScenarioPutDTO {
   active?: boolean;
   dayNumber?: number;
 }
+
+export interface ScenarioMastodonDTO {
+  mastodonBaseUrl: string;
+  mastodonAccessToken: string;
+}
