@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import { NewsService } from "@/api/newsService";
+import type { Scenario } from "@/types/scenario";
+import { ScenarioService } from "@/api/scenarioService";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import { MessageService } from "@/api/messageService";
@@ -46,9 +48,11 @@ export default function BackroomDashboardPage() {
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const messageService = useMemo(() => new MessageService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
+  const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [scenario, setScenario] = useState<Scenario | null>(null);
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -66,6 +70,22 @@ export default function BackroomDashboardPage() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    let cancelled = false;
+
+    scenarioService.getScenarioById(scenarioId, token)
+      .then((data) => {
+        if (!cancelled) setScenario(data);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, scenarioId, token, scenarioService]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -248,25 +268,51 @@ export default function BackroomDashboardPage() {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center",
+                    alignItems: "flex-start",
                     width: "100%",
+                    gap: "16px",
                   }}
                 >
-                  <h2 className={styles.panelTitle}>News Feed</h2>
-
-                  <Button
-                    type="primary"
-                    onClick={() =>
-                      router.push(`/scenarios/${scenarioId}/news`)
-                    }
+                  <div>
+                    <h2 className={styles.panelTitle}>News Feed</h2>
+                    <p className={styles.panelSubtitle}>
+                      Publish stories to all players
+                    </p>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                      alignItems: "flex-end",
+                    }}
                   >
-                    See All News
-                  </Button>
+                    <Button
+                      type="primary"
+                      onClick={() =>
+                        router.push(`/scenarios/${scenarioId}/news`)
+                      }
+                    >
+                      See All News
+                    </Button>
+
+                    {scenario?.mastodonProfileUrl && (
+                      <Button
+                        type="primary"
+                        onClick={() =>
+                          window.open(
+                            scenario.mastodonProfileUrl!,
+                            "_blank",
+                            "noopener,noreferrer"
+                          )
+                        }
+                      >
+                        Go to Mastodon
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <p className={styles.panelSubtitle}>
-                  Publish stories to all players
-                </p>
-            </div>
+              </div>
               <div className={styles.newsFeedBody}>
                 {latestNews.length === 0 ? (
                   <>

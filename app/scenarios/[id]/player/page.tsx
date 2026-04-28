@@ -329,11 +329,25 @@ export default function PlayerDashboardPage() {
             <div
               style={{
                 display: "flex",
-                justifyContent: "flex-end",
+                justifyContent: "space-between",
                 marginTop: "12px",
                 marginBottom: "16px",
+                gap: "12px",
               }}
             >
+              <div>
+                {scenario?.mastodonProfileUrl && (
+                  <Button
+                    type="primary"
+                    onClick={() =>
+                      window.open(scenario.mastodonProfileUrl!, "_blank", "noopener,noreferrer")
+                    }
+                  >
+                    Go to Mastodon
+                  </Button>
+                )}
+              </div>
+
               <Button
                 type="primary"
                 onClick={() =>

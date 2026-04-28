@@ -166,20 +166,40 @@ export default function DirectorDashboardPage() {
                     Monitor readiness and control game state
                   </p>
                 </div>
-                <Button
-                  type="primary"
-                  size="large"
-                  onClick={() => setIsModalOpen(true)}
-                  style={{
-                    backgroundColor: "#4f46e5",
-                    borderColor: "#4f46e5",
-                    height: 48,
-                    paddingInline: 24,
-                    fontWeight: 600,
-                  }}
-                >
-                  Add Mastodon Account
-                </Button>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    {scenario?.mastodonProfileUrl && (
+                      <Button
+                        type="default"
+                        size="large"
+                        href={scenario.mastodonProfileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          height: 48,
+                          paddingInline: 24,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Go to Mastodon
+                      </Button>
+                    )}
+                  <Button
+                    type="primary"
+                    size="large"
+                    onClick={() => setIsModalOpen(true)}
+                    style={{
+                      backgroundColor: "#4f46e5",
+                      borderColor: "#4f46e5",
+                      height: 48,
+                      paddingInline: 24,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {scenario?.mastodonProfileUrl
+                      ? "Change Mastodon Account"
+                      : "Add Mastodon Account"}
+                  </Button>
+                </div>
               </div>
 
               <div className={styles.topRow}>

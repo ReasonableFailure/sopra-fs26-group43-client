@@ -7,6 +7,7 @@ export interface Scenario {
   exchangeRate: number;
   startingMessageCount: number;
   directorToken?: string; // returned by backend once ScenarioGetDTO includes it
+  mastodonProfileUrl?: string | null;
 }
 
 /** POST /scenarios */
