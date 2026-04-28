@@ -244,9 +244,29 @@ export default function BackroomDashboardPage() {
             {/* ── Center: News Feed ── */}
             <div className={styles.centerPanel}>
               <div className={styles.panelHeader}>
-                <h2 className={styles.panelTitle}>News Feed</h2>
-                <p className={styles.panelSubtitle}>Publish stories to all players</p>
-              </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <h2 className={styles.panelTitle}>News Feed</h2>
+
+                  <Button
+                    type="primary"
+                    onClick={() =>
+                      router.push(`/scenarios/${scenarioId}/news`)
+                    }
+                  >
+                    See All News
+                  </Button>
+                </div>
+                <p className={styles.panelSubtitle}>
+                  Publish stories to all players
+                </p>
+            </div>
               <div className={styles.newsFeedBody}>
                 {latestNews.length === 0 ? (
                   <>

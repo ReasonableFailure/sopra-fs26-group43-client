@@ -146,7 +146,7 @@ export default function NewsPage() {
             <span className={styles.navTitle}>News &amp; Pronouncements</span>
           </div>
           <div className={styles.navRight}>
-            <Button onClick={() => router.push(`/scenarios/${scenarioId}`)}>
+            <Button onClick={() => router.back()}>
               Back to Dashboard
             </Button>
             <Avatar icon={<UserOutlined />} className={styles.avatar} />

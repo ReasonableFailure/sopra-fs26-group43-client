@@ -45,6 +45,7 @@ export default function BackroomCommunicatePage() {
   const [title, setTitle] = useState("");
 
   const [messageApi, contextHolder] = message.useMessage();
+  const MAX_POST_LENGTH = 500;
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
@@ -116,14 +117,31 @@ export default function BackroomCommunicatePage() {
     }
   };
 
+  const totalLength =
+  commType === "news_story"
+    ? `${title}: ${content}`.length
+    : content.length;
+
+  const overLimit =
+    commType === "news_story" && totalLength > MAX_POST_LENGTH;
+
   const handleNewsStory = async () => {
     if (!title.trim() || !content.trim()) {
       messageApi.error("Title and content are required.");
       return;
     }
+    if (overLimit) {
+      messageApi.error("News Story Must not Exceed 500 Characters");
+      return;
+    }
     setSubmitting(true);
     try {
-      await newsService.createNewsStory({ title, body: content, scenarioId, postURI: `local://pronouncement/${Date.now()}` }, token);
+      await newsService.createNewsStory({
+              title,
+              body: content,
+              scenarioId,
+              postURI: `local://pronouncement/${Date.now()}`
+            }, token);
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "Failed to create news story.");
@@ -307,11 +325,26 @@ export default function BackroomCommunicatePage() {
 
               {/* Footer */}
               <div className={styles.cardFooter}>
+                <div
+                  style={{
+                    marginTop: 6,
+                    textAlign: "right",
+                    fontSize: 12,
+                    color: overLimit ? "#dc2626" : "#6b7280",
+                  }}
+                >
+                  {totalLength} / {MAX_POST_LENGTH}
+                </div>
                 <Button onClick={() => router.push(`/scenarios/${scenarioId}/backroom`)}>
                   Cancel
                 </Button>
                 {commType === "response" ? (
-                  <Button type="primary" loading={submitting} onClick={handleRespond}>
+                  <Button
+                    type="primary"
+                    loading={submitting}
+                    onClick={handleNewsStory}
+                    disabled={submitting || overLimit}
+                  >
                     Respond
                   </Button>
                 ) : (

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
-import { BellOutlined, FileTextOutlined } from "@ant-design/icons";
+import { BellOutlined} from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -326,7 +326,23 @@ export default function PlayerDashboardPage() {
                 </div>
               )}
             </div>
-
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: "12px",
+                marginBottom: "16px",
+              }}
+            >
+              <Button
+                type="primary"
+                onClick={() =>
+                  router.push(`/scenarios/${scenarioId}/news`)
+                }
+              >
+                See All News
+              </Button>
+            </div>
               {/* My Likes & My Messages */}
               <div className={styles.metricsRow}>
                 <div className={styles.metricCard}>

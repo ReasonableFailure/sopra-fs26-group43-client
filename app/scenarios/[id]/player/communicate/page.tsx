@@ -49,6 +49,8 @@ export default function CommunicationFormPage() {
   const [recipientId, setRecipientId] = useState<number | null>(preselectedRecipient);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const MAX_POST_LENGTH = 500;
+
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
@@ -72,6 +74,15 @@ export default function CommunicationFormPage() {
   if (!authReady || !isAuthenticated) return null;
 
   const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
+
+  const authorName = selectedCharacter?.name ?? "Unknown";
+
+  const totalLength =
+    commType === "pronouncement"
+      ? `${title}: ${content}\n-${authorName}`.length
+      : `${title}: ${content}`.length;
+
+  const overLimit = totalLength > MAX_POST_LENGTH;
 
   const commTypeOptions = [
     { value: "direct_message", label: "Direct Message" },
@@ -112,16 +123,20 @@ export default function CommunicationFormPage() {
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
+        if (overLimit) {
+          messageApi.error("Pronouncement Must not Exceed 500 Characters");
+          return;
+        }
         await newsService.createPronouncement(
-            {
-              title,
-              body: content,
-              scenarioId,
-              authorId: characterId,
-              postURI: `local://pronouncement/${Date.now()}`
-            },
-            token,
-          );
+          {
+            title,
+            body: content,
+            scenarioId,
+            authorId: characterId,
+            postURI: `local://pronouncement/${Date.now()}`
+          },
+          token,
+        );
         router.push(`/scenarios/${scenarioId}/player`);
       }
     } catch (err) {
@@ -238,10 +253,28 @@ export default function CommunicationFormPage() {
 
               {/* Footer */}
               <div className={styles.cardFooter}>
+                <div
+                  style={{
+                    marginTop: 6,
+                    textAlign: "right",
+                    fontSize: 12,
+                    color: overLimit ? "#dc2626" : "#6b7280",
+                  }}
+                >
+                  {totalLength} / {MAX_POST_LENGTH}
+                </div>
                 <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
                   Cancel
                 </Button>
-                <Button type="primary" loading={submitting} onClick={handleSubmit}>
+                <Button
+                  type="primary"
+                  loading={submitting}
+                  onClick={handleSubmit}
+                  disabled={
+                    submitting ||
+                    (commType === "pronouncement" && overLimit)
+                  }
+                >
                   Submit
                 </Button>
               </div>
