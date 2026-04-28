@@ -32,6 +32,7 @@ export interface NewsGetDTO {
 export interface NewsPostDTO {
   title: string;
   body: string;
+  postURI: string;
   scenarioId: number;
   authorId?: number;
 }

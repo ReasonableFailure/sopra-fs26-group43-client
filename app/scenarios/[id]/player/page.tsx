@@ -4,17 +4,23 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
 import { BellOutlined, FileTextOutlined } from "@ant-design/icons";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import { ScenarioService } from "@/api/scenarioService";
+import { NewsService } from "@/api/newsService";
+
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import type { Scenario } from "@/types/scenario";
+import type { NewsGetDTO } from "@/types/news";
+
 import styles from "@/styles/playerDashboard.module.css";
 
 // ── Avatar color palette (cycles by character index) ──────────────
@@ -62,6 +68,7 @@ export default function PlayerDashboardPage() {
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
+  const newsService = useMemo(() => new NewsService(api), [api]);
 
   const { characterId } = useSelectedCharacter(scenarioId);
 
@@ -80,7 +87,13 @@ export default function PlayerDashboardPage() {
     enabled,
   );
 
-  const loading = staticLoading || directivesLoading;
+  const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
+    () => newsService.getNewsByScenario(scenarioId, token),
+    5000,
+    enabled,
+  );
+
+  const loading = staticLoading || directivesLoading || newsLoading;
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
@@ -130,6 +143,14 @@ export default function PlayerDashboardPage() {
     (d) => d.creatorId === characterId,
   );
 
+  const latestNews = [...(newsItems ?? [])]
+  .sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() -
+      new Date(a.createdAt).getTime(),
+  )
+  .slice(0, 3);
+
   const exchangeRate = scenario?.exchangeRate ?? 10;
 
   const handleBuyMessage = () => {
@@ -140,6 +161,27 @@ export default function PlayerDashboardPage() {
     setLikes((prev) => prev - exchangeRate);
     setMessageCount((prev) => prev + 1);
   };
+
+  function isPronouncement(item: NewsGetDTO) {
+    return item.authorId !== null && item.authorId !== undefined;
+  }
+
+  function getAuthorName(
+    authorId: number | null | undefined,
+    characters: Character[],
+  ) {
+    if (!authorId) return "Unknown";
+    return characters.find((c) => c.id === authorId)?.name ?? "Unknown";
+  }
+
+  function renderNewsText(item: NewsGetDTO, characters: Character[]) {
+    const base = `${item.title}: ${item.body}`;
+
+    if (!isPronouncement(item)) return base;
+
+    const authorName = getAuthorName(item.authorId, characters);
+    return `${base}\n- ${authorName}`;
+  }
 
   return (
     <ConfigProvider
@@ -242,7 +284,7 @@ export default function PlayerDashboardPage() {
                 <Button
                   type="primary"
                   onClick={() =>
-                    router.push(`/scenarios/${scenarioId}/player/pronouncement/new`)
+                    router.push(`/scenarios/${scenarioId}/player/communicate?type=pronouncement`)
                   }
                 >
                   Post Pronouncement
@@ -253,19 +295,37 @@ export default function PlayerDashboardPage() {
               </p>
 
               <div className={styles.newsFeedCard}>
+              {latestNews.length === 0 ? (
                 <div className={styles.newsFeedPlaceholder}>
-                  <div className={styles.newsFeedPlaceholderIcon}>
-                    <FileTextOutlined />
-                  </div>
                   <p className={styles.newsFeedPlaceholderTitle}>
-                    News Feed coming soon
+                    No news yet
                   </p>
-                  <p>
-                    News stories will appear here once the Mastodon integration
-                    is connected.
-                  </p>
+                  <p>News stories will appear here when published.</p>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  {latestNews.map((item, index) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        padding: "14px 0",
+                        borderBottom:
+                          index < latestNews.length - 1
+                            ? "1px solid #e5e7eb"
+                            : "none",
+                        whiteSpace: "pre-line",
+                        textAlign: "center",
+                        color: "#000000",
+                        fontSize: "14px",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {renderNewsText(item, characters)}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
               {/* My Likes & My Messages */}
               <div className={styles.metricsRow}>

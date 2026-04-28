@@ -7,9 +7,11 @@ import { FileTextOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
+import { NewsService } from "@/api/newsService";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import { MessageService } from "@/api/messageService";
+import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
@@ -43,6 +45,7 @@ export default function BackroomDashboardPage() {
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const messageService = useMemo(() => new MessageService(api), [api]);
+  const newsService = useMemo(() => new NewsService(api), [api]);
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
@@ -51,6 +54,12 @@ export default function BackroomDashboardPage() {
 
   const { data: directives, loading: directivesLoading } = usePolling<Directive[]>(
     () => directiveService.getDirectivesByScenario(scenarioId, token),
+    5000,
+    enabled,
+  );
+
+  const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
+    () => newsService.getNewsByScenario(scenarioId, token),
     5000,
     enabled,
   );
@@ -85,7 +94,7 @@ export default function BackroomDashboardPage() {
     };
   }, [enabled, scenarioId, token, messageService]);
 
-  const loading = directivesLoading || messagesLoading;
+  const loading = directivesLoading || messagesLoading || newsLoading;
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
@@ -122,6 +131,26 @@ export default function BackroomDashboardPage() {
       setActionLoading(null);
     }
   };
+
+  function isPronouncement(item: NewsGetDTO) {
+    return item.authorId !== null && item.authorId !== undefined;
+  }
+
+  function renderNewsText(item: NewsGetDTO) {
+    const base = `${item.title}: ${item.body}`;
+
+    if (!isPronouncement(item)) return base;
+
+    return `${base}\n- ${characterName(item.authorId)}`;
+  }
+
+  const latestNews = [...(newsItems ?? [])]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime()
+    )
+    .slice(0, 3);
 
   return (
     <ConfigProvider
@@ -218,17 +247,40 @@ export default function BackroomDashboardPage() {
                 <h2 className={styles.panelTitle}>News Feed</h2>
                 <p className={styles.panelSubtitle}>Publish stories to all players</p>
               </div>
-
               <div className={styles.newsFeedBody}>
-                <div className={styles.newsFeedIcon}>
-                  <FileTextOutlined />
-                </div>
-                <p className={styles.newsFeedTitle}>News Feed coming soon</p>
-                <p className={styles.newsFeedSub}>
-                  News stories will appear here once the Mastodon integration is connected.
-                </p>
+                {latestNews.length === 0 ? (
+                  <>
+                    <div className={styles.newsFeedIcon}>
+                      <FileTextOutlined />
+                    </div>
+                    <p className={styles.newsFeedTitle}>No news yet</p>
+                    <p className={styles.newsFeedSub}>
+                      Published stories will appear here.
+                    </p>
+                  </>
+                ) : (
+                  <div style={{ width: "100%" }}>
+                    {latestNews.map((item, index) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          padding: "14px 0",
+                          textAlign: "center",
+                          color: "#000000",
+                          whiteSpace: "pre-line",
+                          lineHeight: 1.5,
+                          borderBottom:
+                            index < latestNews.length - 1
+                              ? "1px solid #e5e7eb"
+                              : "none",
+                        }}
+                      >
+                        {renderNewsText(item)}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-
               <div className={styles.newStoryFooter}>
                 <Button
                   type="primary"

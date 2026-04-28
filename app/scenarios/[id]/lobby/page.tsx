@@ -83,7 +83,7 @@ export default function GameLobbyPage() {
 
   const handleSelectCharacter = (character: Character) => {
     //User is not being assigned to Role in Backend
-    if (character.id === null) return;
+    if (character.id == null) return;
     setCharacterId(character.id);
     router.push(`/scenarios/${scenarioId}/player`);
   };

@@ -113,9 +113,15 @@ export default function CommunicationFormPage() {
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
         await newsService.createPronouncement(
-          { title, body: content, scenarioId, authorId: characterId },
-          token,
-        );
+            {
+              title,
+              body: content,
+              scenarioId,
+              authorId: characterId,
+              postURI: `local://pronouncement/${Date.now()}`
+            },
+            token,
+          );
         router.push(`/scenarios/${scenarioId}/player`);
       }
     } catch (err) {

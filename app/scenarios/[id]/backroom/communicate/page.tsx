@@ -123,7 +123,7 @@ export default function BackroomCommunicatePage() {
     }
     setSubmitting(true);
     try {
-      await newsService.createNewsStory({ title, body: content, scenarioId }, token);
+      await newsService.createNewsStory({ title, body: content, scenarioId, postURI: `local://pronouncement/${Date.now()}` }, token);
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "Failed to create news story.");
