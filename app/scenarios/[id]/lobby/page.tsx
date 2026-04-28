@@ -10,6 +10,7 @@ import { CharacterService } from "@/api/characterService";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
 import type { Character } from "@/types/character";
 import styles from "@/styles/lobby.module.css";
+import {Backroomer} from "@/types/backroomer";
 
 interface CharacterCardProps {
   character: Character;
@@ -85,8 +86,13 @@ export default function GameLobbyPage() {
     //User is not being assigned to Role in Backend
     if (character.id === null) return;
     setCharacterId(character.id);
+
     router.push(`/scenarios/${scenarioId}/player`);
   };
+
+  const handleSelectBackroomer = (async (backroomer: Backroomer)) => {
+
+  }router.push(`/scenarops/${scenarioId}/backroom`);
 
   return (
     <ConfigProvider
