@@ -20,7 +20,9 @@ export class CharacterService {
     );
   }
 
-  assignCharacter(dto:CharacterPutDTO, userToken: string, characterId: number) {
+ assignCharacter(dto:CharacterPutDTO, userToken: string, characterId: number) {
     return this.api.put(`/player/${characterId}`,dto,`Bearer ${userToken}`);
   }
+
+  modifyCharacter(dto: CharacterPutDTO, directorToken: string, characterId: number) {}
 }

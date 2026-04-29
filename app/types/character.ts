@@ -32,5 +32,8 @@ export interface CharacterPutDTO {
   description?: string;
   portrait?: string; // base64 string; backend stores as byte[]
   secret?: string;
-  userId?: number;   // links character to a user account
 }
+ export interface CharacterAssignDTO {
+  toAssignId: number | null;
+ }
+
