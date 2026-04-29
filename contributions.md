@@ -103,6 +103,8 @@ reason).
 |                    | 21.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/17, https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/26 | Implemented frontend message class and news class, defining structured data models for communication and information updates in the system.    | Provides core data structures for messaging and news features, which are essential for communication and scenario progression logic.                  |
 | **[HalaiRhea]** | 22.04.2026   | (https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/b828789d1fa47d845263ba8377baa72f45ddbc24)| Added Authorization functionality for communications endpoints| Allows for secure functioning in which each role can only send what they should|
 | **[HalaiRhea]** | 22.04.2026   | (https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/dbee34de106762e170f9adb4ab67df4309d3a45e)|Added frontend mastodon account linking| Enables the link with the external API| 
+|**[reasonableFailure]**|29.04.2026|(Link 1)[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/e5ed40369da41349fd27008d1e3bda3d8d70766d] |added linking and storing fuctionality for user and backroomer assignment with authorization| enables guarding against unauthorized access |
+|**[reasonableFailure]**|29.04.2026|(Link 2)[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/e5ed40369da41349fd27008d1e3bda3d8d70766d]|added logic for simultaenous creation and user assignment when creating backroomer and removed failing mapping|failing mapping prevented User->Character assignment, backroomer was previously unassigned in DB|
 ---
 
 ## Contributions Week 6 - 30-Apr-2026 to 06-may-2026
