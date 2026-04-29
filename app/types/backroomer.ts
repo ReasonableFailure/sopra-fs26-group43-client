@@ -3,6 +3,6 @@ export interface Backroomer{
     backroomerToken: string;
 }
 
-export interface BackroomerPutDTO {
+export interface BackroomerPostDTO {
     userId: number;
 }
