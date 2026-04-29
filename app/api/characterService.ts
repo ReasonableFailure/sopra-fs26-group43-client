@@ -1,5 +1,5 @@
 import { ApiService } from "@/api/apiService";
-import { Character, CharacterPostDTO } from "@/types/character";
+import {Character, CharacterAssignDTO, CharacterPostDTO, CharacterPutDTO} from "@/types/character";
 
 export class CharacterService {
   constructor(private api: ApiService) {}
@@ -10,5 +10,13 @@ export class CharacterService {
 
   createCharacter(dto: CharacterPostDTO, directorToken: string): Promise<Character> {
     return this.api.postWithToken<Character>("/characters", dto, `Director ${directorToken}`);
+  }
+
+  assignCharacter(dto:CharacterAssignDTO, userToken: string, characterId: number) {
+    return this.api.putWithToken(`/player/${characterId}`,dto,userToken);
+  }
+
+  modifyCharacter(dto: CharacterPutDTO, directorToken: string, characterId: number) {
+    return this.api.putWithToken(`/player/${characterId}`,dto, `Director ${directorToken}`);
   }
 }
