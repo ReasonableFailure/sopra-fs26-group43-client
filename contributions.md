@@ -105,9 +105,10 @@ reason).
 | **[HalaiRhea]** | 22.04.2026   | (https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/dbee34de106762e170f9adb4ab67df4309d3a45e)|Added frontend mastodon account linking| Enables the link with the external API| 
 ---
 
-## Contributions Week 6 - [Begin Date] to [End Date]
+## Contributions Week 6 - 30-Apr-2026 to 06-may-2026
 
-_Continue with the same table format as above._
+| **[HalaiRhea]** | 29.04.2026   | [(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/b828789d1fa47d845263ba8377baa72f45ddbc24)](https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/d03c984beaed8ee9f42bd554914d371ba6121ac7)| Added functionality to allow for mastodon liking, logic of message purchasing on the backend.| provides for the game mechanism of message limits|
+| **[HalaiRhea]** | 29.04.2026   | [[(https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/b828789d1fa47d845263ba8377baa72f45ddbc24)](https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/d03c984beaed8ee9f42bd554914d371ba6121ac7)](https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/02d52314923210c81ebcea566ed850da177e0284)| Added functionality to allow for mastodon liking, logic of message purchasing on the frontend.| provides for the game mechanism of message limits|
 
 ---
 
