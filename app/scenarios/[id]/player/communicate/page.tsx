@@ -108,6 +108,11 @@ export default function CommunicationFormPage() {
       return;
     }
 
+    if (( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0)) {
+      messageApi.error("No Messages Available");
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (commType === "direct_message") {
@@ -133,7 +138,6 @@ export default function CommunicationFormPage() {
             body: content,
             scenarioId,
             authorId: characterId,
-            postURI: `local://pronouncement/${Date.now()}`
           },
           token,
         );
@@ -272,6 +276,7 @@ export default function CommunicationFormPage() {
                   onClick={handleSubmit}
                   disabled={
                     submitting ||
+                    ( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0) ||
                     (commType === "pronouncement" && overLimit)
                   }
                 >

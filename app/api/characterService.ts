@@ -11,4 +11,12 @@ export class CharacterService {
   createCharacter(dto: CharacterPostDTO, directorToken: string): Promise<Character> {
     return this.api.postWithToken<Character>("/characters", dto, `Director ${directorToken}`);
   }
+  getCharacterPoints(scenarioId: number, characterId: number,token: string): Promise<Character> {
+    return this.api.getWithToken<Character>(`/characters/${scenarioId}/${characterId}/points`,token);
+  }
+
+  buyMessage(scenarioId: number, characterId: number,token: string): Promise<Character> {
+  return this.api.postWithToken<Character>(`/characters/${scenarioId}/${characterId}/buy-message`,{},token
+  );
+}
 }

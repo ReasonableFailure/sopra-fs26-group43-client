@@ -201,7 +201,6 @@ export default function DirectorDashboardPage() {
                   </Button>
                 </div>
               </div>
-
               <div className={styles.topRow}>
                 {/* Game Status */}
                 <div className={`${styles.card} ${styles.statusCard}`} style={{ position: "relative" }}>

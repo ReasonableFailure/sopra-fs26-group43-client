@@ -78,6 +78,7 @@ export default function PlayerDashboardPage() {
   const [likes, setLikes] = useState(0);
   const [messageCount, setMessageCount] = useState(0);
   const [messageApi, contextHolder] = message.useMessage();
+  const [buying, setBuying] = useState(false);
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -91,6 +92,14 @@ export default function PlayerDashboardPage() {
     () => newsService.getNewsByScenario(scenarioId, token),
     5000,
     enabled,
+  );
+
+  const { data: liveCharacter } = usePolling<Character>(
+    () =>
+      characterId? characterService.getCharacterPoints(scenarioId,characterId,token)
+        : Promise.reject(),
+    15000,
+    enabled && !!characterId
   );
 
   const loading = staticLoading || directivesLoading || newsLoading;
@@ -131,11 +140,22 @@ export default function PlayerDashboardPage() {
   const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
 
   useEffect(() => {
+    if (liveCharacter) {
+      setLikes(liveCharacter.pointsBalance ?? 0);
+      setMessageCount(liveCharacter.messageCount ?? 0);
+      return;
+    }
+
     if (selectedCharacter) {
-      setLikes(selectedCharacter.actionPoints ?? 0);
+      setLikes(selectedCharacter.pointsBalance ?? 0);
       setMessageCount(selectedCharacter.messageCount ?? 0);
     }
-  }, [selectedCharacter?.id, selectedCharacter?.actionPoints, selectedCharacter?.messageCount]);
+  }, [
+    liveCharacter,
+    selectedCharacter?.id,
+    selectedCharacter?.pointsBalance,
+    selectedCharacter?.messageCount,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -153,13 +173,29 @@ export default function PlayerDashboardPage() {
 
   const exchangeRate = scenario?.exchangeRate ?? 10;
 
-  const handleBuyMessage = () => {
-    if (likes < exchangeRate) {
-      messageApi.warning(`You need ${exchangeRate} likes to purchase a message.`);
-      return;
+  const handleBuyMessage = async () => {
+    if (!characterId) return;
+
+    setBuying(true);
+
+    try {
+      const updated = await characterService.buyMessage(
+        scenarioId,
+        characterId,
+        token
+      );
+
+      setLikes(updated.pointsBalance ?? 0);
+      setMessageCount(updated.messageCount ?? 0);
+
+      messageApi.success("Message purchased.");
+    } catch (err) {
+      messageApi.error(
+        err instanceof Error ? err.message : "Purchase failed."
+      );
+    } finally {
+      setBuying(false);
     }
-    setLikes((prev) => prev - exchangeRate);
-    setMessageCount((prev) => prev + 1);
   };
 
   function isPronouncement(item: NewsGetDTO) {
@@ -207,7 +243,7 @@ export default function PlayerDashboardPage() {
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
             <div className={styles.logoMark} aria-hidden="true" />
-            <span className={styles.navTitle}>Player Dashboard</span>
+            <span className={styles.navTitle}>Character Dashboard</span>
           </div>
           <div className={styles.navRight}>
             <Button
@@ -360,7 +396,7 @@ export default function PlayerDashboardPage() {
               {/* My Likes & My Messages */}
               <div className={styles.metricsRow}>
                 <div className={styles.metricCard}>
-                  <p className={styles.metricLabel}>My Likes</p>
+                  <p className={styles.metricLabel}>Current Like Balance</p>
                   <p className={styles.metricValue}>{likes}</p>
                   <Button
                     type="primary"
@@ -373,7 +409,7 @@ export default function PlayerDashboardPage() {
                 </div>
 
                 <div className={styles.metricCard}>
-                  <p className={styles.metricLabel}>My Messages</p>
+                  <p className={styles.metricLabel}>Current Available Messages</p>
                   <p className={styles.metricValue}>{messageCount}</p>
                 </div>
               </div>

@@ -140,7 +140,6 @@ export default function BackroomCommunicatePage() {
               title,
               body: content,
               scenarioId,
-              postURI: `local://pronouncement/${Date.now()}`
             }, token);
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {

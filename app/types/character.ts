@@ -5,8 +5,8 @@ export interface Character {
   description: string | null;
   portrait: string | null; // base64 data URI or URL
   secret: string | null;   // only visible to the owning player and backroomers
-  isAlive: boolean;
-  actionPoints: number;
+  totalPoints: number;
+  pointsBalance: number;
   messageCount: number;
 }
 
