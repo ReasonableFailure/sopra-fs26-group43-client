@@ -16,5 +16,7 @@ export class CharacterService {
     return this.api.putWithToken(`/player/${characterId}`,dto,userToken);
   }
 
-  modifyCharacter(dto: CharacterPutDTO, directorToken: string, characterId: number) {}
+  modifyCharacter(dto: CharacterPutDTO, directorToken: string, characterId: number) {
+    return this.api.putWithToken(`/player/${characterId}`,dto, `Director ${directorToken}`);
+  }
 }

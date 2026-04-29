@@ -7,10 +7,12 @@ import { InfoCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { CharacterService } from "@/api/characterService";
+import {BackroomerService} from "@/api/backroomerService";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { useBackroomer} from "@/hooks/useBackroomer";
 import type {Character, CharacterAssignDTO} from "@/types/character";
 import styles from "@/styles/lobby.module.css";
-import {Backroomer} from "@/types/backroomer";
+import {Backroomer, BackroomerPostDTO} from "@/types/backroomer";
 
 interface CharacterCardProps {
   character: Character;
@@ -40,7 +42,9 @@ export default function GameLobbyPage() {
   const api = useApi();
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
+  const backroomerService = useMemo(() => new BackroomerService(api), [api]);
   const { setCharacterId } = useSelectedCharacter(scenarioId);
+  const {setBackroomerId, setBackroomerToken} = useBackroomer(scenarioId);
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +82,7 @@ export default function GameLobbyPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, scenarioId, characterService]);
+  }, [token, scenarioId, characterService, backroomerService]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -97,8 +101,24 @@ export default function GameLobbyPage() {
    }
   };
 
-  const handleSelectBackroomer = async (backroomer: Backroomer)=> {
-    router.push(`/scenarios/${scenarioId}/backroom`);
+  const handleSelectBackroomer = async ()=> {
+    if(!userId || userId === 0 || !token) return null;
+    const dto: BackroomerPostDTO = {
+      userId: userId,
+    };
+    try{
+      const thingy = await backroomerService.createBackroomer(dto,"Bearer "+token);
+      console.log(thingy);
+      if(thingy){
+        setBackroomerId(thingy.id);
+        setBackroomerToken(thingy.backroomerToken);
+        router.push(`/scenarios/${scenarioId}/backroom`);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   return (
@@ -137,7 +157,7 @@ export default function GameLobbyPage() {
           <Button
             type="primary"
             className={styles.backroomerButton}
-            onClick={() => router.push(`/scenarios/${scenarioId}/backroom`)}
+            onClick={() => handleSelectBackroomer()}
           >
             Become Backroomer
           </Button>
