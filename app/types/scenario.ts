@@ -1,8 +1,15 @@
+export enum ScenarioStatus {
+  UNSTARTED= "UNSTARTED",
+  FROZEN = "FROZEN",
+  UNFROZEN = "UNFROZEN",
+  COMPLETED = "COMPLETED",
+}
+
 export interface Scenario {
   id: number;
   title: string;
   description: string | null;
-  active: boolean;
+  status: ScenarioStatus;
   dayNumber: number;
   exchangeRate: number;
   startingMessageCount: number;
@@ -24,7 +31,7 @@ export interface ScenarioPutDTO {
   description?: string;
   exchangeRate?: number;
   startingMessageCount?: number;
-  active?: boolean;
+  status?: ScenarioStatus;
   dayNumber?: number;
 }
 

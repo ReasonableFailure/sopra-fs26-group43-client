@@ -5,10 +5,13 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Input, message, Select, Spin, theme } from "antd";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
+import { usePolling } from "@/hooks/usePolling";
+import type { Scenario } from "@/types/scenario";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import { MessageService } from "@/api/messageService";
+import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
 import styles from "@/styles/communicationForm.module.css";
@@ -38,6 +41,7 @@ export default function CommunicationFormPage() {
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const messageService = useMemo(() => new MessageService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
+  const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
   const { characterId } = useSelectedCharacter(scenarioId);
 
@@ -50,6 +54,16 @@ export default function CommunicationFormPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const MAX_POST_LENGTH = 500;
+
+  const enabled = isAuthenticated && !!scenarioId;
+
+  const { data: liveScenario } = usePolling<Scenario>(
+    () => scenarioService.getScenarioById(scenarioId, token),
+    5000,
+    enabled
+  );
+
+  const isGameActive = liveScenario?.status === "UNFROZEN";
 
 
   useEffect(() => {
@@ -276,9 +290,11 @@ export default function CommunicationFormPage() {
                   onClick={handleSubmit}
                   disabled={
                     submitting ||
+                    !isGameActive ||
                     ( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0) ||
                     (commType === "pronouncement" && overLimit)
                   }
+                  style={{ opacity: isGameActive ? 1 : 0.5 }}
                 >
                   Submit
                 </Button>

@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { usePolling } from "@/hooks/usePolling";
+import { ScenarioService } from "@/api/scenarioService";
+import type { Scenario, ScenarioStatus } from "@/types/scenario";
 import { Button, ConfigProvider, Spin, theme } from "antd";
 import {
   CalendarOutlined,
@@ -43,12 +46,24 @@ export default function CharacterProfilePage() {
   const api = useApi();
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const messageService = useMemo(() => new MessageService(api), [api]);
+  const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
   const { characterId: myCharacterId } = useSelectedCharacter(scenarioId);
 
   const [targetCharacter, setTargetCharacter] = useState<Character | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const enabled = isAuthenticated && !!scenarioId;
+
+  const { data: liveScenario } = usePolling<Scenario>(
+    () => scenarioService.getScenarioById(scenarioId, token),
+    5000,
+    enabled
+  );
+
+  const effectiveScenario = liveScenario ?? null;
+  const isGameActive = effectiveScenario?.status === "UNFROZEN";
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
@@ -234,6 +249,8 @@ export default function CharacterProfilePage() {
                   type="primary"
                   icon={<PlusOutlined />}
                   className={styles.newMessageBtn}
+                  disabled={!isGameActive}
+                  style={{ opacity: isGameActive ? 1 : 0.5 }}
                   onClick={() =>
                     router.push(
                       `/scenarios/${scenarioId}/player/communicate?type=direct_message&recipient=${targetCharId}`,

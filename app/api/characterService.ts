@@ -16,7 +16,7 @@ export class CharacterService {
   }
 
   buyMessage(scenarioId: number, characterId: number,token: string): Promise<Character> {
-  return this.api.postWithToken<Character>(`/characters/${scenarioId}/${characterId}/buy-message`,{},token
-  );
-}
+    return this.api.postWithToken<Character>(`/characters/${scenarioId}/${characterId}/buy-message`,{},token
+    );
+  }
 }

@@ -102,7 +102,30 @@ export default function PlayerDashboardPage() {
     enabled && !!characterId
   );
 
+  const { data: liveScenario } = usePolling<Scenario>(
+    () => scenarioService.getScenarioById(scenarioId, token),
+    5000,
+    enabled
+  );
+
+  const effectiveScenario = liveScenario ?? scenario;
+  const isGameActive = effectiveScenario?.status === "UNFROZEN";
+
   const loading = staticLoading || directivesLoading || newsLoading;
+
+  const STATUS_LABEL: Record<string, string> = {
+    UNSTARTED: "Not Started",
+    UNFROZEN: "Running",
+    FROZEN: "Frozen",
+    COMPLETED: "Completed",
+  };
+
+  const STATUS_COLOR: Record<string, string> = {
+    UNSTARTED: "#6b7280",
+    UNFROZEN: "#10b981",
+    FROZEN: "#3b82f6",
+    COMPLETED: "#ef4444",
+  };
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
@@ -171,7 +194,7 @@ export default function PlayerDashboardPage() {
   )
   .slice(0, 3);
 
-  const exchangeRate = scenario?.exchangeRate ?? 10;
+  const exchangeRate = effectiveScenario?.exchangeRate ?? 10;
 
   const handleBuyMessage = async () => {
     if (!characterId) return;
@@ -265,6 +288,8 @@ export default function PlayerDashboardPage() {
                 <h2 className={styles.sidebarTitle}>My Directives</h2>
                 <Button
                   type="primary"
+                  disabled={!isGameActive}
+                  style={{ opacity: isGameActive ? 1 : 0.5 }}
                   onClick={() =>
                     router.push(`/scenarios/${scenarioId}/player/communicate?type=directive`)
                   }
@@ -319,6 +344,8 @@ export default function PlayerDashboardPage() {
                 <h1 className={styles.sectionHeading}>News Feed</h1>
                 <Button
                   type="primary"
+                  disabled={!isGameActive}
+                  style={{ opacity: isGameActive ? 1 : 0.5 }}
                   onClick={() =>
                     router.push(`/scenarios/${scenarioId}/player/communicate?type=pronouncement`)
                   }
@@ -412,6 +439,32 @@ export default function PlayerDashboardPage() {
                   <p className={styles.metricLabel}>Current Available Messages</p>
                   <p className={styles.metricValue}>{messageCount}</p>
                 </div>
+              </div>
+              <div className={styles.metricCard}>
+                <p
+                  className={styles.metricValue}
+                  style={{
+                    color: effectiveScenario
+                      ? STATUS_COLOR[effectiveScenario.status]
+                      : "#6b7280",
+                  }}
+                >
+                  Day {effectiveScenario?.dayNumber ?? 0}
+                </p>
+                <p
+                  style={{
+                    marginTop: 8,
+                    color: effectiveScenario
+                      ? STATUS_COLOR[effectiveScenario.status]
+                      : "#6b7280",
+                    fontWeight: 500,
+                  }}
+                >
+                  The Crisis is{" "}
+                  {effectiveScenario
+                    ? STATUS_LABEL[effectiveScenario.status]
+                    : "Unknown"}
+                </p>
               </div>
             </main>
 

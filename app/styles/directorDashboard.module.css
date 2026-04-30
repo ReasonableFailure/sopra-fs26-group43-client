@@ -113,6 +113,19 @@
   margin-bottom: 20px;
 }
 
+.completedText {
+  font-size: 40px;
+  color: #000000;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.dayText {
+  font-size: 13px;
+  color: #000000;
+  margin-top: 4px;
+}
+
 /* Game Status card */
 .statusCard {
   display: flex;
@@ -142,6 +155,7 @@
 }
 
 .statusText {
+  color: #000000;
   font-size: 36px;
   font-weight: 700;
   line-height: 1;
@@ -181,6 +195,9 @@
   background: #3b82f6;
 }
 
+.statusText.gray {
+  color: #6b7280;
+}
 .statusDescription {
   font-size: 13px;
   color: #9ca3af;
