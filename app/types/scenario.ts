@@ -1,30 +1,10 @@
 export interface Scenario {
-  id: number;
-  title: string;
+  id: number | null;
+  title: string | null;
   description: string | null;
   active: boolean;
   dayNumber: number;
   exchangeRate: number;
-  startingMessageCount: number;
-  directorToken?: string; // returned by backend once ScenarioGetDTO includes it
-}
-
-/** POST /scenarios */
-export interface ScenarioPostDTO {
-  title: string;
-  description: string | null;
-  exchangeRate: number;
-  startingMessageCount: number;
-}
-
-/** PUT /scenarios/{id} */
-export interface ScenarioPutDTO {
-  title?: string;
-  description?: string;
-  exchangeRate?: number;
-  startingMessageCount?: number;
-  active?: boolean;
-  dayNumber?: number;
 }
 
 /** PUT /scenarios/{id} */

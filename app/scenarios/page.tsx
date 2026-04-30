@@ -1,136 +1,82 @@
 "use client";
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Dropdown, Spin, theme } from "antd";
-import type { MenuProps } from "antd";
-import { MoreOutlined, UserOutlined } from "@ant-design/icons";
-import { useAuth } from "@/hooks/useAuth";
-import { useScenarios } from "@/hooks/useScenarios";
-import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
-import type { Scenario } from "@/types/scenario";
-import styles from "@/styles/scenarios.module.css";
+import { useApi } from "@/hooks/useApi";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { Scenario } from "@/types/scenario";
+import { Button, Card, Typography, Spin, Empty, List } from "antd";
+import { PlusOutlined, EyeOutlined, SettingOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 
-function ScenarioCard({ scenario, isDirector }: { scenario: Scenario; isDirector: boolean }) {
-  const router = useRouter();
-
-  const moreMenu: MenuProps = {
-    items: [
-      {
-        key: "edit",
-        label: "Edit",
-        onClick: () => router.push(`/scenarios/${scenario.id}/edit`),
-      },
-      {
-        key: "delete",
-        label: "Delete",
-        danger: true,
-        onClick: () => alert(`Delete scenario "${scenario.title}"? (not yet implemented)`),
-      },
-    ],
-  };
-
-  const handleView = () => {
-    if (isDirector) {
-      router.push(`/scenarios/${scenario.id}`);
-    } else {
-      router.push(`/scenarios/${scenario.id}/lobby`);
-    }
-  };
-
-  return (
-    <div className={styles.card}>
-      <div className={styles.cardHeader}>
-        <h2 className={styles.cardTitle}>{scenario.title}</h2>
-        <Dropdown menu={moreMenu} trigger={["click"]}>
-          <Button type="text" icon={<MoreOutlined />} aria-label="More options" />
-        </Dropdown>
-      </div>
-      <p className={styles.cardDesc}>
-        {scenario.description ?? "No description provided."}
-      </p>
-      <div className={styles.cardFooter}>
-        <Button type="link" onClick={handleView}>
-          View
-        </Button>
-      </div>
-    </div>
-  );
-}
+const { Title, Text } = Typography;
 
 export default function ScenariosPage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth();
-  const { isDirector } = useDirectedScenarios(userId);
   const router = useRouter();
-  const { scenarios, loading, error } = useScenarios(token);
+  const apiService = useApi();
+  const { value: token } = useLocalStorage<string>("token", "");
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (authReady && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, router]);
-
-  if (!authReady || !isAuthenticated) return null;
+    if (!token) { setLoading(false); return; }
+    apiService.get<Scenario[]>("/scenarios", token)
+      .then(data => setScenarios(data))
+      .catch(() => setScenarios([]))
+      .finally(() => setLoading(false));
+  }, [token]);
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.defaultAlgorithm,
-        token: {
-          colorBgContainer: "#ffffff",
-          colorText: "#111827",
-          colorTextSecondary: "#6b7280",
-          colorBorder: "#e5e7eb",
-          colorPrimary: "#4f46e5",
-          borderRadius: 12,
-          fontSize: 14,
-        },
-        components: {
-          Button: {
-            colorPrimary: "#4f46e5",
-            algorithm: true,
-          },
-        },
-      }}
-    >
-      <div className={styles.pageRoot}>
-        <nav className={styles.navbar}>
-          <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
-            <span className={styles.navTitle}>Scenario Manager</span>
-          </div>
-          <div className={styles.navRight}>
-            <Button type="primary" onClick={() => router.push("/scenarios/create")}>
-              Create New Scenario
-            </Button>
-            <Avatar icon={<UserOutlined />} className={styles.avatar} />
-          </div>
-        </nav>
-
-        <main className={styles.pageBody}>
-          <div className={styles.contentWrapper}>
-            <div className={styles.pageHeader}>
-              <h1 className={styles.heading}>Created Scenarios</h1>
-              <p className={styles.subheading}>Review previously created scenarios</p>
+    <div style={{ background: "#f8fafc", minHeight: "100vh" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 16px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0", borderBottom: "1px solid #e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ background: "#6c5ce7", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <SettingOutlined style={{ color: "#fff", fontSize: 16 }} />
             </div>
-
-            {error && <p className={styles.errorText}>{error}</p>}
-
-            <Spin spinning={loading}>
-              <div className={styles.cardList}>
-                {!loading && scenarios?.length === 0 && (
-                  <p className={styles.emptyText}>
-                    No scenarios yet. Create your first one above.
-                  </p>
-                )}
-                {scenarios?.map((scenario) => (
-                  <ScenarioCard key={scenario.id} scenario={scenario} isDirector={isDirector(scenario.id)} />
-                ))}
-              </div>
-            </Spin>
+            <Text strong style={{ fontSize: 16, color: "#1a1a2e" }}>Scenario Manager</Text>
           </div>
-        </main>
+          <Button icon={<ArrowLeftOutlined />} onClick={() => router.push("/")}>Back</Button>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 24, marginBottom: 8 }}>
+          <div>
+            <Title level={3} style={{ color: "#1a1a2e", margin: 0 }}>Created Scenarios</Title>
+            <Text style={{ color: "#64748b" }}>Review previously created scenarios</Text>
+          </div>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/scenarios/create")}>
+            Create New Scenario
+          </Button>
+        </div>
+        {loading ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><Spin size="large" /></div>
+        ) : scenarios.length === 0 ? (
+          <Empty description="No scenarios yet" style={{ marginTop: 48 }} />
+        ) : (
+          <List
+            style={{ marginTop: 16 }}
+            dataSource={scenarios}
+            renderItem={(s) => (
+              <Card
+                style={{ marginBottom: 12, borderRadius: 10, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer" }}
+                bodyStyle={{ padding: "16px 20px" }}
+                hoverable
+                onClick={() => router.push(`/scenarios/${s.id}`)}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <Text strong style={{ fontSize: 15, color: "#1a1a2e" }}>{s.title || "Untitled"}</Text>
+                    <br />
+                    <Text style={{ fontSize: 13, color: "#64748b" }}>{s.description || ""}</Text>
+                    <br />
+                    <Text style={{ fontSize: 12, color: "#6c5ce7" }}>
+                      Day {s.dayNumber} • {s.active ? "Active" : "Inactive"}
+                    </Text>
+                  </div>
+                  <Button type="link" icon={<EyeOutlined />} style={{ color: "#6c5ce7" }}>View</Button>
+                </div>
+              </Card>
+            )}
+          />
+        )}
       </div>
-    </ConfigProvider>
+    </div>
   );
 }

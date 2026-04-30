@@ -1,15 +1,9 @@
-export enum UserStatus {
-  ONLINE = "ONLINE",
-  OFFLINE = "OFFLINE",
-}
-
 export interface User {
-  id: number | null;
+  id: string | null;
   username: string | null;
   token: string | null;
-  status: UserStatus | null;
+  status: string | null;
   bio: string | null;
-  playing: boolean | null;
   creationDate: string | null;
   isPlaying: boolean;
 }

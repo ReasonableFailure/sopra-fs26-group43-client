@@ -1,0 +1,14 @@
+// .vercel/ignore-build.js
+const now = new Date();
+
+// Example: Freeze period from Dec 1-15
+const freezeStart = new Date('2026-25-04');
+const freezeEnd = new Date('2026-04-05');
+
+if (now >= freezeStart && now <= freezeEnd) {
+  console.log('❌ Deployment blocked: Currently in freeze period!');
+  process.exit(1); // Block the deployment
+}
+
+console.log('✅ Deployment allowed');
+process.exit(0); // Allow the deployment

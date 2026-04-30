@@ -6,6 +6,8 @@ import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
+import { Button, Card, Typography, List, Tag } from "antd";
+import { SettingOutlined, PlayCircleOutlined, PauseCircleOutlined, CloseCircleOutlined, StopOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -70,6 +72,8 @@ export default function DirectorPage() {
               Add Mastodon Account
             </Button>
           </div>
+          <Title level={2} style={{ color: "#1a1a2e", marginBottom: 4 }}>The Trojan War</Title>
+          <Text style={{ color: "#64748b" }}>Monitor readiness and control game state</Text>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 24 }}>

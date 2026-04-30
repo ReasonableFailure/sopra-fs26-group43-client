@@ -1,6 +1,5 @@
 import { ApiService } from "@/api/apiService";
-import { Scenario, ScenarioPostDTO, ScenarioMastodonDTO } from "@/types/scenario";
-
+import { Scenario, ScenarioPostDTO, ScenarioMastodonDTO, ScenarioPutDTO } from "@/types/scenario";
 export class ScenarioService {
   constructor(private api: ApiService) {}
 
@@ -18,5 +17,9 @@ export class ScenarioService {
 
   updateMastodonConfig(scenarioId: number, data: ScenarioMastodonDTO, token: string): Promise<void> {
     return this.api.putWithToken<void>(`/scenarios/${scenarioId}/mastodon`, data, token);
+  }
+  
+   updateScenario(id: number, data: ScenarioPutDTO, token: string): Promise<void> {
+    return this.api.putWithToken<void>(`/scenarios/${id}`, data, token);
   }
 }
