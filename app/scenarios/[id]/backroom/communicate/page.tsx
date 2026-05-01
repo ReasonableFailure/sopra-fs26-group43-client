@@ -341,7 +341,7 @@ export default function BackroomCommunicatePage() {
                   <Button
                     type="primary"
                     loading={submitting}
-                    onClick={handleNewsStory}
+                    onClick={handleRespond}
                     disabled={submitting || overLimit}
                   >
                     Respond

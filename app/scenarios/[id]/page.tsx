@@ -199,11 +199,17 @@ export default function DirectorDashboardPage() {
           <div className={styles.navLeft}>
             <div className={styles.logoMark} />
             <span className={styles.navTitle}>Director Dashboard</span>
-          </div>
-
-          <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
               All Scenarios
+            </Button>
+          </div>
+          <div className={styles.navRight}>
+            <Button
+              onClick={() =>
+                router.push(`/scenarios/${scenarioId}/statistics`)
+              }
+            >
+              Player Statistics
             </Button>
             <Avatar icon={<UserOutlined />} />
           </div>

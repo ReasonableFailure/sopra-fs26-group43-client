@@ -9,6 +9,10 @@ export interface Character {
   totalPoints: number;
   pointsBalance: number;
   messageCount: number;
+  numberDirectives: number;
+  numberMessages: number;
+  numberPronouncements: number;
+  totalTextLength: number;
 }
 
 /** POST /characters */
