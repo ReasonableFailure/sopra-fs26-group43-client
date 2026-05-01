@@ -114,6 +114,8 @@ reason).
 | **[HalaiRhea]** | 29.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/02d52314923210c81ebcea566ed850da177e0284| Added functionality to allow for mastodon liking, logic of message purchasing on the frontend.| provides for the game mechanism of message limits|
 | **[HalaiRhea]** | 30.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/14b1e269ac506f53e7024384da5760ab3408452d| Backend changes to allow for game states including freezing, day logic|Allows Director to control the state of the game to manage the experience|
 | **[HalaiRhea]** | 30.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/0f4345599df21a36a3636bbe10889af05a339f24| Frontend changes to allow for game states including freezing, day logic|Allows Director to control the state of the game to manage the experience|
+| **[HalaiRhea]** | 01.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/fa7e4522e6eef6525e9d1ae771910c89d0fd3064| Added User statistics and corresponding functioning to backend|Allows Director to better understand what the characters have done|
+| **[HalaiRhea]** | 01.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/fadc600b02c3be902bb244c1234cc9318b648138| Added User statistics and corresponding functioning to backend|Allows Director to better understand what the characters have done|
 ---
 
 ## Contributions Week 7 - [Begin Date] to [End Date]
