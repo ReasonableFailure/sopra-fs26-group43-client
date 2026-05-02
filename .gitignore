@@ -137,3 +137,9 @@ yarn-error.log*
 .DS_Store
 *.pem
 .env*.local
+/.idea/.gitignore
+/.idea/modules.xml
+/.idea/dictionaries/project.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/sopra-fs26-group43-client.iml
+/.idea/vcs.xml
