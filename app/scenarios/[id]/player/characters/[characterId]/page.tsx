@@ -67,7 +67,7 @@ export default function CharacterProfilePage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, authReady]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId || !targetCharId) return;
