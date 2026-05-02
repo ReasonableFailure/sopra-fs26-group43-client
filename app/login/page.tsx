@@ -102,7 +102,7 @@ const Login: React.FC = () => {
             </Button>
           </Form.Item>
           <Form.Item style={{ textAlign: "center", marginBottom: 0 }}>
-            <span style={{ color: "#9ca3af" }}>Don&apos;t have an account?&nbsp;</span>
+            <span style={{ color: "#9ca3af" }}>Don&apos;t have an account Register here!?&nbsp;</span>
             <Button type="link" style={{ padding: 0 }} onClick={() => switchMode("register")}>
               Sign up
             </Button>
@@ -144,7 +144,7 @@ const Login: React.FC = () => {
             </Button>
           </Form.Item>
           <Form.Item style={{ textAlign: "center", marginBottom: 0 }}>
-            <span style={{ color: "#9ca3af" }}>Already have an account?&nbsp;</span>
+            <span style={{ color: "#9ca3af" }}>Already have an account? Login here!&nbsp;</span>
             <Button type="link" style={{ padding: 0 }} onClick={() => switchMode("login")}>
               Log in
             </Button>
