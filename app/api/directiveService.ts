@@ -5,11 +5,11 @@ export class DirectiveService {
   constructor(private api: ApiService) {}
 
   getDirectivesByScenario(scenarioId: number, token: string): Promise<Directive[]> {
-    return this.api.getWithToken<Directive[]>(`/directives/scenario/${scenarioId}`, token);
+    return this.api.get<Directive[]>(`/directives/scenario/${scenarioId}`, token);
   }
 
   getDirectiveById(directiveId: number, token: string): Promise<Directive> {
-    return this.api.getWithToken<Directive>(`/directives/${directiveId}`, token);
+    return this.api.get<Directive>(`/directives/${directiveId}`, token);
   }
 
   createDirective(dto: DirectivePostDTO, token: string): Promise<Directive> {
@@ -17,6 +17,6 @@ export class DirectiveService {
   }
 
   updateDirective(directiveId: number, dto: DirectivePutDTO, token: string): Promise<void> {
-    return this.api.putWithToken<void>(`/directives/${directiveId}`, dto, token);
+    return this.api.put<void>(`/directives/${directiveId}`, dto, token);
   }
 }

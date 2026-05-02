@@ -13,6 +13,6 @@ export class NewsService {
   }
 
   getNewsByScenario(scenarioId: number, token: string): Promise<NewsGetDTO[]> {
-    return this.api.getWithToken<NewsGetDTO[]>(`/news/scenario/${scenarioId}`, token);
+    return this.api.get<NewsGetDTO[]>(`/news/scenario/${scenarioId}`, token);
   }
 }
