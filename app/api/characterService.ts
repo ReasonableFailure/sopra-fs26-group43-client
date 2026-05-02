@@ -5,7 +5,7 @@ export class CharacterService {
   constructor(private api: ApiService) {}
 
   getCharactersByScenario(scenarioId: number, token: string): Promise<Character[]> {
-    return this.api.getWithToken<Character[]>(`/characters/${scenarioId}`, token);
+    return this.api.get<Character[]>(`/characters/${scenarioId}`, token);
   }
 
   createCharacter(dto: CharacterPostDTO, directorToken: string): Promise<Character> {
@@ -16,11 +16,11 @@ export class CharacterService {
   }
 
   buyMessage(scenarioId: number, characterId: number,token: string): Promise<Character> {
-    return this.api.postWithToken<Character>(`/characters/${scenarioId}/${characterId}/buy-message`,{},token
+    return this.api.postWithToken<Character>(`/characters/${scenarioId}/${characterId}/buy-message`,{},`Role ${token}`
     );
   }
 
   assignCharacter(dto:CharacterPutDTO, userToken: string, characterId: number) {
-    return this.api.putWithToken(`/player/${characterId}`,dto,userToken);
+    return this.api.put(`/player/${characterId}`,dto,`Bearer ${userToken}`);
   }
 }
