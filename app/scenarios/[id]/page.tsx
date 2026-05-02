@@ -1,30 +1,15 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import {
-  Avatar,
-  Button,
-  ConfigProvider,
-  Spin,
-  theme,
-  Modal,
-  Form,
-  Input,
-  message,
-} from "antd";
-import {
-  CaretRightFilled,
-  CloseCircleOutlined,
-  PauseCircleOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import React, {useEffect, useMemo, useState} from "react";
+import {useParams, useRouter} from "next/navigation";
+import {Avatar, Button, ConfigProvider, Form, Input, message, Modal, Spin, theme,} from "antd";
+import {CaretRightFilled, CloseCircleOutlined, PauseCircleOutlined, UserOutlined,} from "@ant-design/icons";
 
-import { useAuth } from "@/hooks/useAuth";
-import { useApi } from "@/hooks/useApi";
-import { usePolling } from "@/hooks/usePolling";
-import { ScenarioService } from "@/api/scenarioService";
-import type { Scenario, ScenarioStatus } from "@/types/scenario";
+import {useAuth} from "@/hooks/useAuth";
+import {useApi} from "@/hooks/useApi";
+import {usePolling} from "@/hooks/usePolling";
+import {ScenarioService} from "@/api/scenarioService";
+import {Scenario, ScenarioStatus} from "@/types/scenario";
 import styles from "@/styles/directorDashboard.module.css";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
@@ -104,7 +89,7 @@ export default function DirectorDashboardPage() {
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: "UNFROZEN", dayNumber: 1 },
+        { status: ScenarioStatus.UNFROZEN, dayNumber: 1 },
         token
       );
       messageApi.success("Game started");
@@ -131,12 +116,12 @@ export default function DirectorDashboardPage() {
   const handleFreezeToggle = async () => {
     if (!scenario) return;
 
-    const isFrozen = scenario.status === "FROZEN";
+    const isFrozen = scenario.status === ScenarioStatus.FROZEN;
 
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: isFrozen ? "UNFROZEN" : "FROZEN" },
+        { status: isFrozen ? ScenarioStatus.UNFROZEN : ScenarioStatus.FROZEN },
         token
       );
       messageApi.success(isFrozen ? "Game resumed" : "Game frozen");
@@ -149,7 +134,7 @@ export default function DirectorDashboardPage() {
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: "COMPLETED" },
+        { status: ScenarioStatus.COMPLETED },
         token
       );
       messageApi.success("Game ended");
