@@ -132,13 +132,13 @@ export default function CommunicationFormPage() {
       if (commType === "direct_message") {
         await messageService.createMessage(
           { title, body: content, creatorId: characterId, recipientId: recipientId!, scenarioId },
-          token,
+          `Router ${token}`,
         );
         router.push(`/scenarios/${scenarioId}/player/characters/${recipientId}`);
       } else if (commType === "directive") {
         await directiveService.createDirective(
           { title, body: content, creatorId: characterId, scenarioId },
-          token,
+          `Role ${token}`,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {

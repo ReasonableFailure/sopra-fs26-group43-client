@@ -65,7 +65,7 @@ export default function GameLobbyPage() {
       setLoading(true);
       setError(null);
       try {
-        const chars = await characterService.getCharactersByScenario(scenarioId, token);
+        const chars = await characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`);
         if (!cancelled) {
           setCharacters(chars);
         }
@@ -93,8 +93,9 @@ export default function GameLobbyPage() {
       toAssignId: userId
     };
    try{
-     await characterService.assignCharacter(dtoToAssign,token,character.id);
+     const res = await characterService.assignCharacter(dtoToAssign,`Bearer ${token}`,character.id);
      setCharacterId(character.id);
+     setBackroomerToken(character.roleToken);
      router.push(`/scenarios/${scenarioId}/player`);
    } catch (error) {
      console.log(error);

@@ -56,8 +56,8 @@ export default function BackroomCommunicatePage() {
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      directiveService.getDirectivesByScenario(scenarioId, token),
-      characterService.getCharactersByScenario(scenarioId, token),
+      directiveService.getDirectivesByScenario(scenarioId, `Backroomer ${token}`),
+      characterService.getCharactersByScenario(scenarioId, `Backroomer ${token}`),
     ])
       .then(([dirs, chars]) => {
         if (!cancelled) {
@@ -107,7 +107,7 @@ export default function BackroomCommunicatePage() {
           status: selectedOutcome === "approve" ? CommsStatus.ACCEPTED : CommsStatus.REJECTED,
           response: content,
         },
-        token,
+          `Backroomer ${token}`,
       );
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
@@ -140,7 +140,7 @@ export default function BackroomCommunicatePage() {
               title,
               body: content,
               scenarioId,
-            }, token);
+            }, `Backroomer ${token}`);
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
       messageApi.error(err instanceof Error ? err.message : "Failed to create news story.");

@@ -63,8 +63,8 @@ export default function BackroomDirectiveDetailPage() {
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      directiveService.getDirectiveById(directiveId, token),
-      characterService.getCharactersByScenario(scenarioId, token),
+      directiveService.getDirectiveById(directiveId, `Backroomer ${token}`),
+      characterService.getCharactersByScenario(scenarioId, `Backroomer ${token}`),
     ])
       .then(([dir, chars]) => {
         if (cancelled) return;

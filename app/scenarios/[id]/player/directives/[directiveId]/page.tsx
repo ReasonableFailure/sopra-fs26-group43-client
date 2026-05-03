@@ -89,7 +89,7 @@ export default function DirectiveDetailPage() {
     const fetchData = async () => {
       try {
         const [dir, chars] = await Promise.all([
-          directiveService.getDirectiveById(directiveId, token),
+          directiveService.getDirectiveById(directiveId, `Role ${token}`),
           characterService.getCharactersByScenario(scenarioId, token),
         ]);
         if (cancelled) return;

@@ -57,13 +57,13 @@ export default function BackroomDashboardPage() {
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: directives, loading: directivesLoading } = usePolling<Directive[]>(
-    () => directiveService.getDirectivesByScenario(scenarioId, token),
+    () => directiveService.getDirectivesByScenario(scenarioId, `Backroomer ${token}`),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, token),
+    () => newsService.getNewsByScenario(scenarioId, `Backroomer ${token}`),
     5000,
     enabled,
   );
@@ -76,7 +76,7 @@ export default function BackroomDashboardPage() {
 
     let cancelled = false;
 
-    scenarioService.getScenarioById(scenarioId, token)
+    scenarioService.getScenarioById(scenarioId, `Backroomer ${token}`)
       .then((data) => {
         if (!cancelled) setScenario(data);
       })
@@ -94,9 +94,9 @@ export default function BackroomDashboardPage() {
     const fetchMessages = async () => {
       setMessagesLoading(true);
       try {
-        const pairs = await messageService.getMessagePairsByScenario(scenarioId, token);
+        const pairs = await messageService.getMessagePairsByScenario(scenarioId, `Backroomer ${token}`);
         const arrays = await Promise.all(
-          pairs.map((p) => messageService.getMessagesBetween(p.roleAId, p.roleBId, token)),
+          pairs.map((p) => messageService.getMessagesBetween(p.roleAId, p.roleBId, `Backroomer ${token}`)),
         );
         if (!cancelled) setMessages(arrays.flat());
       } catch {
@@ -125,7 +125,7 @@ export default function BackroomDashboardPage() {
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    characterService.getCharactersByScenario(scenarioId, token)
+    characterService.getCharactersByScenario(scenarioId, `Backroomer ${token}`)
       .then((chars) => { if (!cancelled) setCharacters(chars); })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -144,7 +144,7 @@ export default function BackroomDashboardPage() {
     if (messageId === null) return;
     setActionLoading(messageId);
     try {
-      await messageService.updateMessage(messageId, { status }, token);
+      await messageService.updateMessage(messageId, { status }, `Backroomer ${token}`);
     } catch {
       // silently ignore — message stays in list
     } finally {

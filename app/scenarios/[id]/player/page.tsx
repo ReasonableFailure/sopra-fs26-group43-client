@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
-import { BellOutlined} from "@ant-design/icons";
+import {useEffect, useMemo, useState} from "react";
+import {useParams, useRouter} from "next/navigation";
+import {Avatar, Button, ConfigProvider, message, Spin, theme} from "antd";
+import {BellOutlined} from "@ant-design/icons";
 
-import { useAuth } from "@/hooks/useAuth";
-import { useApi } from "@/hooks/useApi";
-import { usePolling } from "@/hooks/usePolling";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import {useAuth} from "@/hooks/useAuth";
+import {useApi} from "@/hooks/useApi";
+import {usePolling} from "@/hooks/usePolling";
+import {useSelectedCharacter} from "@/hooks/useSelectedCharacter";
 
-import { CharacterService } from "@/api/characterService";
-import { DirectiveService } from "@/api/directiveService";
-import { ScenarioService } from "@/api/scenarioService";
-import { NewsService } from "@/api/newsService";
+import {CharacterService} from "@/api/characterService";
+import {DirectiveService} from "@/api/directiveService";
+import {ScenarioService} from "@/api/scenarioService";
+import {NewsService} from "@/api/newsService";
 
-import type { Character } from "@/types/character";
-import type { Directive } from "@/types/directive";
-import { CommsStatus } from "@/types/directive";
-import type { Scenario } from "@/types/scenario";
-import type { NewsGetDTO } from "@/types/news";
+import type {Character} from "@/types/character";
+import type {Directive} from "@/types/directive";
+import {CommsStatus} from "@/types/directive";
+import {Scenario, ScenarioStatus} from "@/types/scenario";
+import type {NewsGetDTO} from "@/types/news";
 
 import styles from "@/styles/playerDashboard.module.css";
 
@@ -83,33 +83,33 @@ export default function PlayerDashboardPage() {
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: directives, loading: directivesLoading } = usePolling<Directive[]>(
-    () => directiveService.getDirectivesByScenario(scenarioId, token),
+    () => directiveService.getDirectivesByScenario(scenarioId, `Role ${token}`),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, token),
+    () => newsService.getNewsByScenario(scenarioId, `Role ${token}`),
     5000,
     enabled,
   );
 
   const { data: liveCharacter } = usePolling<Character>(
     () =>
-      characterId? characterService.getCharacterPoints(scenarioId,characterId,token)
+      characterId? characterService.getCharacterPoints(scenarioId,characterId,`Role ${token}`)
         : Promise.reject(),
     15000,
     enabled && !!characterId
   );
 
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, token),
+    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
     5000,
     enabled
   );
 
   const effectiveScenario = liveScenario ?? scenario;
-  const isGameActive = effectiveScenario?.status === "UNFROZEN";
+  const isGameActive = effectiveScenario?.status === ScenarioStatus.UNFROZEN;
 
   const loading = staticLoading || directivesLoading || newsLoading;
 
@@ -142,8 +142,8 @@ export default function PlayerDashboardPage() {
       setStaticLoading(true);
       try {
         const [chars, scen] = await Promise.all([
-          characterService.getCharactersByScenario(scenarioId, token),
-          scenarioService.getScenarioById(scenarioId, token),
+          characterService.getCharactersByScenario(scenarioId, `Role ${token}`),
+          scenarioService.getScenarioById(scenarioId, `Role ${token}`),
         ]);
         if (!cancelled) {
           setCharacters(chars);
@@ -205,7 +205,7 @@ export default function PlayerDashboardPage() {
       const updated = await characterService.buyMessage(
         scenarioId,
         characterId,
-        token
+          `Role ${token}`
       );
 
       setLikes(updated.pointsBalance ?? 0);

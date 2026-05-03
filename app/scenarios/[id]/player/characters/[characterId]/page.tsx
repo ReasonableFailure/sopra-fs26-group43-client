@@ -1,25 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { usePolling } from "@/hooks/usePolling";
-import { ScenarioService } from "@/api/scenarioService";
-import type { Scenario, ScenarioStatus } from "@/types/scenario";
-import { Button, ConfigProvider, Spin, theme } from "antd";
-import {
-  CalendarOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
-import { useAuth } from "@/hooks/useAuth";
-import { useApi } from "@/hooks/useApi";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
-import { CharacterService } from "@/api/characterService";
-import { MessageService } from "@/api/messageService";
-import type { Character } from "@/types/character";
-import type { Message } from "@/types/message";
-import { CommsStatus } from "@/types/directive";
+import {useEffect, useMemo, useState} from "react";
+import {useParams, useRouter} from "next/navigation";
+import {usePolling} from "@/hooks/usePolling";
+import {ScenarioService} from "@/api/scenarioService";
+import {Scenario, ScenarioStatus} from "@/types/scenario";
+import {Button, ConfigProvider, Spin, theme} from "antd";
+import {CalendarOutlined, CheckCircleOutlined, CloseCircleOutlined, PlusOutlined,} from "@ant-design/icons";
+import {useAuth} from "@/hooks/useAuth";
+import {useApi} from "@/hooks/useApi";
+import {useSelectedCharacter} from "@/hooks/useSelectedCharacter";
+import {CharacterService} from "@/api/characterService";
+import {MessageService} from "@/api/messageService";
+import type {Character} from "@/types/character";
+import type {Message} from "@/types/message";
+import {CommsStatus} from "@/types/directive";
 import styles from "@/styles/characterProfile.module.css";
 
 function initials(name: string | null): string {
@@ -63,7 +58,7 @@ export default function CharacterProfilePage() {
   );
 
   const effectiveScenario = liveScenario ?? null;
-  const isGameActive = effectiveScenario?.status === "UNFROZEN";
+  const isGameActive = effectiveScenario?.status === ScenarioStatus.UNFROZEN;
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
@@ -76,12 +71,12 @@ export default function CharacterProfilePage() {
 
     const fetchData = async () => {
       try {
-        const chars = await characterService.getCharactersByScenario(scenarioId, token);
+        const chars = await characterService.getCharactersByScenario(scenarioId, `Role ${token}`);
         if (cancelled) return;
         setTargetCharacter(chars.find((c) => c.id === targetCharId) ?? null);
 
         const msgs = myCharacterId
-          ? await messageService.getMessagesBetween(myCharacterId, targetCharId, token)
+          ? await messageService.getMessagesBetween(myCharacterId, targetCharId, `Role ${token}`)
           : [];
         if (cancelled) return;
 
