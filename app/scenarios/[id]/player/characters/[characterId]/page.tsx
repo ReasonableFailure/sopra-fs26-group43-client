@@ -62,8 +62,19 @@ export default function CharacterProfilePage() {
     enabled
   );
 
+  const { data: liveCharacter } = usePolling<Character>(
+    () =>
+      myCharacterId
+        ? characterService.getCharacterById(myCharacterId, token)
+        : Promise.reject(),
+    5000,
+    enabled && !!myCharacterId
+  );
+
+
   const effectiveScenario = liveScenario ?? null;
   const isGameActive = effectiveScenario?.status === "UNFROZEN";
+  const isAlive = (liveCharacter?.alive ?? true);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
@@ -130,6 +141,11 @@ export default function CharacterProfilePage() {
               Character Profile &amp; Communication Log
             </span>
           </div>
+          {!isAlive && (
+            <div style={{ color: "#ef4444", fontWeight: 600, marginBottom: 12 }}>
+              Your Character has Died.
+            </div>
+          )}
           <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
             Back to Dashboard
           </Button>
@@ -178,12 +194,12 @@ export default function CharacterProfilePage() {
                   <p className={styles.fieldLabel}>Status</p>
                   <span
                     className={
-                      targetCharacter?.isAlive !== false
+                      targetCharacter?.alive !== false
                         ? styles.statusAlive
                         : styles.statusDead
                     }
                   >
-                    {targetCharacter?.isAlive !== false ? "Active" : "Eliminated"}
+                    {targetCharacter?.alive !== false ? "Alive" : "Dead"}
                   </span>
                 </div>
               </div>
@@ -249,8 +265,8 @@ export default function CharacterProfilePage() {
                   type="primary"
                   icon={<PlusOutlined />}
                   className={styles.newMessageBtn}
-                  disabled={!isGameActive}
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
+                  disabled={!isGameActive || !isAlive}
+                  style={{ opacity: isGameActive && isAlive ? 1 : 0.5 }}
                   onClick={() =>
                     router.push(
                       `/scenarios/${scenarioId}/player/communicate?type=direct_message&recipient=${targetCharId}`,

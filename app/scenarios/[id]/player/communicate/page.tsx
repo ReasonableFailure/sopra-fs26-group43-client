@@ -63,7 +63,16 @@ export default function CommunicationFormPage() {
     enabled
   );
 
-  const isGameActive = liveScenario?.status === "UNFROZEN";
+  const { data: liveCharacter } = usePolling<Character>(
+    () =>
+      characterId
+        ? characterService.getCharacterById(characterId, token)
+        : Promise.reject(),
+    5000,
+    enabled && !!characterId
+  );
+
+  
 
 
   useEffect(() => {
@@ -88,6 +97,8 @@ export default function CommunicationFormPage() {
   if (!authReady || !isAuthenticated) return null;
 
   const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
+  const isGameActive = liveScenario?.status === "UNFROZEN";
+  const isAlive = (liveCharacter?.alive ?? selectedCharacter?.alive) !== false;
 
   const authorName = selectedCharacter?.name ?? "Unknown";
 
@@ -191,6 +202,11 @@ export default function CommunicationFormPage() {
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Scenario Manager</span>
           </div>
+          {!isAlive && (
+            <div style={{ color: "#ef4444", fontWeight: 600, marginBottom: 12 }}>
+              Your Character has Died.
+              </div>
+            )}
           <Avatar className={styles.navAvatar}>
             {initials(selectedCharacter?.name ?? null)}
           </Avatar>
@@ -291,10 +307,10 @@ export default function CommunicationFormPage() {
                   disabled={
                     submitting ||
                     !isGameActive ||
-                    ( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0) ||
+                    !isAlive ||
+                    (commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0) ||
                     (commType === "pronouncement" && overLimit)
                   }
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
                 >
                   Submit
                 </Button>

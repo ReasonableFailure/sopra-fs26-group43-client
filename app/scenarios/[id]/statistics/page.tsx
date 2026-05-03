@@ -2,14 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Avatar,
-  Button,
-  ConfigProvider,
-  Spin,
-  Table,
-  theme,
-} from "antd";
+import {Avatar, Button, ConfigProvider, Spin, Table, theme, message, Modal} from "antd";
 import { UserOutlined } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -32,6 +25,27 @@ export default function PlayerStatisticsPage() {
     () => new CharacterService(api),
     [api]
   );
+
+    const handleKill = (character: Character) => {
+        Modal.confirm({
+            title: `Eliminate ${character.name}?`,
+            content: "This action cannot be undone.",
+            okText: "Kill",
+            okButtonProps: { danger: true },
+            onOk: async () => {
+            try {
+                await characterService.updateCharacter(
+                character.id!,
+                { alive: false },
+                token
+                );
+                message.success(`${character.name} eliminated`);
+            } catch {
+                message.error("Failed to eliminate character");
+            }
+            },
+        });
+    };
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -84,6 +98,24 @@ export default function PlayerStatisticsPage() {
       dataIndex: "totalTextLength",
       key: "totalTextLength",
     },
+    {
+        title: "Kill",
+        key: "kill",
+        render: (_: any, record: Character) => {
+            if (!record.alive) {
+            return <span style={{ color: "#6b7280", fontWeight: 500 }}>Dead</span>;
+            }
+
+            return (
+            <Button
+                danger
+                onClick={() => handleKill(record)}
+            >
+                Kill
+            </Button>
+            );
+        },
+    }
   ];
 
   return (

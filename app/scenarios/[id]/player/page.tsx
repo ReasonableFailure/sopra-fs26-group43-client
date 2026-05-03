@@ -161,6 +161,7 @@ export default function PlayerDashboardPage() {
   }, [enabled, scenarioId, token, characterService, scenarioService]);
 
   const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
+  const isAlive = (liveCharacter?.alive ?? selectedCharacter?.alive) !== false;
 
   useEffect(() => {
     if (liveCharacter) {
@@ -268,6 +269,11 @@ export default function PlayerDashboardPage() {
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Character Dashboard</span>
           </div>
+          {!isAlive && (
+            <div style={{ color: "#ef4444", fontWeight: 600 }}>
+              Your Character has Died.
+            </div>
+          )}
           <div className={styles.navRight}>
             <Button
               icon={<BellOutlined />}
@@ -288,8 +294,8 @@ export default function PlayerDashboardPage() {
                 <h2 className={styles.sidebarTitle}>My Directives</h2>
                 <Button
                   type="primary"
-                  disabled={!isGameActive}
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
+                  disabled={!isGameActive || !isAlive}
+                  style={{ opacity: isGameActive && isAlive ? 1 : 0.5 }}
                   onClick={() =>
                     router.push(`/scenarios/${scenarioId}/player/communicate?type=directive`)
                   }
@@ -344,8 +350,8 @@ export default function PlayerDashboardPage() {
                 <h1 className={styles.sectionHeading}>News Feed</h1>
                 <Button
                   type="primary"
-                  disabled={!isGameActive}
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
+                  disabled={!isGameActive || !isAlive}
+                  style={{ opacity: isGameActive && isAlive ? 1 : 0.5 }}
                   onClick={() =>
                     router.push(`/scenarios/${scenarioId}/player/communicate?type=pronouncement`)
                   }
