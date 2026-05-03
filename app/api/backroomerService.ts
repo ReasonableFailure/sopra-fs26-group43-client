@@ -6,6 +6,6 @@ export class BackroomerService{
     }
 
     createBackroomer(dto: BackroomerPostDTO, userToken: string): Promise<Backroomer>{
-        return this.api.postWithToken(`/backroomers`, dto, userToken);
+        return this.api.postWithToken<Backroomer>(`/backroomers`, dto, userToken);
     }
 }

@@ -9,22 +9,22 @@ export class CharacterService {
   }
 
   createCharacter(dto: CharacterPostDTO, directorToken: string): Promise<Character> {
-    return this.api.postWithToken<Character>("/characters", dto, `Director ${directorToken}`);
+    return this.api.postWithToken<Character>("/characters", dto, directorToken);
   }
-  getCharacterPoints(scenarioId: number, characterId: number,token: string): Promise<Character> {
-    return this.api.get<Character>(`/characters/${scenarioId}/${characterId}/points`,token);
+  getCharacterPoints(scenarioId: number, characterId: number,token: string): Promise<number> {
+    return this.api.get<number>(`/characters/${scenarioId}/${characterId}/points`,token);
   }
 
-  buyMessage(scenarioId: number, characterId: number,token: string): Promise<Character> {
-    return this.api.postWithToken<Character>(`/characters/${scenarioId}/${characterId}/buy-message`,{},`Role ${token}`
+  buyMessage(scenarioId: number, characterId: number,token: string): Promise<number> {
+    return this.api.postWithToken<number>(`/characters/${scenarioId}/${characterId}/buy-message`,{},token
     );
   }
 
- assignCharacter(dto:CharacterAssignDTO, userToken: string, characterId: number) {
-    return this.api.put(`/player/${characterId}`,dto,`Bearer ${userToken}`);
+ assignCharacter(dto:CharacterAssignDTO, userToken: string, characterId: number):Promise<Character> {
+    return this.api.put<Character>(`/player/${characterId}`,dto,userToken);
   }
 
-  modifyCharacter(dto: CharacterPutDTO, directorToken: string, characterId: number) {
-    return this.api.put(`/player/${characterId}`,dto, `Director ${directorToken}`);
+  modifyCharacter(dto: CharacterPutDTO, directorToken: string, characterId: number):Promise<void>{
+    return this.api.put<void>(`/player/${characterId}`,dto, directorToken);
   }
 }
