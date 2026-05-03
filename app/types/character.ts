@@ -13,6 +13,7 @@ export interface Character {
   numberMessages: number;
   numberPronouncements: number;
   totalTextLength: number;
+  roleToken: string;
 }
 
 /** POST /characters */
