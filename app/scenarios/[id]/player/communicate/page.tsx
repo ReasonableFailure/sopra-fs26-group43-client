@@ -10,6 +10,7 @@ import type { Scenario } from "@/types/scenario";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
+import { DirectiveCategory } from "@/types/directive";
 import { MessageService } from "@/api/messageService";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
@@ -53,6 +54,7 @@ export default function CommunicationFormPage() {
   const [recipientId, setRecipientId] = useState<number | null>(preselectedRecipient);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState<DirectiveCategory | null>(null);
   const MAX_POST_LENGTH = 500;
 
   const enabled = isAuthenticated && !!scenarioId;
@@ -138,6 +140,11 @@ export default function CommunicationFormPage() {
       return;
     }
 
+    if (commType === "directive" && !category) {
+      messageApi.error("Please select a directive category.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (commType === "direct_message") {
@@ -148,7 +155,7 @@ export default function CommunicationFormPage() {
         router.push(`/scenarios/${scenarioId}/player/characters/${recipientId}`);
       } else if (commType === "directive") {
         await directiveService.createDirective(
-          { title, body: content, creatorId: characterId, scenarioId },
+          { title, body: content, creatorId: characterId, scenarioId, category: category!, },
           token,
         );
         router.push(`/scenarios/${scenarioId}/player`);
@@ -235,7 +242,7 @@ export default function CommunicationFormPage() {
                   <Select
                     options={commTypeOptions}
                     value={commType}
-                    onChange={(v) => { setCommType(v as CommType); setRecipientId(null); }}
+                    onChange={(v) => { setCommType(v as CommType); setRecipientId(null); setCategory(null); }}
                     style={{ width: "100%" }}
                   />
                 </div>
@@ -263,6 +270,25 @@ export default function CommunicationFormPage() {
                     />
                   )}
                 </div>
+
+                {commType === "directive" && (
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Directive Category</label>
+                    <Select
+                      value={category ?? undefined}
+                      onChange={(v) => setCategory(v)}
+                      placeholder="Select category"
+                      style={{ width: "100%" }}
+                      options={[
+                        { value: DirectiveCategory.MILITARY, label: "Military" },
+                        { value: DirectiveCategory.POLITICAL, label: "Political" },
+                        { value: DirectiveCategory.PUBLIC, label: "Public" },
+                        { value: DirectiveCategory.INTELLIGENCE, label: "Intelligence" },
+                        { value: DirectiveCategory.OTHER, label: "Other" },
+                      ]}
+                    />
+                  </div>
+                )}
 
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Title</label>

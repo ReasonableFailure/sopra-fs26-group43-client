@@ -186,16 +186,18 @@
 }
 
 .colPlayerName {
-  width: 180px;
+  width: 100px;
   flex-shrink: 0;
 }
 
 .colDirectiveTitle {
   flex: 1;
+  min-width: 100px;
+  overflow: hidden;
 }
 
 .colStatus {
-  width: 110px;
+  width: 100px;
   flex-shrink: 0;
 }
 

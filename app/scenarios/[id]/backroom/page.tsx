@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
+import { Avatar, Button, ConfigProvider, Select, Spin, theme } from "antd";
 import { FileTextOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -15,7 +15,8 @@ import { DirectiveService } from "@/api/directiveService";
 import { MessageService } from "@/api/messageService";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
-import type { Directive } from "@/types/directive";
+import type { Directive} from "@/types/directive";
+import { DirectiveCategory } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import type { Message } from "@/types/message";
 import styles from "@/styles/backroomDashboard.module.css";
@@ -70,6 +71,7 @@ export default function BackroomDashboardPage() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<DirectiveCategory | "ALL">("ALL");
 
   useEffect(() => {
     if (!enabled) return;
@@ -172,6 +174,11 @@ export default function BackroomDashboardPage() {
     )
     .slice(0, 3);
 
+    const filteredDirectives = (directives ?? []).filter((d) => {
+      if (selectedCategory === "ALL") return true;
+      return d.category === selectedCategory;
+    });
+
   return (
     <ConfigProvider
       theme={{
@@ -209,17 +216,33 @@ export default function BackroomDashboardPage() {
                 <p className={styles.panelSubtitle}>Review and manage player directives</p>
               </div>
 
+              <div style={{ marginBottom: "12px" }}>
+                <Select
+                  value={selectedCategory}
+                  onChange={(v) => setSelectedCategory(v)}
+                  style={{ width: "100%" }}
+                  options={[
+                    { value: "ALL", label: "All Categories" },
+                    { value: DirectiveCategory.MILITARY, label: "Military" },
+                    { value: DirectiveCategory.POLITICAL, label: "Political" },
+                    { value: DirectiveCategory.PUBLIC, label: "Public" },
+                    { value: DirectiveCategory.INTELLIGENCE, label: "Intelligence" },
+                    { value: DirectiveCategory.OTHER, label: "Other" },
+                  ]}
+                />
+              </div>
+
               <div className={styles.tableHeader}>
                 <div className={`${styles.tableHeaderCell} ${styles.colPlayerName}`}>Player Name</div>
                 <div className={`${styles.tableHeaderCell} ${styles.colDirectiveTitle}`}>Directive Title</div>
                 <div className={`${styles.tableHeaderCell} ${styles.colStatus}`}>Status</div>
               </div>
 
-              {(directives ?? []).length === 0 && !loading && (
+              {filteredDirectives.length === 0 && !loading && (
                 <p className={styles.emptyState}>No directives submitted yet.</p>
               )}
 
-              {(directives ?? []).map((directive) => (
+              {filteredDirectives.map((directive) => (
                 <div
                   key={directive.id}
                   className={styles.tableRow}

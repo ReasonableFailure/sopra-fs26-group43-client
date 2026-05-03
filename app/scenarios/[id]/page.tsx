@@ -24,7 +24,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import { ScenarioService } from "@/api/scenarioService";
-import type { Scenario, ScenarioStatus } from "@/types/scenario";
+import type { Scenario } from "@/types/scenario";
+import type { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/directorDashboard.module.css";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
