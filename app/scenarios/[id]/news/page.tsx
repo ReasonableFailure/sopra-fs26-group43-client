@@ -16,6 +16,7 @@ import { ScenarioService } from "@/api/scenarioService";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
 import styles from "@/styles/newsPage.module.css";
+import {usePlayerRole} from "@/hooks/usePlayerRole";
 
 type FilterType = "all" | "news" | "pronouncement";
 
@@ -72,6 +73,7 @@ export default function NewsPage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const {playerRole} = usePlayerRole();
 
   const api = useApi();
   const newsService = useMemo(() => new NewsService(api), [api]);
@@ -94,9 +96,9 @@ export default function NewsPage() {
     setLoading(true);
 
     Promise.all([
-      newsService.getNewsByScenario(scenarioId, token),
-      characterService.getCharactersByScenario(scenarioId, token),
-      scenarioService.getScenarioById(scenarioId, token),
+      newsService.getNewsByScenario(scenarioId, `${playerRole} ${token}`),
+      characterService.getCharactersByScenario(scenarioId, `${playerRole} ${token}`),
+      scenarioService.getScenarioById(scenarioId, `${playerRole} ${token}`),
     ])
       .then(([news, chars, scenario]) => {
         if (cancelled) return;
@@ -119,6 +121,7 @@ export default function NewsPage() {
     newsService,
     characterService,
     scenarioService,
+    playerRole,
   ]);
 
   if (!authReady || !isAuthenticated) return null;

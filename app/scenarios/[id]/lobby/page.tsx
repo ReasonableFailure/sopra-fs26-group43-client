@@ -13,6 +13,7 @@ import { useBackroomer } from "@/hooks/useBackroomer";
 import type { Character, CharacterAssignDTO } from "@/types/character";
 import styles from "@/styles/lobby.module.css";
 import { Backroomer, BackroomerPostDTO } from "@/types/backroomer";
+import { usePlayerRole} from "@/hooks/usePlayerRole";
 
 interface CharacterCardProps {
   character: Character;
@@ -45,6 +46,7 @@ export default function GameLobbyPage() {
   const params = useParams();
   const scenarioId = Number(params.id);
   const api = useApi();
+  const {setPlayerRole} = usePlayerRole();
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const backroomerService = useMemo(() => new BackroomerService(api), [api]);
@@ -108,6 +110,7 @@ export default function GameLobbyPage() {
       );
       setCharacterId(res.id);
       setBackroomerToken(res.roleToken);
+      setPlayerRole("character");
       router.push(`/scenarios/${scenarioId}/player`);
     } catch (error) {
       console.log(error);
@@ -128,6 +131,7 @@ export default function GameLobbyPage() {
       if (thingy) {
         setBackroomerId(thingy.id);
         setBackroomerToken(thingy.backroomerToken);
+        setPlayerRole("backroomer")
         router.push(`/scenarios/${scenarioId}/backroom`);
       } else {
         return null;
