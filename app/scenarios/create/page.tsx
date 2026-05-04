@@ -24,7 +24,7 @@ import styles from "@/styles/createScenario.module.css";
 import { DirectorService } from "@/api/directorService";
 import { useDirector } from "@/hooks/useDirector";
 import { DirectorPutDTO } from "@/types/director";
-import {usePlayerRole} from "@/hooks/usePlayerRole";
+import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 interface ScenarioFormValues {
   title: string;
@@ -57,7 +57,7 @@ export default function CreateScenarioPage() {
   const directorService = useMemo(() => new DirectorService(api), [api]);
   const { setDirectorId, setDirectorToken } = useDirector(userId);
   const { addDirectedScenario } = useDirectedScenarios(userId);
-  const {setPlayerRole} = usePlayerRole();
+  const { setPlayerRole } = usePlayerRole();
 
   const [form] = Form.useForm<ScenarioFormValues>();
   const [characterForm] = Form.useForm<CharacterFormValues>();

@@ -13,21 +13,25 @@ export class CharacterService {
     scenarioId: number,
     token: string,
   ): Promise<Character[]> {
-    return this.api.get<Character[]>(`/characters/${scenarioId}`, token);
+    return await this.api.get<Character[]>(`/characters/${scenarioId}`, token);
   }
 
   public async createCharacter(
     dto: CharacterPostDTO,
     directorToken: string,
   ): Promise<Character> {
-    return this.api.postWithToken<Character>("/characters", dto, directorToken);
+    return await this.api.postWithToken<Character>(
+      "/characters",
+      dto,
+      directorToken,
+    );
   }
   public async getCharacterPoints(
     scenarioId: number,
     characterId: number,
     token: string,
   ): Promise<Character> {
-    return this.api.get<Character>(
+    return await this.api.get<Character>(
       `/characters/${scenarioId}/${characterId}/points`,
       token,
     );
@@ -38,7 +42,7 @@ export class CharacterService {
     characterId: number,
     token: string,
   ): Promise<Character> {
-    return this.api.postWithToken<Character>(
+    return await this.api.postWithToken<Character>(
       `/characters/${scenarioId}/${characterId}/buy-message`,
       {},
       token,
@@ -58,6 +62,10 @@ export class CharacterService {
     directorToken: string,
     characterId: number,
   ): Promise<void> {
-    return this.api.put<void>(`/player/${characterId}`, dto, directorToken);
+    return await this.api.put<void>(
+      `/player/${characterId}`,
+      dto,
+      directorToken,
+    );
   }
 }

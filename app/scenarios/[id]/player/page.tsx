@@ -421,7 +421,7 @@ export default function PlayerDashboardPage() {
                     <Button
                       type="primary"
                       onClick={() =>
-                        window.open(
+                        globalThis.open(
                           scenario.mastodonProfileUrl!,
                           "_blank",
                           "noopener,noreferrer",

@@ -362,7 +362,7 @@ export default function BackroomDashboardPage() {
                       <Button
                         type="primary"
                         onClick={() =>
-                          window.open(
+                          globalThis.open(
                             scenario.mastodonProfileUrl!,
                             "_blank",
                             "noopener,noreferrer",
