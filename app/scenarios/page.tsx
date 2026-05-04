@@ -75,7 +75,7 @@ export default function ScenariosPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, authReady]);
 
   if (!authReady || !isAuthenticated) return null;
 

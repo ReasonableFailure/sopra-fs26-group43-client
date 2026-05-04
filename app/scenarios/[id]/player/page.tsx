@@ -186,6 +186,7 @@ export default function PlayerDashboardPage() {
       setMessageCount(selectedCharacter.messageCount ?? 0);
     }
   }, [
+      selectedCharacter,
     liveCharacter,
     selectedCharacter?.id,
     selectedCharacter?.pointsBalance,

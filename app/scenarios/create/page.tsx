@@ -70,7 +70,7 @@ export default function CreateScenarioPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, authReady]);
 
   const openModal = () => {
     characterForm.resetFields();

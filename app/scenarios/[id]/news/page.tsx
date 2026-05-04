@@ -88,7 +88,7 @@ export default function NewsPage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, authReady]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
