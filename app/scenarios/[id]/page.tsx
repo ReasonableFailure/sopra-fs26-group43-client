@@ -120,7 +120,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { dayNumber: scenario.dayNumber + 1 },
-          `Director ${token}`,
+        `Director ${token}`,
       );
       messageApi.success("Advanced to next day");
     } catch {
@@ -137,7 +137,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { status: isFrozen ? ScenarioStatus.UNFROZEN : ScenarioStatus.FROZEN },
-          `Director ${token}`,
+        `Director ${token}`,
       );
       messageApi.success(isFrozen ? "Game resumed" : "Game frozen");
     } catch {
@@ -150,7 +150,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { status: ScenarioStatus.COMPLETED },
-          `Director ${token}`,
+        `Director ${token}`,
       );
       messageApi.success("Game ended");
     } catch {
