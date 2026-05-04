@@ -1,10 +1,14 @@
-export interface director {
-    id: number;
-    userId: number;
-    scenarioId: number;
-    directorToken: string;
+export interface Director {
+  id: number;
+  userId: number;
+  scenarioId: number;
+  directorToken: string;
 }
 
-export interface directorputdto {
-    id: number;
+export interface DirectorPutDTO {
+  id: number;
+}
+export interface DirectorGetDTO {
+  directorId: number;
+  directorToken: string;
 }

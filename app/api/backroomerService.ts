@@ -1,11 +1,14 @@
 import { ApiService } from "@/api/apiService";
-import {BackroomerPostDTO, Backroomer} from "@/types/backroomer";
+import { Backroomer, BackroomerPostDTO } from "@/types/backroomer";
 
-export class BackroomerService{
-    constructor(private api: ApiService) {
-    }
+export class BackroomerService {
+  constructor(private api: ApiService) {
+  }
 
-    createBackroomer(dto: BackroomerPostDTO, userToken: string): Promise<Backroomer>{
-        return this.api.postWithToken<Backroomer>(`/backroomers`, dto, userToken);
-    }
+  createBackroomer(
+    dto: BackroomerPostDTO,
+    userToken: string,
+  ): Promise<Backroomer> {
+    return this.api.postWithToken<Backroomer>(`/backroomers`, dto, userToken);
+  }
 }

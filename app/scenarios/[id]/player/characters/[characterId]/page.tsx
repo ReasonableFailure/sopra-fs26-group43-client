@@ -1,20 +1,25 @@
 "use client";
 
-import {useEffect, useMemo, useState} from "react";
-import {useParams, useRouter} from "next/navigation";
-import {usePolling} from "@/hooks/usePolling";
-import {ScenarioService} from "@/api/scenarioService";
-import {Scenario, ScenarioStatus} from "@/types/scenario";
-import {Button, ConfigProvider, Spin, theme} from "antd";
-import {CalendarOutlined, CheckCircleOutlined, CloseCircleOutlined, PlusOutlined,} from "@ant-design/icons";
-import {useAuth} from "@/hooks/useAuth";
-import {useApi} from "@/hooks/useApi";
-import {useSelectedCharacter} from "@/hooks/useSelectedCharacter";
-import {CharacterService} from "@/api/characterService";
-import {MessageService} from "@/api/messageService";
-import type {Character} from "@/types/character";
-import type {Message} from "@/types/message";
-import {CommsStatus} from "@/types/directive";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { usePolling } from "@/hooks/usePolling";
+import { ScenarioService } from "@/api/scenarioService";
+import { Scenario, ScenarioStatus } from "@/types/scenario";
+import { Button, ConfigProvider, Spin, theme } from "antd";
+import {
+  CalendarOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
+import { useAuth } from "@/hooks/useAuth";
+import { useApi } from "@/hooks/useApi";
+import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { CharacterService } from "@/api/characterService";
+import { MessageService } from "@/api/messageService";
+import type { Character } from "@/types/character";
+import type { Message } from "@/types/message";
+import { CommsStatus } from "@/types/directive";
 import styles from "@/styles/characterProfile.module.css";
 
 function initials(name: string | null): string {
@@ -45,7 +50,9 @@ export default function CharacterProfilePage() {
 
   const { characterId: myCharacterId } = useSelectedCharacter(scenarioId);
 
-  const [targetCharacter, setTargetCharacter] = useState<Character | null>(null);
+  const [targetCharacter, setTargetCharacter] = useState<Character | null>(
+    null,
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +61,7 @@ export default function CharacterProfilePage() {
   const { data: liveScenario } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, token),
     5000,
-    enabled
+    enabled,
   );
 
   const effectiveScenario = liveScenario ?? null;
@@ -71,18 +78,26 @@ export default function CharacterProfilePage() {
 
     const fetchData = async () => {
       try {
-        const chars = await characterService.getCharactersByScenario(scenarioId, `Role ${token}`);
+        const chars = await characterService.getCharactersByScenario(
+          scenarioId,
+          `Role ${token}`,
+        );
         if (cancelled) return;
         setTargetCharacter(chars.find((c) => c.id === targetCharId) ?? null);
 
         const msgs = myCharacterId
-          ? await messageService.getMessagesBetween(myCharacterId, targetCharId, `Role ${token}`)
+          ? await messageService.getMessagesBetween(
+            myCharacterId,
+            targetCharId,
+            `Role ${token}`,
+          )
           : [];
         if (cancelled) return;
 
         const sorted = [...msgs].sort((a, b) => {
           if (!a.createdAt || !b.createdAt) return 0;
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return new Date(a.createdAt).getTime() -
+            new Date(b.createdAt).getTime();
         });
         setMessages(sorted);
       } catch {
@@ -93,8 +108,18 @@ export default function CharacterProfilePage() {
     };
 
     fetchData();
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, targetCharId, myCharacterId, token, characterService, messageService]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isAuthenticated,
+    scenarioId,
+    targetCharId,
+    myCharacterId,
+    token,
+    characterService,
+    messageService,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -125,7 +150,9 @@ export default function CharacterProfilePage() {
               Character Profile &amp; Communication Log
             </span>
           </div>
-          <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
+          <Button
+            onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
+          >
             Back to Dashboard
           </Button>
         </nav>
@@ -135,17 +162,19 @@ export default function CharacterProfilePage() {
             {/* ── Left panel: Character Profile ── */}
             <aside className={styles.leftPanel}>
               <div className={styles.profileCard}>
-                {targetCharacter?.portrait ? (
-                  <img
-                    src={targetCharacter.portrait}
-                    alt={targetCharacter.name ?? ""}
-                    className={styles.avatarImg}
-                  />
-                ) : (
-                  <div className={styles.avatarFallback}>
-                    {initials(targetCharacter?.name ?? null)}
-                  </div>
-                )}
+                {targetCharacter?.portrait
+                  ? (
+                    <img
+                      src={targetCharacter.portrait}
+                      alt={targetCharacter.name ?? ""}
+                      className={styles.avatarImg}
+                    />
+                  )
+                  : (
+                    <div className={styles.avatarFallback}>
+                      {initials(targetCharacter?.name ?? null)}
+                    </div>
+                  )}
 
                 <h2 className={styles.characterName}>
                   {targetCharacter?.name ?? "—"}
@@ -156,7 +185,8 @@ export default function CharacterProfilePage() {
                 <div className={styles.fieldGroup}>
                   <p className={styles.fieldLabel}>Description</p>
                   <p className={styles.fieldValue}>
-                    {targetCharacter?.description ?? "No description available."}
+                    {targetCharacter?.description ??
+                      "No description available."}
                   </p>
                 </div>
 
@@ -172,13 +202,13 @@ export default function CharacterProfilePage() {
                 <div className={styles.fieldGroup}>
                   <p className={styles.fieldLabel}>Status</p>
                   <span
-                    className={
-                      targetCharacter?.isAlive !== false
-                        ? styles.statusAlive
-                        : styles.statusDead
-                    }
+                    className={targetCharacter?.isAlive !== false
+                      ? styles.statusAlive
+                      : styles.statusDead}
                   >
-                    {targetCharacter?.isAlive !== false ? "Active" : "Eliminated"}
+                    {targetCharacter?.isAlive !== false
+                      ? "Active"
+                      : "Eliminated"}
                   </span>
                 </div>
               </div>
@@ -188,54 +218,59 @@ export default function CharacterProfilePage() {
             <main className={styles.rightPanel}>
               <div className={styles.logHeader}>
                 <h1 className={styles.logTitle}>Communication Log</h1>
-                <p className={styles.logSubtitle}>All messages and transmissions</p>
+                <p className={styles.logSubtitle}>
+                  All messages and transmissions
+                </p>
               </div>
 
               <div className={styles.messageList}>
-                {messages.length === 0 ? (
-                  <p className={styles.emptyLog}>No messages yet.</p>
-                ) : (
-                  messages.map((msg) => {
-                    const isMine = msg.creatorId === myCharacterId;
-                    const senderName = isMine
-                      ? "You"
-                      : (targetCharacter?.name ?? "Unknown");
+                {messages.length === 0
+                  ? <p className={styles.emptyLog}>No messages yet.</p>
+                  : (
+                    messages.map((msg) => {
+                      const isMine = msg.creatorId === myCharacterId;
+                      const senderName = isMine
+                        ? "You"
+                        : (targetCharacter?.name ?? "Unknown");
 
-                    return (
-                      <div key={msg.id} className={styles.messageCard}>
-                        <div className={styles.messageHeader}>
-                          <span className={styles.messageSender}>{senderName}</span>
-                          {isMine && msg.status === CommsStatus.ACCEPTED && (
-                            <span className={styles.badgeSent}>
-                              <CheckCircleOutlined /> Sent
+                      return (
+                        <div key={msg.id} className={styles.messageCard}>
+                          <div className={styles.messageHeader}>
+                            <span className={styles.messageSender}>
+                              {senderName}
                             </span>
-                          )}
-                          {isMine && msg.status === CommsStatus.FAILED && (
-                            <span className={styles.badgeFailed}>
-                              <CloseCircleOutlined /> Failed
-                            </span>
-                          )}
-                          {isMine && msg.status === CommsStatus.REJECTED && (
-                            <span className={styles.badgeFailed}>
-                              <CloseCircleOutlined /> Rejected
-                            </span>
-                          )}
-                          {isMine && msg.status === CommsStatus.PENDING && (
-                            <span className={styles.badgePending}>Pending</span>
-                          )}
+                            {isMine && msg.status === CommsStatus.ACCEPTED && (
+                              <span className={styles.badgeSent}>
+                                <CheckCircleOutlined /> Sent
+                              </span>
+                            )}
+                            {isMine && msg.status === CommsStatus.FAILED && (
+                              <span className={styles.badgeFailed}>
+                                <CloseCircleOutlined /> Failed
+                              </span>
+                            )}
+                            {isMine && msg.status === CommsStatus.REJECTED && (
+                              <span className={styles.badgeFailed}>
+                                <CloseCircleOutlined /> Rejected
+                              </span>
+                            )}
+                            {isMine && msg.status === CommsStatus.PENDING && (
+                              <span className={styles.badgePending}>
+                                Pending
+                              </span>
+                            )}
+                          </div>
+
+                          <div className={styles.messageTimestamp}>
+                            <CalendarOutlined className={styles.calIcon} />
+                            <span>{formatDate(msg.createdAt)}</span>
+                          </div>
+
+                          <p className={styles.messageBody}>{msg.body}</p>
                         </div>
-
-                        <div className={styles.messageTimestamp}>
-                          <CalendarOutlined className={styles.calIcon} />
-                          <span>{formatDate(msg.createdAt)}</span>
-                        </div>
-
-                        <p className={styles.messageBody}>{msg.body}</p>
-
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
               </div>
 
               {/* Sticky footer: New Message */}
@@ -246,11 +281,9 @@ export default function CharacterProfilePage() {
                   className={styles.newMessageBtn}
                   disabled={!isGameActive}
                   style={{ opacity: isGameActive ? 1 : 0.5 }}
-                  onClick={() =>
-                    router.push(
-                      `/scenarios/${scenarioId}/player/communicate?type=direct_message&recipient=${targetCharId}`,
-                    )
-                  }
+                  onClick={() => router.push(
+                    `/scenarios/${scenarioId}/player/communicate?type=direct_message&recipient=${targetCharId}`,
+                  )}
                 >
                   New Message
                 </Button>

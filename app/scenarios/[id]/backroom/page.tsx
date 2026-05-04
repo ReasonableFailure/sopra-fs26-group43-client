@@ -29,12 +29,22 @@ function initials(name: string | null): string {
 
 function DirectiveBadge({ status }: { status: CommsStatus | null }) {
   if (status === CommsStatus.ACCEPTED) {
-    return <span className={`${styles.badge} ${styles.badgeResponded}`}>Approved</span>;
+    return (
+      <span className={`${styles.badge} ${styles.badgeResponded}`}>
+        Approved
+      </span>
+    );
   }
   if (status === CommsStatus.REJECTED) {
-    return <span className={`${styles.badge} ${styles.badgeRejected}`}>Rejected</span>;
+    return (
+      <span className={`${styles.badge} ${styles.badgeRejected}`}>
+        Rejected
+      </span>
+    );
   }
-  return <span className={`${styles.badge} ${styles.badgePending}`}>Pending</span>;
+  return (
+    <span className={`${styles.badge} ${styles.badgePending}`}>Pending</span>
+  );
 }
 
 export default function BackroomDashboardPage() {
@@ -56,8 +66,14 @@ export default function BackroomDashboardPage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
-  const { data: directives, loading: directivesLoading } = usePolling<Directive[]>(
-    () => directiveService.getDirectivesByScenario(scenarioId, `Backroomer ${token}`),
+  const { data: directives, loading: directivesLoading } = usePolling<
+    Directive[]
+  >(
+    () =>
+      directiveService.getDirectivesByScenario(
+        scenarioId,
+        `Backroomer ${token}`,
+      ),
     5000,
     enabled,
   );
@@ -94,9 +110,18 @@ export default function BackroomDashboardPage() {
     const fetchMessages = async () => {
       setMessagesLoading(true);
       try {
-        const pairs = await messageService.getMessagePairsByScenario(scenarioId, `Backroomer ${token}`);
+        const pairs = await messageService.getMessagePairsByScenario(
+          scenarioId,
+          `Backroomer ${token}`,
+        );
         const arrays = await Promise.all(
-          pairs.map((p) => messageService.getMessagesBetween(p.roleAId, p.roleBId, `Backroomer ${token}`)),
+          pairs.map((p) =>
+            messageService.getMessagesBetween(
+              p.roleAId,
+              p.roleBId,
+              `Backroomer ${token}`,
+            )
+          ),
         );
         if (!cancelled) setMessages(arrays.flat());
       } catch {
@@ -126,25 +151,38 @@ export default function BackroomDashboardPage() {
     if (!enabled) return;
     let cancelled = false;
     characterService.getCharactersByScenario(scenarioId, `Backroomer ${token}`)
-      .then((chars) => { if (!cancelled) setCharacters(chars); })
+      .then((chars) => {
+        if (!cancelled) setCharacters(chars);
+      })
       .catch(() => {});
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [enabled, scenarioId, token, characterService]);
 
   if (!authReady || !isAuthenticated) return null;
 
-  const pendingMessages = (messages ?? []).filter((m) => m.status === CommsStatus.PENDING || m.status === null);
+  const pendingMessages = (messages ?? []).filter((m) =>
+    m.status === CommsStatus.PENDING || m.status === null
+  );
 
   const characterName = (id: number | null): string => {
     if (id === null) return "Unknown";
     return characters.find((c) => c.id === id)?.name ?? "Unknown";
   };
 
-  const handleMessageAction = async (messageId: number | null, status: CommsStatus) => {
+  const handleMessageAction = async (
+    messageId: number | null,
+    status: CommsStatus,
+  ) => {
     if (messageId === null) return;
     setActionLoading(messageId);
     try {
-      await messageService.updateMessage(messageId, { status }, `Backroomer ${token}`);
+      await messageService.updateMessage(
+        messageId,
+        { status },
+        `Backroomer ${token}`,
+      );
     } catch {
       // silently ignore — message stays in list
     } finally {
@@ -168,7 +206,7 @@ export default function BackroomDashboardPage() {
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime()
+        new Date(a.createdAt).getTime(),
     )
     .slice(0, 3);
 
@@ -206,17 +244,33 @@ export default function BackroomDashboardPage() {
             <div className={styles.leftPanel}>
               <div className={styles.panelHeader}>
                 <h2 className={styles.panelTitle}>Directives</h2>
-                <p className={styles.panelSubtitle}>Review and manage player directives</p>
+                <p className={styles.panelSubtitle}>
+                  Review and manage player directives
+                </p>
               </div>
 
               <div className={styles.tableHeader}>
-                <div className={`${styles.tableHeaderCell} ${styles.colPlayerName}`}>Player Name</div>
-                <div className={`${styles.tableHeaderCell} ${styles.colDirectiveTitle}`}>Directive Title</div>
-                <div className={`${styles.tableHeaderCell} ${styles.colStatus}`}>Status</div>
+                <div
+                  className={`${styles.tableHeaderCell} ${styles.colPlayerName}`}
+                >
+                  Player Name
+                </div>
+                <div
+                  className={`${styles.tableHeaderCell} ${styles.colDirectiveTitle}`}
+                >
+                  Directive Title
+                </div>
+                <div
+                  className={`${styles.tableHeaderCell} ${styles.colStatus}`}
+                >
+                  Status
+                </div>
               </div>
 
               {(directives ?? []).length === 0 && !loading && (
-                <p className={styles.emptyState}>No directives submitted yet.</p>
+                <p className={styles.emptyState}>
+                  No directives submitted yet.
+                </p>
               )}
 
               {(directives ?? []).map((directive) => (
@@ -225,16 +279,23 @@ export default function BackroomDashboardPage() {
                   className={styles.tableRow}
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                    if (directive.status === CommsStatus.PENDING || directive.status === null) {
+                    if (
+                      directive.status === CommsStatus.PENDING ||
+                      directive.status === null
+                    ) {
                       router.push(
                         `/scenarios/${scenarioId}/backroom/communicate?type=response&directiveId=${directive.id}`,
                       );
                     } else {
-                      router.push(`/scenarios/${scenarioId}/backroom/directives/${directive.id}`);
+                      router.push(
+                        `/scenarios/${scenarioId}/backroom/directives/${directive.id}`,
+                      );
                     }
                   }}
                 >
-                  <div className={`${styles.playerCell} ${styles.colPlayerName}`}>
+                  <div
+                    className={`${styles.playerCell} ${styles.colPlayerName}`}
+                  >
                     <div className={styles.playerAvatar}>
                       {initials(characterName(directive.creatorId ?? null))}
                     </div>
@@ -243,7 +304,9 @@ export default function BackroomDashboardPage() {
                     </span>
                   </div>
 
-                  <div className={`${styles.directiveCell} ${styles.colDirectiveTitle}`}>
+                  <div
+                    className={`${styles.directiveCell} ${styles.colDirectiveTitle}`}
+                  >
                     <span className={styles.directiveTitle}>
                       {directive.title ?? directive.body ?? "Untitled"}
                     </span>
@@ -290,8 +353,7 @@ export default function BackroomDashboardPage() {
                     <Button
                       type="primary"
                       onClick={() =>
-                        router.push(`/scenarios/${scenarioId}/news`)
-                      }
+                        router.push(`/scenarios/${scenarioId}/news`)}
                     >
                       See All News
                     </Button>
@@ -303,9 +365,8 @@ export default function BackroomDashboardPage() {
                           window.open(
                             scenario.mastodonProfileUrl!,
                             "_blank",
-                            "noopener,noreferrer"
-                          )
-                        }
+                            "noopener,noreferrer",
+                          )}
                       >
                         Go to Mastodon
                       </Button>
@@ -314,46 +375,48 @@ export default function BackroomDashboardPage() {
                 </div>
               </div>
               <div className={styles.newsFeedBody}>
-                {latestNews.length === 0 ? (
-                  <>
-                    <div className={styles.newsFeedIcon}>
-                      <FileTextOutlined />
-                    </div>
-                    <p className={styles.newsFeedTitle}>No news yet</p>
-                    <p className={styles.newsFeedSub}>
-                      Published stories will appear here.
-                    </p>
-                  </>
-                ) : (
-                  <div style={{ width: "100%" }}>
-                    {latestNews.map((item, index) => (
-                      <div
-                        key={item.id}
-                        style={{
-                          padding: "14px 0",
-                          textAlign: "center",
-                          color: "#000000",
-                          whiteSpace: "pre-line",
-                          lineHeight: 1.5,
-                          borderBottom:
-                            index < latestNews.length - 1
+                {latestNews.length === 0
+                  ? (
+                    <>
+                      <div className={styles.newsFeedIcon}>
+                        <FileTextOutlined />
+                      </div>
+                      <p className={styles.newsFeedTitle}>No news yet</p>
+                      <p className={styles.newsFeedSub}>
+                        Published stories will appear here.
+                      </p>
+                    </>
+                  )
+                  : (
+                    <div style={{ width: "100%" }}>
+                      {latestNews.map((item, index) => (
+                        <div
+                          key={item.id}
+                          style={{
+                            padding: "14px 0",
+                            textAlign: "center",
+                            color: "#000000",
+                            whiteSpace: "pre-line",
+                            lineHeight: 1.5,
+                            borderBottom: index < latestNews.length - 1
                               ? "1px solid #e5e7eb"
                               : "none",
-                        }}
-                      >
-                        {renderNewsText(item)}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          }}
+                        >
+                          {renderNewsText(item)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
               <div className={styles.newStoryFooter}>
                 <Button
                   type="primary"
                   className={styles.newStoryBtn}
                   onClick={() =>
-                    router.push(`/scenarios/${scenarioId}/backroom/communicate?type=news_story`)
-                  }
+                    router.push(
+                      `/scenarios/${scenarioId}/backroom/communicate?type=news_story`,
+                    )}
                 >
                   Post a New Story
                 </Button>
@@ -364,7 +427,9 @@ export default function BackroomDashboardPage() {
             <div className={styles.rightPanel}>
               <div className={styles.panelHeader}>
                 <h2 className={styles.panelTitle}>Pending Messages</h2>
-                <p className={styles.panelSubtitle}>Approve or reject player communications</p>
+                <p className={styles.panelSubtitle}>
+                  Approve or reject player communications
+                </p>
               </div>
 
               {pendingMessages.length === 0 && !loading && (
@@ -396,14 +461,16 @@ export default function BackroomDashboardPage() {
                       <Button
                         className={styles.approveBtn}
                         loading={actionLoading === message.id}
-                        onClick={() => handleMessageAction(message.id, CommsStatus.ACCEPTED)}
+                        onClick={() =>
+                          handleMessageAction(message.id, CommsStatus.ACCEPTED)}
                       >
                         Approve
                       </Button>
                       <Button
                         className={styles.rejectBtn}
                         loading={actionLoading === message.id}
-                        onClick={() => handleMessageAction(message.id, CommsStatus.REJECTED)}
+                        onClick={() =>
+                          handleMessageAction(message.id, CommsStatus.REJECTED)}
                       >
                         Reject
                       </Button>

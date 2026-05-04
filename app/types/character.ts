@@ -4,7 +4,7 @@ export interface Character {
   title: string | null;
   description: string | null;
   portrait: string | null; // base64 data URI or URL
-  secret: string | null;   // only visible to the owning player and backroomers
+  secret: string | null; // only visible to the owning player and backroomers
   isAlive: boolean;
   totalPoints: number;
   pointsBalance: number;
@@ -34,7 +34,6 @@ export interface CharacterPutDTO {
   portrait?: string; // base64 string; backend stores as byte[]
   secret?: string;
 }
- export interface CharacterAssignDTO {
+export interface CharacterAssignDTO {
   toAssignId: number | null;
- }
-
+}

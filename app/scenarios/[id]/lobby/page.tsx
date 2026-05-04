@@ -1,18 +1,18 @@
 "use client";
 
-import {use, useEffect, useMemo, useState} from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
 import { InfoCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { CharacterService } from "@/api/characterService";
-import {BackroomerService} from "@/api/backroomerService";
+import { BackroomerService } from "@/api/backroomerService";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
-import { useBackroomer} from "@/hooks/useBackroomer";
-import type {Character, CharacterAssignDTO} from "@/types/character";
+import { useBackroomer } from "@/hooks/useBackroomer";
+import type { Character, CharacterAssignDTO } from "@/types/character";
 import styles from "@/styles/lobby.module.css";
-import {Backroomer, BackroomerPostDTO} from "@/types/backroomer";
+import { Backroomer, BackroomerPostDTO } from "@/types/backroomer";
 
 interface CharacterCardProps {
   character: Character;
@@ -21,7 +21,12 @@ interface CharacterCardProps {
 
 function CharacterCard({ character, onSelect }: CharacterCardProps) {
   return (
-    <div className={styles.characterCard} onClick={onSelect} role="button" tabIndex={0}>
+    <div
+      className={styles.characterCard}
+      onClick={onSelect}
+      role="button"
+      tabIndex={0}
+    >
       <h3 className={styles.characterName}>{character.name}</h3>
       <p className={styles.characterDesc}>
         {character.description ?? "No description provided."}
@@ -44,7 +49,7 @@ export default function GameLobbyPage() {
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const backroomerService = useMemo(() => new BackroomerService(api), [api]);
   const { setCharacterId } = useSelectedCharacter(scenarioId);
-  const {setBackroomerId, setBackroomerToken} = useBackroomer(scenarioId);
+  const { setBackroomerId, setBackroomerToken } = useBackroomer(scenarioId);
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +70,10 @@ export default function GameLobbyPage() {
       setLoading(true);
       setError(null);
       try {
-        const chars = await characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`);
+        const chars = await characterService.getCharactersByScenario(
+          scenarioId,
+          `Bearer ${token}`,
+        );
         if (!cancelled) {
           setCharacters(chars);
         }
@@ -88,29 +96,36 @@ export default function GameLobbyPage() {
 
   const handleSelectCharacter = async (character: Character) => {
     //User is not being assigned to Role in Backend
-    if(!userId || userId === 0 || !character.id || !token) return null;
+    if (!userId || userId === 0 || !character.id || !token) return null;
     const dtoToAssign: CharacterAssignDTO = {
-      toAssignId: userId
+      toAssignId: userId,
     };
-   try{
-     const res = await characterService.assignCharacter(dtoToAssign,`Bearer ${token}`,character.id);
-     setCharacterId(character.id);
-     setBackroomerToken(character.roleToken);
-     router.push(`/scenarios/${scenarioId}/player`);
-   } catch (error) {
-     console.log(error);
-   }
+    try {
+      const res = await characterService.assignCharacter(
+        dtoToAssign,
+        `Bearer ${token}`,
+        character.id,
+      );
+      setCharacterId(character.id);
+      setBackroomerToken(character.roleToken);
+      router.push(`/scenarios/${scenarioId}/player`);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleSelectBackroomer = async ()=> {
-    if(!userId || userId === 0 || !token) return null;
+  const handleSelectBackroomer = async () => {
+    if (!userId || userId === 0 || !token) return null;
     const dto: BackroomerPostDTO = {
       userId: userId,
     };
-    try{
-      const thingy = await backroomerService.createBackroomer(dto,"Bearer "+token);
+    try {
+      const thingy = await backroomerService.createBackroomer(
+        dto,
+        "Bearer " + token,
+      );
       console.log(thingy);
-      if(thingy){
+      if (thingy) {
         setBackroomerId(thingy.id);
         setBackroomerToken(thingy.backroomerToken);
         router.push(`/scenarios/${scenarioId}/backroom`);
@@ -120,7 +135,7 @@ export default function GameLobbyPage() {
     } catch (e) {
       console.log(e);
     }
-  }
+  };
 
   return (
     <ConfigProvider
@@ -164,14 +179,18 @@ export default function GameLobbyPage() {
           </Button>
 
           <h1 className={styles.sectionHeading}>Select Your Character</h1>
-          <p className={styles.sectionSubheading}>Choose a character to begin your journey</p>
+          <p className={styles.sectionSubheading}>
+            Choose a character to begin your journey
+          </p>
 
           {error && <p className={styles.errorText}>{error}</p>}
 
           <Spin spinning={loading}>
             <div className={styles.characterGrid}>
               {!loading && characters.length === 0 && (
-                <p className={styles.emptyText}>No characters available for this scenario.</p>
+                <p className={styles.emptyText}>
+                  No characters available for this scenario.
+                </p>
               )}
               {characters.map((character) => (
                 <CharacterCard

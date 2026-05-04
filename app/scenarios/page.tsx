@@ -11,7 +11,9 @@ import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import type { Scenario } from "@/types/scenario";
 import styles from "@/styles/scenarios.module.css";
 
-function ScenarioCard({ scenario, isDirector }: { scenario: Scenario; isDirector: boolean }) {
+function ScenarioCard(
+  { scenario, isDirector }: { scenario: Scenario; isDirector: boolean },
+) {
   const router = useRouter();
 
   const moreMenu: MenuProps = {
@@ -25,7 +27,8 @@ function ScenarioCard({ scenario, isDirector }: { scenario: Scenario; isDirector
         key: "delete",
         label: "Delete",
         danger: true,
-        onClick: () => alert(`Delete scenario "${scenario.title}"? (not yet implemented)`),
+        onClick: () =>
+          alert(`Delete scenario "${scenario.title}"? (not yet implemented)`),
       },
     ],
   };
@@ -43,7 +46,11 @@ function ScenarioCard({ scenario, isDirector }: { scenario: Scenario; isDirector
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>{scenario.title}</h2>
         <Dropdown menu={moreMenu} trigger={["click"]}>
-          <Button type="text" icon={<MoreOutlined />} aria-label="More options" />
+          <Button
+            type="text"
+            icon={<MoreOutlined />}
+            aria-label="More options"
+          />
         </Dropdown>
       </div>
       <p className={styles.cardDesc}>
@@ -62,7 +69,7 @@ export default function ScenariosPage() {
   const { token, userId, isAuthenticated, authReady } = useAuth();
   const { isDirector } = useDirectedScenarios(userId);
   const router = useRouter();
-  const { scenarios, loading, error } = useScenarios(token);
+  const { scenarios, loading, error } = useScenarios(`Bearer ${token}`);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
@@ -100,7 +107,10 @@ export default function ScenariosPage() {
             <span className={styles.navTitle}>Scenario Manager</span>
           </div>
           <div className={styles.navRight}>
-            <Button type="primary" onClick={() => router.push("/scenarios/create")}>
+            <Button
+              type="primary"
+              onClick={() => router.push("/scenarios/create")}
+            >
               Create New Scenario
             </Button>
             <Avatar icon={<UserOutlined />} className={styles.avatar} />
@@ -111,7 +121,9 @@ export default function ScenariosPage() {
           <div className={styles.contentWrapper}>
             <div className={styles.pageHeader}>
               <h1 className={styles.heading}>Created Scenarios</h1>
-              <p className={styles.subheading}>Review previously created scenarios</p>
+              <p className={styles.subheading}>
+                Review previously created scenarios
+              </p>
             </div>
 
             {error && <p className={styles.errorText}>{error}</p>}
@@ -124,7 +136,11 @@ export default function ScenariosPage() {
                   </p>
                 )}
                 {scenarios?.map((scenario) => (
-                  <ScenarioCard key={scenario.id} scenario={scenario} isDirector={isDirector(scenario.id)} />
+                  <ScenarioCard
+                    key={scenario.id}
+                    scenario={scenario}
+                    isDirector={isDirector(scenario.id)}
+                  />
                 ))}
               </div>
             </Spin>

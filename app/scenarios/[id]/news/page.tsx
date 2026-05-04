@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Select, Spin, theme } from "antd";
-import { ClockCircleOutlined, FilterOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  FilterOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { NewsService } from "@/api/newsService";
@@ -28,11 +32,9 @@ function timeAgo(iso: string | null): string {
 }
 
 function TypeBadge({ isPronouncement }: { isPronouncement: boolean }) {
-  return isPronouncement ? (
-    <span className={styles.badgePronouncement}>Pronouncement</span>
-  ) : (
-    <span className={styles.badgeNews}>News Story</span>
-  );
+  return isPronouncement
+    ? <span className={styles.badgePronouncement}>Pronouncement</span>
+    : <span className={styles.badgeNews}>News Story</span>;
 }
 
 interface FeedCardProps {
@@ -103,10 +105,21 @@ export default function NewsPage() {
         setScenarioTitle(scenario.title);
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, token, newsService, characterService, scenarioService]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isAuthenticated,
+    scenarioId,
+    token,
+    newsService,
+    characterService,
+    scenarioService,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -157,8 +170,12 @@ export default function NewsPage() {
           <div className={styles.contentWrapper}>
             <div className={styles.pageHeader}>
               <div>
-                <h1 className={styles.heading}>{scenarioTitle ?? "Loading…"}</h1>
-                <p className={styles.subheading}>Stay updated with the latest developments</p>
+                <h1 className={styles.heading}>
+                  {scenarioTitle ?? "Loading…"}
+                </h1>
+                <p className={styles.subheading}>
+                  Stay updated with the latest developments
+                </p>
               </div>
               <Select
                 value={filter}

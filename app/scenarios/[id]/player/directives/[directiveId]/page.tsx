@@ -103,22 +103,31 @@ export default function DirectiveDetailPage() {
     };
 
     fetchData();
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, directiveId, characterId, token, directiveService, characterService]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isAuthenticated,
+    scenarioId,
+    directiveId,
+    characterId,
+    token,
+    directiveService,
+    characterService,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
-  const isResolved =
-    directive?.status === CommsStatus.ACCEPTED ||
+  const isResolved = directive?.status === CommsStatus.ACCEPTED ||
     directive?.status === CommsStatus.REJECTED ||
     directive?.status === CommsStatus.FAILED;
 
-  const statusIconClass =
-    directive?.status === CommsStatus.ACCEPTED
-      ? styles.sectionIconGreen
-      : directive?.status === CommsStatus.REJECTED || directive?.status === CommsStatus.FAILED
-      ? styles.sectionIconRed
-      : styles.sectionIconGray;
+  const statusIconClass = directive?.status === CommsStatus.ACCEPTED
+    ? styles.sectionIconGreen
+    : directive?.status === CommsStatus.REJECTED ||
+        directive?.status === CommsStatus.FAILED
+    ? styles.sectionIconRed
+    : styles.sectionIconGray;
 
   return (
     <ConfigProvider
@@ -146,7 +155,9 @@ export default function DirectiveDetailPage() {
             <span className={styles.navTitle}>Player Dashboard</span>
           </div>
           <div className={styles.navRight}>
-            <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
+            <Button
+              onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
+            >
               Back to Dashboard
             </Button>
             <Avatar className={styles.navAvatar}>
@@ -168,8 +179,9 @@ export default function DirectiveDetailPage() {
               <Button
                 type="primary"
                 onClick={() =>
-                  router.push(`/scenarios/${scenarioId}/player/communicate?type=directive`)
-                }
+                  router.push(
+                    `/scenarios/${scenarioId}/player/communicate?type=directive`,
+                  )}
               >
                 New Directive
               </Button>
@@ -207,14 +219,12 @@ export default function DirectiveDetailPage() {
               {/* Approval Status section */}
               <div className={styles.sectionRow}>
                 <div className={`${styles.sectionIcon} ${statusIconClass}`}>
-                  {directive?.status === CommsStatus.ACCEPTED ? (
-                    <CheckCircleOutlined />
-                  ) : directive?.status === CommsStatus.REJECTED ||
-                    directive?.status === CommsStatus.FAILED ? (
-                    <CloseCircleOutlined />
-                  ) : (
-                    <ClockCircleOutlined />
-                  )}
+                  {directive?.status === CommsStatus.ACCEPTED
+                    ? <CheckCircleOutlined />
+                    : directive?.status === CommsStatus.REJECTED ||
+                        directive?.status === CommsStatus.FAILED
+                    ? <CloseCircleOutlined />
+                    : <ClockCircleOutlined />}
                 </div>
                 <div className={styles.sectionContent}>
                   <p className={styles.sectionTitle}>Approval Status</p>
@@ -223,7 +233,10 @@ export default function DirectiveDetailPage() {
                   </p>
                   {directive?.response && (
                     <>
-                      <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
+                      <p
+                        className={styles.sectionTitle}
+                        style={{ marginTop: 16 }}
+                      >
                         Backroom Notes
                       </p>
                       <p className={styles.sectionText}>{directive.response}</p>

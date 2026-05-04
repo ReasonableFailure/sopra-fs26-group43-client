@@ -8,7 +8,10 @@ export class NewsService {
     return this.api.postWithToken<NewsGetDTO>("/news", dto, token);
   }
 
-  createNewsStory(dto: Omit<NewsPostDTO, "authorId">, token: string): Promise<NewsGetDTO> {
+  createNewsStory(
+    dto: Omit<NewsPostDTO, "authorId">,
+    token: string,
+  ): Promise<NewsGetDTO> {
     return this.api.postWithToken<NewsGetDTO>("/news", dto, token);
   }
 
