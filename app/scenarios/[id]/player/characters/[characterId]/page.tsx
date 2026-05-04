@@ -59,7 +59,7 @@ export default function CharacterProfilePage() {
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, token),
+    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
     5000,
     enabled,
   );

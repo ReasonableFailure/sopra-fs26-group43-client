@@ -90,7 +90,7 @@ export default function DirectiveDetailPage() {
       try {
         const [dir, chars] = await Promise.all([
           directiveService.getDirectiveById(directiveId, `Role ${token}`),
-          characterService.getCharactersByScenario(scenarioId, token),
+          characterService.getCharactersByScenario(scenarioId, `Role ${token}`),
         ]);
         if (cancelled) return;
         setDirective(dir);

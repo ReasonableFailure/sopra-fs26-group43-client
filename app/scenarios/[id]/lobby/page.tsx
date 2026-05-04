@@ -122,7 +122,7 @@ export default function GameLobbyPage() {
     try {
       const thingy = await backroomerService.createBackroomer(
         dto,
-        "Bearer " + token,
+        `Bearer ${token}`,
       );
       console.log(thingy);
       if (thingy) {

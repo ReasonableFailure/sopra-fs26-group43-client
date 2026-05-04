@@ -71,7 +71,7 @@ export default function CommunicationFormPage() {
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, token),
+    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
     5000,
     enabled,
   );
@@ -87,7 +87,7 @@ export default function CommunicationFormPage() {
     let cancelled = false;
     setLoading(true);
     characterService
-      .getCharactersByScenario(scenarioId, token)
+      .getCharactersByScenario(scenarioId, `Role ${token}`)
       .then((chars) => {
         if (!cancelled) setCharacters(chars);
       })
@@ -160,7 +160,7 @@ export default function CommunicationFormPage() {
             recipientId: recipientId!,
             scenarioId,
           },
-          `Router ${token}`,
+          `Role ${token}`,
         );
         router.push(
           `/scenarios/${scenarioId}/player/characters/${recipientId}`,
@@ -183,7 +183,7 @@ export default function CommunicationFormPage() {
             scenarioId,
             authorId: characterId,
           },
-          token,
+            `Role ${token}`,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       }
