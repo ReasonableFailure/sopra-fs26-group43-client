@@ -26,8 +26,8 @@ export class CharacterService {
     scenarioId: number,
     characterId: number,
     token: string,
-  ): Promise<number> {
-    return this.api.get<number>(
+  ): Promise<Character> {
+    return this.api.get<Character>(
       `/characters/${scenarioId}/${characterId}/points`,
       token,
     );
