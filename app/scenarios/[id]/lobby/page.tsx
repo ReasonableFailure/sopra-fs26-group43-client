@@ -106,8 +106,8 @@ export default function GameLobbyPage() {
         `Bearer ${token}`,
         character.id,
       );
-      setCharacterId(character.id);
-      setBackroomerToken(character.roleToken);
+      setCharacterId(res.id);
+      setBackroomerToken(res.roleToken);
       router.push(`/scenarios/${scenarioId}/player`);
     } catch (error) {
       console.log(error);
