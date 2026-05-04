@@ -183,7 +183,7 @@ export default function CommunicationFormPage() {
             scenarioId,
             authorId: characterId,
           },
-            `Role ${token}`,
+          `Role ${token}`,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       }
