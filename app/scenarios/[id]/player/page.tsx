@@ -384,6 +384,11 @@ export default function PlayerDashboardPage() {
                       }}
                     >
                       {renderNewsText(item, characters)}
+                      {item.createdAt && (
+                        <div style={{ marginTop: 4, fontSize: 12, color: "#6b7280" }}>
+                          {item.createdAt.slice(0, 19).replace("T", " ")}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -438,6 +443,16 @@ export default function PlayerDashboardPage() {
                 <div className={styles.metricCard}>
                   <p className={styles.metricLabel}>Current Available Messages</p>
                   <p className={styles.metricValue}>{messageCount}</p>
+                  {messageCount === 0 && (
+                    <p style={{ marginTop: 4, color: "#dc2626", fontSize: 12, fontWeight: 500 }}>
+                      Warning: You have no messages left. Buy more with likes.
+                    </p>
+                  )}
+                  {messageCount > 0 && messageCount <= 2 && (
+                    <p style={{ marginTop: 4, color: "#f59e0b", fontSize: 12, fontWeight: 500 }}>
+                      Warning: Running low on messages.
+                    </p>
+                  )}
                 </div>
               </div>
               <div className={styles.metricCard}>
