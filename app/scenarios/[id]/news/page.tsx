@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Select, Spin, theme } from "antd";
-import { ClockCircleOutlined, FilterOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  FilterOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { NewsService } from "@/api/newsService";
@@ -28,11 +32,9 @@ function timeAgo(iso: string | null): string {
 }
 
 function TypeBadge({ isPronouncement }: { isPronouncement: boolean }) {
-  return isPronouncement ? (
-    <span className={styles.badgePronouncement}>Pronouncement</span>
-  ) : (
-    <span className={styles.badgeNews}>News Story</span>
-  );
+  return isPronouncement
+    ? <span className={styles.badgePronouncement}>Pronouncement</span>
+    : <span className={styles.badgeNews}>News Story</span>;
 }
 
 interface FeedCardProps {
@@ -54,10 +56,12 @@ function FeedCard({ item, authorName }: FeedCardProps) {
             </span>
           )}
         </div>
-        <span className={styles.timestamp}>
-          <ClockCircleOutlined className={styles.clockIcon} />
-          {timeAgo(item.createdAt)}
-        </span>
+        <div className={styles.cardTopRight}>
+          <span className={styles.timestamp}>
+            <ClockCircleOutlined className={styles.clockIcon} />
+            {timeAgo(item.createdAt)}
+          </span>
+        </div>
       </div>
       <h2 className={styles.cardTitle}>{item.title}</h2>
       <p className={styles.cardBody}>{item.body}</p>
@@ -84,7 +88,7 @@ export default function NewsPage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
@@ -103,10 +107,22 @@ export default function NewsPage() {
         setScenarioTitle(scenario.title);
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, token, newsService, characterService, scenarioService]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    authReady,
+    isAuthenticated,
+    scenarioId,
+    token,
+    newsService,
+    characterService,
+    scenarioService,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -115,11 +131,17 @@ export default function NewsPage() {
     return characters.find((c) => c.id === authorId)?.name ?? null;
   };
 
-  const filtered = newsItems.filter((item) => {
-    if (filter === "news") return item.authorId === null;
-    if (filter === "pronouncement") return item.authorId !== null;
-    return true;
-  });
+  const filtered = [...newsItems]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime(),
+    )
+    .filter((item) => {
+      if (filter === "news") return item.authorId === null;
+      if (filter === "pronouncement") return item.authorId !== null;
+      return true;
+    });
 
   return (
     <ConfigProvider
@@ -157,8 +179,12 @@ export default function NewsPage() {
           <div className={styles.contentWrapper}>
             <div className={styles.pageHeader}>
               <div>
-                <h1 className={styles.heading}>{scenarioTitle ?? "Loading…"}</h1>
-                <p className={styles.subheading}>Stay updated with the latest developments</p>
+                <h1 className={styles.heading}>
+                  {scenarioTitle ?? "Loading…"}
+                </h1>
+                <p className={styles.subheading}>
+                  Stay updated with the latest developments
+                </p>
               </div>
               <Select
                 value={filter}

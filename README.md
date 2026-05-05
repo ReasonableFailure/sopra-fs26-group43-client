@@ -15,7 +15,6 @@ installation, therefore, save and close all your other work and programs
 1. Download the following [powershell script](./windows.ps1)\
    ![downloadWindowsScript](https://github.com/user-attachments/assets/7372e029-8bed-41e4-80b7-b7079b0856be)
 
-
 ---
 2. Open a new powershell terminal **with admin privileges** and run the following command and follow the instructions. Make sure that you open the powershell terminal at the path where you have downloaded the powershell script, otherwise the command will not work because it can not find the script. You can list currently accessible files in the powershell terminal with ```dir``` and you can use ```cd``` to navigate between directories
    ```shell
@@ -71,7 +70,6 @@ installation, therefore, save and close all your other work and programs
 
 The screenshot below shows an example of how this looks
 ![sourceScript](https://github.com/user-attachments/assets/9f804291-85b2-4a49-8da0-c6c95db390f3)
-
 
 The installation script _setup.sh_ can take a few minutes, please be patient and
 do not abort the process. If you encounter any issues, please close the terminal
@@ -216,29 +214,47 @@ npm run dev
 # Docker
 
 ### Introduction
+
 This year Docker will be used to ease the process of deployment.\
-Docker is a tool that uses containers as isolated environments, ensuring that the application runs consistently and uniformly across different devices.\
-Everything in this repository is already set up to minimize your effort for deployment.\
-All changes to the main branch will automatically be pushed to dockerhub and optimized for production.
+Docker is a tool that uses containers as isolated environments, ensuring that
+the application runs consistently and uniformly across different devices.\
+Everything in this repository is already set up to minimize your effort for
+deployment.\
+All changes to the main branch will automatically be pushed to dockerhub and
+optimized for production.
 
 ### Setup
-1. **One** member of the team should create an account on [dockerhub](https://hub.docker.com/), _incorporating the group number into the account name_, for example, `SoPra_group_XX`.\
-2. This account then creates a repository on dockerhub with the _same name as the group's Github repository name_.\
-3. Finally, the person's account details need to be added as [secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository) to the group's repository:
-    - dockerhub_username (the username of the dockerhub account from step 1, for example, `SoPra_group_XX`)
-    - dockerhub_password (a generated PAT([personal access token](https://docs.docker.com/docker-hub/access-tokens/)) of the account with read and write access)
-    - dockerhub_repo_name (the name of the dockerhub repository from step 2)
+
+1. **One** member of the team should create an account on
+   [dockerhub](https://hub.docker.com/), _incorporating the group number into
+   the account name_, for example, `SoPra_group_XX`.\
+2. This account then creates a repository on dockerhub with the _same name as
+   the group's Github repository name_.\
+3. Finally, the person's account details need to be added as
+   [secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository)
+   to the group's repository:
+   - dockerhub_username (the username of the dockerhub account from step 1, for
+     example, `SoPra_group_XX`)
+   - dockerhub_password (a generated
+     PAT([personal access token](https://docs.docker.com/docker-hub/access-tokens/))
+     of the account with read and write access)
+   - dockerhub_repo_name (the name of the dockerhub repository from step 2)
 
 ### Pull and run
-Once the image is created and has been successfully pushed to dockerhub, the image can be run on any machine.\
-Ensure that [Docker](https://www.docker.com/) is installed on the machine you wish to run the container.\
-First, pull (download) the image with the following command, replacing your username and repository name accordingly.
 
-```docker pull <dockerhub_username>/<dockerhub_repo_name>```
+Once the image is created and has been successfully pushed to dockerhub, the
+image can be run on any machine.\
+Ensure that [Docker](https://www.docker.com/) is installed on the machine you
+wish to run the container.\
+First, pull (download) the image with the following command, replacing your
+username and repository name accordingly.
 
-Then, run the image in a container with the following command, again replacing _<dockerhub_username>_ and _<dockerhub_repo_name>_ accordingly.
+`docker pull <dockerhub_username>/<dockerhub_repo_name>`
 
-```docker run -p 3000:3000 <dockerhub_username>/<dockerhub_repo_name>```
+Then, run the image in a container with the following command, again replacing
+_<dockerhub_username>_ and _<dockerhub_repo_name>_ accordingly.
+
+`docker run -p 3000:3000 <dockerhub_username>/<dockerhub_repo_name>`
 
 <br>
 <br>
