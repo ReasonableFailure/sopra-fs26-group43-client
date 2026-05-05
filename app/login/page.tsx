@@ -21,7 +21,8 @@ interface RegisterFields {
 const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
-  const [form] = Form.useForm();
+  const [loginForm] = Form.useForm<LoginFields>();
+  const [registerForm] = Form.useForm<RegisterFields>();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
 
@@ -65,44 +66,71 @@ const Login: React.FC = () => {
   };
 
   const switchMode = (next: "login" | "register") => {
-    form.resetFields();
+    loginForm.resetFields();
+    registerForm.resetFields();
     setMode(next);
   };
 
   return (
     <div className="login-container">
-      <Form
-        form={form}
-        key={mode}
-        name={mode}
-        size="large"
-        variant="outlined"
-        onFinish={mode === "login" ? handleLogin : handleRegister}
-        layout="vertical"
-      >
-        <Form.Item
-          name="username"
-          label="Username"
-          rules={[{ required: true, message: "Please input your username!" }]}
+      {mode === "login" ? (
+        <Form
+          form={loginForm}
+          name="login"
+          size="large"
+          variant="outlined"
+          onFinish={handleLogin}
+          layout="vertical"
         >
-          <Input
-            placeholder={mode === "login"
-              ? "Enter username"
-              : "Choose a username"}
-          />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          label="Password"
-          rules={[{ required: true, message: "Please input your password!" }]}
+          <Form.Item
+            name="username"
+            label="Username"
+            rules={[{ required: true, message: "Please input your username!" }]}
+          >
+            <Input placeholder="Enter username" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            label="Password"
+            rules={[{ required: true, message: "Please input your password!" }]}
+          >
+            <Input.Password placeholder="Enter password" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" className="login-button" loading={loading}>
+              Login
+            </Button>
+          </Form.Item>
+          <Form.Item style={{ textAlign: "center", marginBottom: 0 }}>
+            <span style={{ color: "#9ca3af" }}>Don&apos;t have an account?&nbsp;</span>
+            <Button type="link" style={{ padding: 0 }} onClick={() => switchMode("register")}>
+              Sign up
+            </Button>
+          </Form.Item>
+        </Form>
+      ) : (
+        <Form
+          form={registerForm}
+          name="register"
+          size="large"
+          variant="outlined"
+          onFinish={handleRegister}
+          layout="vertical"
         >
-          <Input.Password
-            placeholder={mode === "login"
-              ? "Enter password"
-              : "Choose a password"}
-          />
-        </Form.Item>
-        {mode === "register" && (
+          <Form.Item
+            name="username"
+            label="Username"
+            rules={[{ required: true, message: "Please input a username!" }]}
+          >
+            <Input placeholder="Choose a username" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            label="Password"
+            rules={[{ required: true, message: "Please input a password!" }]}
+          >
+            <Input.Password placeholder="Choose a password" />
+          </Form.Item>
           <Form.Item name="bio" label="Bio (optional)">
             <Input.TextArea
               placeholder="Tell us a little about yourself"
@@ -110,49 +138,19 @@ const Login: React.FC = () => {
               style={{ resize: "none" }}
             />
           </Form.Item>
-        )}
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            className="login-button"
-            loading={loading}
-          >
-            {mode === "login" ? "Login" : "Sign up"}
-          </Button>
-        </Form.Item>
-        <Form.Item style={{ textAlign: "center", marginBottom: 0 }}>
-          {mode === "login"
-            ? (
-              <>
-                <span style={{ color: "#9ca3af" }}>
-                  Don&apos;t have an account?&nbsp;
-                </span>
-                <Button
-                  type="link"
-                  style={{ padding: 0 }}
-                  onClick={() => switchMode("register")}
-                >
-                  Sign up
-                </Button>
-              </>
-            )
-            : (
-              <>
-                <span style={{ color: "#9ca3af" }}>
-                  Already have an account?&nbsp;
-                </span>
-                <Button
-                  type="link"
-                  style={{ padding: 0 }}
-                  onClick={() => switchMode("login")}
-                >
-                  Log in
-                </Button>
-              </>
-            )}
-        </Form.Item>
-      </Form>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" className="login-button" loading={loading}>
+              Sign up
+            </Button>
+          </Form.Item>
+          <Form.Item style={{ textAlign: "center", marginBottom: 0 }}>
+            <span style={{ color: "#9ca3af" }}>Already have an account?&nbsp;</span>
+            <Button type="link" style={{ padding: 0 }} onClick={() => switchMode("login")}>
+              Log in
+            </Button>
+          </Form.Item>
+        </Form>
+      )}
     </div>
   );
 };

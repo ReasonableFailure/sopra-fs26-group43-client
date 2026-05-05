@@ -21,7 +21,7 @@ export interface NewsGetDTO {
   title: string;
   body: string;
   createdAt: string;
-  authorId: number | null; // null for news stories, set for pronouncements
+  authorId: number | null;  // null for news stories, set for pronouncements
   likes: number | null;
 }
 

@@ -1,5 +1,5 @@
 export enum ScenarioStatus {
-  UNSTARTED = "UNSTARTED",
+  UNSTARTED= "UNSTARTED",
   FROZEN = "FROZEN",
   UNFROZEN = "UNFROZEN",
   COMPLETED = "COMPLETED",

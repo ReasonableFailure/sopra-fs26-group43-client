@@ -203,12 +203,4 @@
     flex-direction: column;
     gap: 16px;
   }
-
-  .likes {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: #6b7280;
-    font-size: 12px;
-  }
 }

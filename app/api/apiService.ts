@@ -121,10 +121,7 @@ export class ApiService {
       method: "GET",
       headers: { ...this.defaultHeaders, Authorization: token },
     });
-    return this.processResponse<T>(
-      res,
-      "An error occurred while fetching the data.\n",
-    );
+    return this.processResponse<T>(res, "An error occurred while fetching the data.\n");
   }
 
   /**
@@ -134,21 +131,14 @@ export class ApiService {
    * @param token - The auth token.
    * @returns JSON data of type T.
    */
-  public async postWithToken<T>(
-    endpoint: string,
-    data: unknown,
-    token: string,
-  ): Promise<T> {
+  public async postWithToken<T>(endpoint: string, data: unknown, token: string): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     const res = await fetch(url, {
       method: "POST",
       headers: { ...this.defaultHeaders, Authorization: token },
       body: JSON.stringify(data),
     });
-    return this.processResponse<T>(
-      res,
-      "An error occurred while posting the data.\n",
-    );
+    return this.processResponse<T>(res, "An error occurred while posting the data.\n");
   }
 
   /**
@@ -204,9 +194,6 @@ export class ApiService {
       method: "DELETE",
       headers: { ...this.defaultHeaders, Authorization: token },
     });
-    return this.processResponse<T>(
-      res,
-      "An error occurred while deleting the data.\n",
-    );
+    return this.processResponse<T>(res, "An error occurred while deleting the data.\n");
   }
 }

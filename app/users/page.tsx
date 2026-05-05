@@ -37,14 +37,8 @@ const Dashboard: React.FC = () => {
   const api = useApi();
   const userService = useMemo(() => new UserService(api), [api]);
   const [users, setUsers] = useState<User[] | null>(null);
-  const { value: token, clear: clearToken } = useLocalStorage<string>(
-    "token",
-    "",
-  );
-  const { value: userId, clear: clearUserId } = useLocalStorage<number>(
-    "userId",
-    0,
-  );
+  const { value: token, clear: clearToken } = useLocalStorage<string>("token", "");
+  const { value: userId, clear: clearUserId } = useLocalStorage<number>("userId", 0);
 
   const handleLogout = async (): Promise<void> => {
     try {

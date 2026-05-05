@@ -2,16 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import {
-  Avatar,
-  Button,
-  ConfigProvider,
-  Input,
-  message,
-  Select,
-  Spin,
-  theme,
-} from "antd";
+import { Avatar, Button, ConfigProvider, Input, message, Select, Spin, theme } from "antd";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
@@ -59,12 +50,8 @@ export default function CommunicationFormPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const [commType, setCommType] = useState<CommType>(
-    preselectedType ?? "direct_message",
-  );
-  const [recipientId, setRecipientId] = useState<number | null>(
-    preselectedRecipient,
-  );
+  const [commType, setCommType] = useState<CommType>(preselectedType ?? "direct_message");
+  const [recipientId, setRecipientId] = useState<number | null>(preselectedRecipient);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<DirectiveCategory | null>(null);
@@ -75,7 +62,7 @@ export default function CommunicationFormPage() {
   const { data: liveScenario } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, token),
     5000,
-    enabled,
+    enabled
   );
 
   const { data: liveCharacter } = usePolling<Character>(
@@ -84,12 +71,15 @@ export default function CommunicationFormPage() {
         ? characterService.getCharacterById(characterId, token)
         : Promise.reject(),
     5000,
-    enabled && !!characterId,
+    enabled && !!characterId
   );
+
+  
+
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [authReady, isAuthenticated, router]);
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
@@ -97,32 +87,27 @@ export default function CommunicationFormPage() {
     setLoading(true);
     characterService
       .getCharactersByScenario(scenarioId, token)
-      .then((chars) => {
-        if (!cancelled) setCharacters(chars);
-      })
+      .then((chars) => { if (!cancelled) setCharacters(chars); })
       .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [isAuthenticated, scenarioId, token, characterService]);
+
 
   const [messageApi, contextHolder] = message.useMessage();
 
   if (!authReady || !isAuthenticated) return null;
 
-  const selectedCharacter = characters.find((c) => c.id === characterId) ??
-    null;
+  const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
   const isGameActive = liveScenario?.status === "UNFROZEN";
   const isAlive = (liveCharacter?.alive ?? selectedCharacter?.alive) !== false;
 
   const authorName = selectedCharacter?.name ?? "Unknown";
 
-  const totalLength = commType === "pronouncement"
-    ? `${title}: ${content}\n-${authorName}`.length
-    : `${title}: ${content}`.length;
+  const totalLength =
+    commType === "pronouncement"
+      ? `${title}: ${content}\n-${authorName}`.length
+      : `${title}: ${content}`.length;
 
   const overLimit = totalLength > MAX_POST_LENGTH;
 
@@ -138,9 +123,7 @@ export default function CommunicationFormPage() {
 
   const handleSubmit = async () => {
     if (!characterId) {
-      messageApi.error(
-        "No character selected. Please go back to the lobby and select a character first.",
-      );
+      messageApi.error("No character selected. Please go back to the lobby and select a character first.");
       return;
     }
     if (!title.trim() || !content.trim()) {
@@ -152,10 +135,7 @@ export default function CommunicationFormPage() {
       return;
     }
 
-    if (
-      (commType === "direct_message" &&
-        (selectedCharacter?.messageCount ?? 0) <= 0)
-    ) {
+    if (( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0)) {
       messageApi.error("No Messages Available");
       return;
     }
@@ -169,27 +149,13 @@ export default function CommunicationFormPage() {
     try {
       if (commType === "direct_message") {
         await messageService.createMessage(
-          {
-            title,
-            body: content,
-            creatorId: characterId,
-            recipientId: recipientId!,
-            scenarioId,
-          },
+          { title, body: content, creatorId: characterId, recipientId: recipientId!, scenarioId },
           token,
         );
-        router.push(
-          `/scenarios/${scenarioId}/player/characters/${recipientId}`,
-        );
+        router.push(`/scenarios/${scenarioId}/player/characters/${recipientId}`);
       } else if (commType === "directive") {
         await directiveService.createDirective(
-          {
-            title,
-            body: content,
-            creatorId: characterId,
-            scenarioId,
-            category: category!,
-          },
+          { title, body: content, creatorId: characterId, scenarioId, category: category!, },
           token,
         );
         router.push(`/scenarios/${scenarioId}/player`);
@@ -210,9 +176,7 @@ export default function CommunicationFormPage() {
         router.push(`/scenarios/${scenarioId}/player`);
       }
     } catch (err) {
-      const detail = err instanceof Error
-        ? err.message
-        : "Submission failed. Please try again.";
+      const detail = err instanceof Error ? err.message : "Submission failed. Please try again.";
       messageApi.error(detail);
     } finally {
       setSubmitting(false);
@@ -246,12 +210,10 @@ export default function CommunicationFormPage() {
             <span className={styles.navTitle}>Scenario Manager</span>
           </div>
           {!isAlive && (
-            <div
-              style={{ color: "#ef4444", fontWeight: 600, marginBottom: 12 }}
-            >
+            <div style={{ color: "#ef4444", fontWeight: 600, marginBottom: 12 }}>
               Your Character has Died.
-            </div>
-          )}
+              </div>
+            )}
           <Avatar className={styles.navAvatar}>
             {initials(selectedCharacter?.name ?? null)}
           </Avatar>
@@ -268,9 +230,7 @@ export default function CommunicationFormPage() {
                     Create and submit your directive, pronouncement, or message
                   </p>
                 </div>
-                <Button
-                  onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
-                >
+                <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
                   Back to Dashboard
                 </Button>
               </div>
@@ -282,39 +242,33 @@ export default function CommunicationFormPage() {
                   <Select
                     options={commTypeOptions}
                     value={commType}
-                    onChange={(v) => {
-                      setCommType(v as CommType);
-                      setRecipientId(null);
-                      setCategory(null);
-                    }}
+                    onChange={(v) => { setCommType(v as CommType); setRecipientId(null); setCategory(null); }}
                     style={{ width: "100%" }}
                   />
                 </div>
 
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Select Recipient</label>
-                  {commType === "direct_message"
-                    ? (
-                      <Select
-                        options={dmRecipientOptions}
-                        value={recipientId ?? undefined}
-                        onChange={(v) => setRecipientId(v)}
-                        placeholder="Select recipient"
-                        style={{ width: "100%" }}
-                      />
-                    )
-                    : (
-                      <Select
-                        value={commType === "directive" ? "backroomer" : "all"}
-                        disabled
-                        options={[
-                          commType === "directive"
-                            ? { value: "backroomer", label: "Backroom" }
-                            : { value: "all", label: "All" },
-                        ]}
-                        style={{ width: "100%" }}
-                      />
-                    )}
+                  {commType === "direct_message" ? (
+                    <Select
+                      options={dmRecipientOptions}
+                      value={recipientId ?? undefined}
+                      onChange={(v) => setRecipientId(v)}
+                      placeholder="Select recipient"
+                      style={{ width: "100%" }}
+                    />
+                  ) : (
+                    <Select
+                      value={commType === "directive" ? "backroomer" : "all"}
+                      disabled
+                      options={[
+                        commType === "directive"
+                          ? { value: "backroomer", label: "Backroom" }
+                          : { value: "all", label: "All" },
+                      ]}
+                      style={{ width: "100%" }}
+                    />
+                  )}
                 </div>
 
                 {commType === "directive" && (
@@ -326,19 +280,10 @@ export default function CommunicationFormPage() {
                       placeholder="Select category"
                       style={{ width: "100%" }}
                       options={[
-                        {
-                          value: DirectiveCategory.MILITARY,
-                          label: "Military",
-                        },
-                        {
-                          value: DirectiveCategory.POLITICAL,
-                          label: "Political",
-                        },
+                        { value: DirectiveCategory.MILITARY, label: "Military" },
+                        { value: DirectiveCategory.POLITICAL, label: "Political" },
                         { value: DirectiveCategory.PUBLIC, label: "Public" },
-                        {
-                          value: DirectiveCategory.INTELLIGENCE,
-                          label: "Intelligence",
-                        },
+                        { value: DirectiveCategory.INTELLIGENCE, label: "Intelligence" },
                         { value: DirectiveCategory.OTHER, label: "Other" },
                       ]}
                     />
@@ -378,21 +323,20 @@ export default function CommunicationFormPage() {
                 >
                   {totalLength} / {MAX_POST_LENGTH}
                 </div>
-                <Button
-                  onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
-                >
+                <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
                   Cancel
                 </Button>
                 <Button
                   type="primary"
                   loading={submitting}
                   onClick={handleSubmit}
-                  disabled={submitting ||
+                  disabled={
+                    submitting ||
                     !isGameActive ||
                     !isAlive ||
-                    (commType === "direct_message" &&
-                      (selectedCharacter?.messageCount ?? 0) <= 0) ||
-                    (commType === "pronouncement" && overLimit)}
+                    (commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0) ||
+                    (commType === "pronouncement" && overLimit)
+                  }
                 >
                   Submit
                 </Button>

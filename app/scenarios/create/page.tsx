@@ -3,17 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Avatar,
-  Button,
-  ConfigProvider,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Space,
-  theme,
+  Avatar, Button, ConfigProvider, Form, Input, InputNumber,
+  Modal, Space, theme,
 } from "antd";
-import { DeleteOutlined, EditOutlined, UserOutlined } from "@ant-design/icons";
+import { DeleteOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
@@ -57,48 +50,32 @@ export default function CreateScenarioPage() {
   const [submitting, setSubmitting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [characters, setCharacters] = useState<DraftCharacter[]>([]);
-  const [editingCharacter, setEditingCharacter] = useState<
-    DraftCharacter | null
-  >(null);
   const [nextKey, setNextKey] = useState(0);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [authReady, isAuthenticated, router]);
+  }, [isAuthenticated, router]);
 
-  const openModal = (character?: DraftCharacter) => {
-    if (character) {
-      setEditingCharacter(character);
-      characterForm.setFieldsValue(character);
-    } else {
-      setEditingCharacter(null);
-      characterForm.resetFields();
-    }
+  const openModal = () => {
+    characterForm.resetFields();
     setModalOpen(true);
   };
 
   const handleAddCharacter = (values: CharacterFormValues) => {
-    if (editingCharacter) {
-      setCharacters((prev) =>
-        prev.map((c) =>
-          c.key === editingCharacter.key ? { ...c, ...values } : c
-        )
-      );
-    } else {
-      setCharacters((prev) => [
-        ...prev,
-        {
-          key: nextKey,
-          ...values,
-        },
-      ]);
-      setNextKey((k) => k + 1);
-    }
-    characterForm.resetFields();
+    setCharacters((prev) => [
+      ...prev,
+      {
+        key: nextKey,
+        name: values.name,
+        title: values.title ?? "",
+        description: values.description ?? "",
+        secret: values.secret ?? "",
+      },
+    ]);
+    setNextKey((k) => k + 1);
     setModalOpen(false);
-    setEditingCharacter(null);
   };
 
   const handleRemoveCharacter = (key: number) => {
@@ -129,7 +106,7 @@ export default function CreateScenarioPage() {
                 scenarioId: created.id,
               },
               created.directorToken!,
-            )
+            ),
           ),
         );
       }
@@ -186,19 +163,13 @@ export default function CreateScenarioPage() {
                 <Form.Item
                   name="title"
                   label="Scenario Title"
-                  rules={[{
-                    required: true,
-                    message: "Please enter a scenario title",
-                  }]}
+                  rules={[{ required: true, message: "Please enter a scenario title" }]}
                 >
                   <Input placeholder="Enter scenario title" />
                 </Form.Item>
 
                 <Form.Item name="description" label="Description">
-                  <Input.TextArea
-                    rows={4}
-                    placeholder="Describe the scenario"
-                  />
+                  <Input.TextArea rows={4} placeholder="Describe the scenario" />
                 </Form.Item>
 
                 {/* Characters */}
@@ -207,100 +178,67 @@ export default function CreateScenarioPage() {
                     <h3 className={styles.sectionTitle}>
                       Characters
                       {characters.length > 0 && (
-                        <span className={styles.sectionCount}>
-                          {characters.length}
-                        </span>
+                        <span className={styles.sectionCount}>{characters.length}</span>
                       )}
                     </h3>
-                    <Button type="primary" onClick={() => openModal()}>
+                    <Button type="primary" onClick={openModal}>
                       Add Character
                     </Button>
                   </div>
 
-                  {characters.length === 0
-                    ? (
-                      <p className={styles.sectionEmpty}>
-                        {`No characters added yet. Click "Add Character" to get started.`}
-                      </p>
-                    )
-                    : (
-                      <div className={styles.characterList}>
-                        {characters.map((c) => (
-                          <div key={c.key} className={styles.characterRow}>
-                            <div className={styles.characterAvatar}>
-                              {c.name.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div className={styles.characterInfo}>
-                              <span className={styles.characterName}>
-                                {c.name}
-                              </span>
-                              {c.title && (
-                                <span className={styles.characterMeta}>
-                                  {c.title}
-                                </span>
-                              )}
-                            </div>
-                            <Button
-                              type="text"
-                              icon={<EditOutlined />}
-                              onClick={() =>
-                                openModal(c)}
-                              aria-label={`Edit ${c.name}`}
-                            />
-
-                            <Button
-                              type="text"
-                              danger
-                              icon={<DeleteOutlined />}
-                              onClick={() =>
-                                handleRemoveCharacter(c.key)}
-                              aria-label={`Remove ${c.name}`}
-                            />
+                  {characters.length === 0 ? (
+                    <p className={styles.sectionEmpty}>
+                      {`No characters added yet. Click "Add Character" to get started.`}
+                    </p>
+                  ) : (
+                    <div className={styles.characterList}>
+                      {characters.map((c) => (
+                        <div key={c.key} className={styles.characterRow}>
+                          <div className={styles.characterAvatar}>
+                            {c.name.slice(0, 2).toUpperCase()}
                           </div>
-                        ))}
-                      </div>
-                    )}
+                          <div className={styles.characterInfo}>
+                            <span className={styles.characterName}>{c.name}</span>
+                            {c.title && (
+                              <span className={styles.characterMeta}>{c.title}</span>
+                            )}
+                          </div>
+                          <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleRemoveCharacter(c.key)}
+                            aria-label={`Remove ${c.name}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <Form.Item
                   name="exchangeRate"
                   label="Message Cost"
-                  rules={[{
-                    required: true,
-                    message: "Please enter the message cost",
-                  }]}
+                  rules={[{ required: true, message: "Please enter the message cost" }]}
                 >
                   <Space.Compact style={{ width: "100%" }}>
                     <InputNumber min={0} style={{ flex: 1 }} placeholder="0" />
                     <Input value="likes" disabled style={{ width: 72 }} />
                   </Space.Compact>
                 </Form.Item>
-                <p className={styles.fieldHint}>
-                  Likes required to buy a message
-                </p>
+                <p className={styles.fieldHint}>Likes required to buy a message</p>
 
                 <Form.Item
                   name="startingMessageCount"
                   label="Starting Messages"
-                  rules={[{
-                    required: true,
-                    message: "Please enter the starting message count",
-                  }]}
+                  rules={[{ required: true, message: "Please enter the starting message count" }]}
                 >
-                  <InputNumber
-                    min={0}
-                    style={{ width: "100%" }}
-                    placeholder="15"
-                  />
+                  <InputNumber min={0} style={{ width: "100%" }} placeholder="15" />
                 </Form.Item>
-                <p className={styles.fieldHint}>
-                  Number of messages each player starts with
-                </p>
+                <p className={styles.fieldHint}>Number of messages each player starts with</p>
 
                 <div className={styles.formFooter}>
-                  <Button onClick={() => router.push("/scenarios")}>
-                    Cancel
-                  </Button>
+                  <Button onClick={() => router.push("/scenarios")}>Cancel</Button>
                   <Button type="primary" htmlType="submit" loading={submitting}>
                     Save Scenario
                   </Button>
@@ -313,10 +251,11 @@ export default function CreateScenarioPage() {
 
       {/* Add Character Modal */}
       <Modal
-        title={editingCharacter ? "Edit Character" : "Add Character"}
+        title="Add Character"
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
+        destroyOnHidden
       >
         <Form
           form={characterForm}
@@ -327,65 +266,29 @@ export default function CreateScenarioPage() {
           <Form.Item
             name="name"
             label="Name"
-            rules={[{
-              required: true,
-              message: "Please enter the character's name",
-            }]}
+            rules={[{ required: true, message: "Please enter the character's name" }]}
           >
             <Input placeholder="e.g. President Johnson" />
           </Form.Item>
 
-          <Form.Item
-            name="title"
-            label="Title"
-            rules={[{
-              required: true,
-              message: "Please enter the character's title",
-            }]}
-          >
+          <Form.Item name="title" label="Title"
+            rules={[{ required: true, message: "Please enter the character's title" }]}>
             <Input placeholder="e.g. Head of State" />
           </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="Description"
-            rules={[{
-              required: true,
-              message: "Please enter the character's description",
-            }]}
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="Public-facing character description"
-            />
+          <Form.Item name="description" label="Description"
+            rules={[{ required: true, message: "Please enter the character's description" }]}>
+            <Input.TextArea rows={3} placeholder="Public-facing character description" />
           </Form.Item>
 
-          <Form.Item
-            name="secret"
-            label="Secret"
-            rules={[{
-              required: true,
-              message: "Please enter the character's secret",
-            }]}
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="Hidden information only this player can see"
-            />
+          <Form.Item name="secret" label="Secret"
+            rules={[{ required: true, message: "Please enter the character's secret" }]}>
+            <Input.TextArea rows={3} placeholder="Hidden information only this player can see" />
           </Form.Item>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 8,
-              paddingTop: 8,
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 8 }}>
             <Button onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button type="primary" htmlType="submit">
-              {editingCharacter ? "Save" : "Add"}
-            </Button>
+            <Button type="primary" htmlType="submit">Add</Button>
           </div>
         </Form>
       </Modal>

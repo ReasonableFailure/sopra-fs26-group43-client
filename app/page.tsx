@@ -18,14 +18,7 @@ export default function Home() {
           height={38}
           priority
         />
-        <h1
-          style={{
-            fontSize: "36px",
-            fontWeight: "bold",
-            marginBottom: "1rem",
-            color: "#22426b",
-          }}
-        >
+        <h1 style={{ fontSize: "36px", fontWeight: "bold", marginBottom: "1rem", color: "#22426b" }}>
           Group 43
         </h1>
         <ol>

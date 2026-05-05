@@ -25,20 +25,14 @@ export const useScenarios = (token: string) => {
         const data = await scenarioService.getScenarios(token);
         if (!cancelled) setScenarios(data);
       } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to fetch scenarios",
-          );
-        }
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to fetch scenarios");
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
 
     fetch();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [scenarioService, token]);
 
   return { scenarios, loading, error };

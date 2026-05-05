@@ -18,12 +18,7 @@ interface CharacterCardProps {
 
 function CharacterCard({ character, onSelect }: CharacterCardProps) {
   return (
-    <div
-      className={styles.characterCard}
-      onClick={onSelect}
-      role="button"
-      tabIndex={0}
-    >
+    <div className={styles.characterCard} onClick={onSelect} role="button" tabIndex={0}>
       <h3 className={styles.characterName}>{character.name}</h3>
       <p className={styles.characterDesc}>
         {character.description ?? "No description provided."}
@@ -54,7 +49,7 @@ export default function GameLobbyPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [authReady, isAuthenticated, router]);
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     if (!token || !scenarioId) return;
@@ -65,10 +60,7 @@ export default function GameLobbyPage() {
       setLoading(true);
       setError(null);
       try {
-        const chars = await characterService.getCharactersByScenario(
-          scenarioId,
-          token,
-        );
+        const chars = await characterService.getCharactersByScenario(scenarioId, token);
         if (!cancelled) {
           setCharacters(chars);
         }
@@ -138,18 +130,14 @@ export default function GameLobbyPage() {
           </Button>
 
           <h1 className={styles.sectionHeading}>Select Your Character</h1>
-          <p className={styles.sectionSubheading}>
-            Choose a character to begin your journey
-          </p>
+          <p className={styles.sectionSubheading}>Choose a character to begin your journey</p>
 
           {error && <p className={styles.errorText}>{error}</p>}
 
           <Spin spinning={loading}>
             <div className={styles.characterGrid}>
               {!loading && characters.length === 0 && (
-                <p className={styles.emptyText}>
-                  No characters available for this scenario.
-                </p>
+                <p className={styles.emptyText}>No characters available for this scenario.</p>
               )}
               {characters.map((character) => (
                 <CharacterCard
