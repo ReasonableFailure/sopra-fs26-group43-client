@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Select, Spin, theme } from "antd";
-import { ClockCircleOutlined, FilterOutlined, UserOutlined } from "@ant-design/icons";
+import { ClockCircleOutlined, FilterOutlined, HeartFilled, HeartOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { NewsService } from "@/api/newsService";
@@ -14,6 +14,7 @@ import type { Character } from "@/types/character";
 import styles from "@/styles/newsPage.module.css";
 
 type FilterType = "all" | "news" | "pronouncement";
+type SortOrder = "newest" | "oldest";
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "";
@@ -38,10 +39,14 @@ function TypeBadge({ isPronouncement }: { isPronouncement: boolean }) {
 interface FeedCardProps {
   item: NewsGetDTO;
   authorName: string | null;
+  liked: boolean;
+  onToggleLike: () => void;
 }
 
-function FeedCard({ item, authorName }: FeedCardProps) {
+function FeedCard({ item, authorName, liked, onToggleLike }: FeedCardProps) {
   const isPronouncement = item.authorId !== null;
+  const baseLikes = item.likes ?? 0;
+  const displayLikes = baseLikes + (liked ? 1 : 0);
   return (
     <div className={styles.card}>
       <div className={styles.cardTop}>
@@ -61,6 +66,22 @@ function FeedCard({ item, authorName }: FeedCardProps) {
       </div>
       <h2 className={styles.cardTitle}>{item.title}</h2>
       <p className={styles.cardBody}>{item.body}</p>
+      {isPronouncement && (
+        <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
+          <Button
+            type="text"
+            size="small"
+            icon={liked ? <HeartFilled style={{ color: "#ec4899" }} /> : <HeartOutlined />}
+            onClick={onToggleLike}
+            aria-label={liked ? "Unlike" : "Like"}
+          >
+            {liked ? "Liked" : "Like"}
+          </Button>
+          <span style={{ color: "#6b7280", fontSize: 13 }}>
+            {displayLikes} like{displayLikes === 1 ? "" : "s"}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -81,6 +102,20 @@ export default function NewsPage() {
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
+
+  const toggleLike = (id: number) => {
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
@@ -115,11 +150,17 @@ export default function NewsPage() {
     return characters.find((c) => c.id === authorId)?.name ?? null;
   };
 
-  const filtered = newsItems.filter((item) => {
-    if (filter === "news") return item.authorId === null;
-    if (filter === "pronouncement") return item.authorId !== null;
-    return true;
-  });
+  const filtered = newsItems
+    .filter((item) => {
+      if (filter === "news") return item.authorId === null;
+      if (filter === "pronouncement") return item.authorId !== null;
+      return true;
+    })
+    .sort((a, b) => {
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return sortOrder === "newest" ? tb - ta : ta - tb;
+    });
 
   return (
     <ConfigProvider
@@ -160,17 +201,28 @@ export default function NewsPage() {
                 <h1 className={styles.heading}>{scenarioTitle ?? "Loading…"}</h1>
                 <p className={styles.subheading}>Stay updated with the latest developments</p>
               </div>
-              <Select
-                value={filter}
-                onChange={(v) => setFilter(v as FilterType)}
-                suffixIcon={<FilterOutlined />}
-                style={{ width: 140 }}
-                options={[
-                  { value: "all", label: "All" },
-                  { value: "news", label: "News Story" },
-                  { value: "pronouncement", label: "Pronouncement" },
-                ]}
-              />
+              <div style={{ display: "flex", gap: 8 }}>
+                <Select
+                  value={filter}
+                  onChange={(v) => setFilter(v as FilterType)}
+                  suffixIcon={<FilterOutlined />}
+                  style={{ width: 140 }}
+                  options={[
+                    { value: "all", label: "All" },
+                    { value: "news", label: "News Story" },
+                    { value: "pronouncement", label: "Pronouncement" },
+                  ]}
+                />
+                <Select
+                  value={sortOrder}
+                  onChange={(v) => setSortOrder(v as SortOrder)}
+                  style={{ width: 140 }}
+                  options={[
+                    { value: "newest", label: "Newest first" },
+                    { value: "oldest", label: "Oldest first" },
+                  ]}
+                />
+              </div>
             </div>
 
             <Spin spinning={loading}>
@@ -183,6 +235,8 @@ export default function NewsPage() {
                     key={item.id}
                     item={item}
                     authorName={authorName(item.authorId)}
+                    liked={likedIds.has(item.id)}
+                    onToggleLike={() => toggleLike(item.id)}
                   />
                 ))}
               </div>
