@@ -6,6 +6,8 @@ import useLocalStorage from "@/hooks/useLocalStorage";
  */
 export function useSelectedCharacter(scenarioId: number) {
   const key = `selectedCharacter_${scenarioId}`;
-  const { value: characterId, set: setCharacterId } = useLocalStorage<number | null>(key, null);
+  const { value: characterId, set: setCharacterId } = useLocalStorage<
+    number | null
+  >(key, null);
   return { characterId, setCharacterId };
 }

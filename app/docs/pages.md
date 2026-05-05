@@ -4,19 +4,23 @@
 
 ## `/scenarios/[id]/player` — Player Dashboard
 
-**File:** `app/scenarios/[id]/player/page.tsx`
-**Styles:** `app/styles/playerDashboard.module.css`
-**Figma node:** `30:2`
+**File:** `app/scenarios/[id]/player/page.tsx` **Styles:**
+`app/styles/playerDashboard.module.css` **Figma node:** `30:2`
 
 ### Purpose
 
-Main interface for a player who has selected a character. Shows their directives, a news feed (Mastodon placeholder), and an action-points exchange panel. Also lists all characters in the scenario so the player can send messages.
+Main interface for a player who has selected a character. Shows their
+directives, a news feed (Mastodon placeholder), and an action-points exchange
+panel. Also lists all characters in the scenario so the player can send
+messages.
 
 ---
 
 ### Entry Point
 
-Navigated to from the Lobby (`/scenarios/[id]/lobby`) after the player clicks a character card. The selected character ID is persisted in `localStorage` via `useSelectedCharacter(scenarioId)`, keyed as `selectedCharacter_{scenarioId}`.
+Navigated to from the Lobby (`/scenarios/[id]/lobby`) after the player clicks a
+character card. The selected character ID is persisted in `localStorage` via
+`useSelectedCharacter(scenarioId)`, keyed as `selectedCharacter_{scenarioId}`.
 
 ---
 
@@ -70,11 +74,14 @@ PlayerDashboardPage
 ### Data Flow
 
 1. `scenarioId` read from URL; `characterId` read from `useSelectedCharacter`.
-2. `Promise.all` fires `GET /scenarios/{id}/characters` + `GET /scenarios/{id}` in parallel.
-3. `GET /scenarios/{id}/directives` fires separately; errors are swallowed (endpoint may not exist yet) → empty list.
+2. `Promise.all` fires `GET /scenarios/{id}/characters` + `GET /scenarios/{id}`
+   in parallel.
+3. `GET /scenarios/{id}/directives` fires separately; errors are swallowed
+   (endpoint may not exist yet) → empty list.
 4. `selectedCharacter = characters.find(c => c.id === characterId)`.
 5. `myDirectives = directives.filter(d => d.creator?.id === characterId)`.
-6. `actionPoints` comes from `selectedCharacter.actionPoints`; `exchangeRate` from scenario.
+6. `actionPoints` comes from `selectedCharacter.actionPoints`; `exchangeRate`
+   from scenario.
 7. Likes count is hardcoded to `0` — will come from Mastodon API later.
 
 ---
@@ -103,13 +110,16 @@ PlayerDashboardPage
 
 ### News Feed: Placeholder
 
-The news feed card renders a centered placeholder ("News Feed coming soon") until the Mastodon API integration is built. No mock data is shown.
+The news feed card renders a centered placeholder ("News Feed coming soon")
+until the Mastodon API integration is built. No mock data is shown.
 
 ---
 
 ### Character Avatars
 
-Colors cycle through a 6-color gradient palette (`AVATAR_GRADIENTS`) based on the character's index in the list. Initials are derived: first+last-word initials if multi-word name, first 2 chars otherwise.
+Colors cycle through a 6-color gradient palette (`AVATAR_GRADIENTS`) based on
+the character's index in the list. Initials are derived: first+last-word
+initials if multi-word name, first 2 chars otherwise.
 
 ---
 
@@ -135,23 +145,30 @@ Colors cycle through a 6-color gradient palette (`AVATAR_GRADIENTS`) based on th
 
 ### Known Omissions / Future Work
 
-- **Directives endpoint**: `GET /scenarios/{id}/directives` may not exist on backend yet — shows empty list silently.
-- **Likes count**: Hardcoded `0`. Will need Mastodon API to fetch real like counts on player's pronouncements.
-- **Buy action points**: `alert()` stub. Needs `POST /players/{id}/actionPoints` or similar.
-- **Day label on directives**: Figma shows "Day 8", "Day 7" etc. The `Directive.createdAt` is an ISO timestamp; day number needs to come from the scenario's `day` field or a separate server response.
-- **Selected character highlight**: The right sidebar doesn't visually distinguish the player's own character. Consider adding a badge or different styling.
+- **Directives endpoint**: `GET /scenarios/{id}/directives` may not exist on
+  backend yet — shows empty list silently.
+- **Likes count**: Hardcoded `0`. Will need Mastodon API to fetch real like
+  counts on player's pronouncements.
+- **Buy action points**: `alert()` stub. Needs `POST /players/{id}/actionPoints`
+  or similar.
+- **Day label on directives**: Figma shows "Day 8", "Day 7" etc. The
+  `Directive.createdAt` is an ISO timestamp; day number needs to come from the
+  scenario's `day` field or a separate server response.
+- **Selected character highlight**: The right sidebar doesn't visually
+  distinguish the player's own character. Consider adding a badge or different
+  styling.
 
 ---
 
 ## `/scenarios/[id]/lobby` — Game Lobby
 
-**File:** `app/scenarios/[id]/lobby/page.tsx`
-**Styles:** `app/styles/lobby.module.css`
-**Figma node:** `24:273`
+**File:** `app/scenarios/[id]/lobby/page.tsx` **Styles:**
+`app/styles/lobby.module.css` **Figma node:** `24:273`
 
 ### Purpose
 
-Landing page for Players joining a scenario. Shows all characters created for that scenario as selectable cards. Also provides the "Become Backroomer" action.
+Landing page for Players joining a scenario. Shows all characters created for
+that scenario as selectable cards. Also provides the "Become Backroomer" action.
 
 ---
 
@@ -199,7 +216,8 @@ GameLobbyPage
 2. On mount (once `token` is available), fires **two parallel requests**:
    - `GET /scenarios/{id}/characters` → `Character[]`
    - `GET /scenarios/{id}/cabinets` → `Cabinet[]`
-3. `getCabinetName(cabinetId)` joins them in-memory: finds the matching `Cabinet` by `id` and returns `cabinetName`.
+3. `getCabinetName(cabinetId)` joins them in-memory: finds the matching
+   `Cabinet` by `id` and returns `cabinetName`.
 4. Cards render only real characters from the API — no dummy data.
 
 ---
@@ -256,27 +274,31 @@ GameLobbyPage
 
 ### Known Omissions / Future Work
 
-- **Character selection API**: `POST /scenarios/{id}/players` or similar endpoint needed. Currently an `alert()` stub.
-- **Become Backroomer API**: Role assignment endpoint needed. Currently an `alert()` stub.
-- **Already-taken characters**: No indication if a character is already claimed by another player. Will need backend support (`isAssigned` field or similar).
+- **Character selection API**: `POST /scenarios/{id}/players` or similar
+  endpoint needed. Currently an `alert()` stub.
+- **Become Backroomer API**: Role assignment endpoint needed. Currently an
+  `alert()` stub.
+- **Already-taken characters**: No indication if a character is already claimed
+  by another player. Will need backend support (`isAssigned` field or similar).
 
 ---
 
 ## `/scenarios/create` — Create New Scenario
 
-**File:** `app/scenarios/create/page.tsx`
-**Styles:** `app/styles/createScenario.module.css`
-**Figma node:** `24:230`
+**File:** `app/scenarios/create/page.tsx` **Styles:**
+`app/styles/createScenario.module.css` **Figma node:** `24:230`
 
 ### Purpose
 
-Form page for Directors to create a new scenario. Submits `POST /scenarios` and redirects back to the scenario list on success.
+Form page for Directors to create a new scenario. Submits `POST /scenarios` and
+redirects back to the scenario list on success.
 
 ---
 
 ### Authentication
 
-Same guard as `/scenarios`: `useEffect` watching `isAuthenticated` redirects to `/login`; returns `null` during hydration.
+Same guard as `/scenarios`: `useEffect` watching `isAuthenticated` redirects to
+`/login`; returns `null` during hydration.
 
 ---
 
@@ -343,11 +365,14 @@ CreateScenarioPage
 
 1. User fills in title, description, message cost.
 2. On submit, `Form` validates (title is required).
-3. `handleSubmit(values)` builds a `ScenarioPostDTO: { title, description, exchangeRate }`.
+3. `handleSubmit(values)` builds a
+   `ScenarioPostDTO: { title, description, exchangeRate }`.
 4. Calls `ScenarioService.createScenario(data, token)` → `POST /scenarios`.
-5. On success: `router.push(\`/scenarios/${created.id}\`)` → lands on the Director Dashboard for the new scenario.
+5. On success: `router.push(\`/scenarios/${created.id}\`)` → lands on the
+   Director Dashboard for the new scenario.
 6. On error: `alert()` with the error message.
-7. `submitting` state drives the `loading` spinner on the "Save Scenario" button.
+7. `submitting` state drives the `loading` spinner on the "Save Scenario"
+   button.
 
 **Field → DTO mapping:**
 
@@ -361,7 +386,9 @@ CreateScenarioPage
 
 ### Sections: Characters & Cabinets
 
-Both sections render an empty state only. The "Add Character" and "Add Cabinet" buttons show an `alert()` stub. Full implementation is deferred until character/cabinet creation flows are built.
+Both sections render an empty state only. The "Add Character" and "Add Cabinet"
+buttons show an `alert()` stub. Full implementation is deferred until
+character/cabinet creation flows are built.
 
 ---
 
@@ -389,21 +416,24 @@ Both sections render an empty state only. The "Add Character" and "Add Cabinet" 
 
 ### Known Omissions / Future Work
 
-- **Characters section**: "Add Character" is a stub. Full flow needed to create characters within a scenario.
+- **Characters section**: "Add Character" is a stub. Full flow needed to create
+  characters within a scenario.
 - **Cabinets section**: "Add Cabinet" is a stub. Full flow needed.
-- **Exchange rate vs message cost**: `exchangeRate` in the type is described as "likes → action points conversion rate", but the form labels it "Message Cost". Clarify with backend on final field semantics.
+- **Exchange rate vs message cost**: `exchangeRate` in the type is described as
+  "likes → action points conversion rate", but the form labels it "Message
+  Cost". Clarify with backend on final field semantics.
 
 ---
 
 ## `/scenarios` — Scenario Manager (Main Page)
 
-**File:** `app/scenarios/page.tsx`
-**Styles:** `app/styles/scenarios.module.css`
+**File:** `app/scenarios/page.tsx` **Styles:** `app/styles/scenarios.module.css`
 **Figma node:** `24:105`
 
 ### Purpose
 
-Displays all scenarios available to the authenticated Director. Provides entry points to create new scenarios, view a scenario detail, edit, or delete.
+Displays all scenarios available to the authenticated Director. Provides entry
+points to create new scenarios, view a scenario detail, edit, or delete.
 
 ---
 
@@ -412,7 +442,10 @@ Displays all scenarios available to the authenticated Director. Provides entry p
 Guarded by `useAuth()`. On mount, a `useEffect` watches `isAuthenticated`:
 
 - If `false`, calls `router.replace("/login")` to redirect.
-- The component also returns `null` while `isAuthenticated` is false to prevent a flash of unauthenticated content during the localStorage hydration tick (the `useLocalStorage` hook reads from localStorage asynchronously on first render).
+- The component also returns `null` while `isAuthenticated` is false to prevent
+  a flash of unauthenticated content during the localStorage hydration tick (the
+  `useLocalStorage` hook reads from localStorage asynchronously on first
+  render).
 
 ---
 
@@ -475,15 +508,20 @@ ScenariosPage
 
 ### Data Flow
 
-1. Component mounts; `useAuth` reads `token` from localStorage (one-tick async delay).
-2. `useScenarios(token)` fires `GET /scenarios` with the Bearer token once `token` is non-empty. While `token` is `""` (hydrating), the hook skips the fetch.
+1. Component mounts; `useAuth` reads `token` from localStorage (one-tick async
+   delay).
+2. `useScenarios(token)` fires `GET /scenarios` with the Bearer token once
+   `token` is non-empty. While `token` is `""` (hydrating), the hook skips the
+   fetch.
 3. While `loading` is `true`, `Spin` renders an overlay over the card area.
 4. Each `Scenario` in the response maps to a `ScenarioCard`:
    - `title` → card heading
-   - `description` → card body (falls back to `"No description provided."` if `null`)
+   - `description` → card body (falls back to `"No description provided."` if
+     `null`)
    - `id` → React key, navigation target
 5. `isActive`, `day`, and `exchangeRate` are not shown on this listing page.
-6. `creationDate` does not exist on the `Scenario` type — the date row visible in Figma is intentionally omitted until the backend adds it.
+6. `creationDate` does not exist on the `Scenario` type — the date row visible
+   in Figma is intentionally omitted until the backend adds it.
 
 ---
 
@@ -507,9 +545,13 @@ ScenarioCard({ scenario })
 
 ### Theme Override
 
-The global `layout.tsx` sets a dark Ant Design theme (`colorBgContainer: "#16181D"`, `colorText: "#fff"`, `Button.colorPrimary: "#75bd9d"`). This page wraps its entire output in a nested `ConfigProvider` to produce the light Figma design.
+The global `layout.tsx` sets a dark Ant Design theme
+(`colorBgContainer: "#16181D"`, `colorText: "#fff"`,
+`Button.colorPrimary: "#75bd9d"`). This page wraps its entire output in a nested
+`ConfigProvider` to produce the light Figma design.
 
-A nested `ConfigProvider` in Ant Design 6 merges tokens with the parent; child values win on collision. The override set:
+A nested `ConfigProvider` in Ant Design 6 merges tokens with the parent; child
+values win on collision. The override set:
 
 | Token                 | Value     | Reason                                                                                                             |
 | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -565,27 +607,33 @@ A nested `ConfigProvider` in Ant Design 6 merges tokens with the parent; child v
 
 ### Known Omissions / Future Work
 
-- **Date row**: Figma shows a calendar icon + creation date on each card. The `Scenario` type has no `creationDate` field. Implement when the backend adds it.
-- **User avatar initials**: Figma shows "JD" initials. Currently renders a `UserOutlined` icon. Upgrade to real initials once user profile is fetched on this page.
+- **Date row**: Figma shows a calendar icon + creation date on each card. The
+  `Scenario` type has no `creationDate` field. Implement when the backend adds
+  it.
+- **User avatar initials**: Figma shows "JD" initials. Currently renders a
+  `UserOutlined` icon. Upgrade to real initials once user profile is fetched on
+  this page.
 - **Stub routes**: `/scenarios/[id]/edit` does not exist yet and will 404.
 
 ---
 
 ## `/scenarios/[id]` — Director Dashboard
 
-**File:** `app/scenarios/[id]/page.tsx`
-**Styles:** `app/styles/directorDashboard.module.css`
-**Figma node:** `62:21`
+**File:** `app/scenarios/[id]/page.tsx` **Styles:**
+`app/styles/directorDashboard.module.css` **Figma node:** `62:21`
 
 ### Purpose
 
-The main control panel for a Director managing an active scenario. Shows the current game state, provides controls to start/freeze/end the game, and lists recent activity (news stories).
+The main control panel for a Director managing an active scenario. Shows the
+current game state, provides controls to start/freeze/end the game, and lists
+recent activity (news stories).
 
 ---
 
 ### Authentication
 
-Same guard: `useEffect` watching `isAuthenticated` redirects to `/login`; component returns `null` during hydration.
+Same guard: `useEffect` watching `isAuthenticated` redirects to `/login`;
+component returns `null` during hydration.
 
 ---
 
@@ -652,7 +700,8 @@ DirectorDashboardPage
 1. `scenarioId` read from URL via `useParams().id`.
 2. `GET /scenarios/{scenarioId}` fires once `isAuthenticated` is true.
 3. `scenario.title` → page heading.
-4. `deriveStatus(scenario)` maps `{ isActive, day }` → `"stopped" | "running" | "frozen"`:
+4. `deriveStatus(scenario)` maps `{ isActive, day }` →
+   `"stopped" | "running" | "frozen"`:
    - `!isActive && day === 0` → `"stopped"`
    - `isActive` → `"running"`
    - `!isActive && day > 0` → `"frozen"`
@@ -697,7 +746,12 @@ DirectorDashboardPage
 
 ### Known Omissions / Future Work
 
-- **Game controls API**: Start/Freeze/End require backend endpoints (e.g. `PATCH /scenarios/{id}/start`). Currently `alert()` stubs.
-- **Recent Activity**: No backend endpoint yet. Shows empty state. Will need `GET /scenarios/{id}/news` or similar.
-- **Freeze state**: The `Scenario` entity only has `active: boolean`. A separate `frozen: boolean` field may be needed to distinguish frozen from stopped.
-- **Role guard**: Any authenticated user can currently navigate to this page. Director-only guard needs to be added once role info is available from the auth token.
+- **Game controls API**: Start/Freeze/End require backend endpoints (e.g.
+  `PATCH /scenarios/{id}/start`). Currently `alert()` stubs.
+- **Recent Activity**: No backend endpoint yet. Shows empty state. Will need
+  `GET /scenarios/{id}/news` or similar.
+- **Freeze state**: The `Scenario` entity only has `active: boolean`. A separate
+  `frozen: boolean` field may be needed to distinguish frozen from stopped.
+- **Role guard**: Any authenticated user can currently navigate to this page.
+  Director-only guard needs to be added once role info is available from the
+  auth token.
