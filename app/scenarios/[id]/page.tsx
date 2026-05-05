@@ -25,7 +25,7 @@ import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import { ScenarioService } from "@/api/scenarioService";
 import type { Scenario } from "@/types/scenario";
-import type { ScenarioStatus } from "@/types/scenario";
+import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/directorDashboard.module.css";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
@@ -105,7 +105,7 @@ export default function DirectorDashboardPage() {
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: "UNFROZEN", dayNumber: 1 },
+        { status: ScenarioStatus.UNFROZEN, dayNumber: 1 },
         token
       );
       messageApi.success("Game started");
@@ -137,7 +137,7 @@ export default function DirectorDashboardPage() {
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: isFrozen ? "UNFROZEN" : "FROZEN" },
+        { status: isFrozen ? ScenarioStatus.UNFROZEN : ScenarioStatus.FROZEN },
         token
       );
       messageApi.success(isFrozen ? "Game resumed" : "Game frozen");
@@ -150,7 +150,7 @@ export default function DirectorDashboardPage() {
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: "COMPLETED" },
+        { status: ScenarioStatus.COMPLETED },
         token
       );
       messageApi.success("Game ended");
