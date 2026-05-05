@@ -134,6 +134,12 @@ export default function BackroomDashboardPage() {
   if (!authReady || !isAuthenticated) return null;
 
   const pendingMessages = (messages ?? []).filter((m) => m.status === CommsStatus.PENDING || m.status === null);
+  const messageHistory = (messages ?? [])
+    .filter((m) => m.status === CommsStatus.ACCEPTED || m.status === CommsStatus.REJECTED)
+    .sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   const characterName = (id: number | null): string => {
     if (id === null) return "Unknown";
@@ -342,6 +348,11 @@ export default function BackroomDashboardPage() {
                         }}
                       >
                         {renderNewsText(item)}
+                        {item.createdAt && (
+                          <div style={{ marginTop: 4, fontSize: 12, color: "#6b7280" }}>
+                            {item.createdAt.slice(0, 19).replace("T", " ")}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -408,6 +419,49 @@ export default function BackroomDashboardPage() {
                         Reject
                       </Button>
                     </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Message History (handled messages) ── */}
+              <div className={styles.panelHeader} style={{ marginTop: 16 }}>
+                <h2 className={styles.panelTitle}>Message History</h2>
+                <p className={styles.panelSubtitle}>Previously approved or rejected messages</p>
+              </div>
+
+              {messageHistory.length === 0 && !loading && (
+                <p className={styles.emptyState}>No handled messages yet.</p>
+              )}
+
+              <div className={styles.messagesList}>
+                {messageHistory.map((message) => (
+                  <div key={`hist-${message.id}`} className={styles.messageCard}>
+                    <div className={styles.messageCardHeader}>
+                      <div className={styles.senderAvatar}>
+                        {initials(characterName(message.creatorId))}
+                      </div>
+                      <div className={styles.senderInfo}>
+                        <span className={styles.senderName}>
+                          {characterName(message.creatorId)}
+                        </span>
+                        <span className={styles.recipientLabel}>
+                          To: {characterName(message.recipientId)}
+                        </span>
+                      </div>
+                      <div style={{ marginLeft: "auto" }}>
+                        <DirectiveBadge status={message.status} />
+                      </div>
+                    </div>
+
+                    <p className={styles.messageBody}>
+                      {message.body ?? message.title ?? ""}
+                    </p>
+
+                    {message.createdAt && (
+                      <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                        {message.createdAt.slice(0, 19).replace("T", " ")}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
