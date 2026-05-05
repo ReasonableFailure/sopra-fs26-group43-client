@@ -2,33 +2,18 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Dropdown, Spin, theme } from "antd";
-import type { MenuProps } from "antd";
-import { MoreOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useScenarios } from "@/hooks/useScenarios";
 import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import type { Scenario } from "@/types/scenario";
 import styles from "@/styles/scenarios.module.css";
 
-function ScenarioCard({ scenario, isDirector }: { scenario: Scenario; isDirector: boolean }) {
+function ScenarioCard(
+  { scenario, isDirector }: { scenario: Scenario; isDirector: boolean },
+) {
   const router = useRouter();
-
-  const moreMenu: MenuProps = {
-    items: [
-      {
-        key: "edit",
-        label: "Edit",
-        onClick: () => router.push(`/scenarios/${scenario.id}/edit`),
-      },
-      {
-        key: "delete",
-        label: "Delete",
-        danger: true,
-        onClick: () => alert(`Delete scenario "${scenario.title}"? (not yet implemented)`),
-      },
-    ],
-  };
 
   const handleView = () => {
     if (isDirector) {
@@ -42,9 +27,6 @@ function ScenarioCard({ scenario, isDirector }: { scenario: Scenario; isDirector
     <div className={styles.card}>
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>{scenario.title}</h2>
-        <Dropdown menu={moreMenu} trigger={["click"]}>
-          <Button type="text" icon={<MoreOutlined />} aria-label="More options" />
-        </Dropdown>
       </div>
       <p className={styles.cardDesc}>
         {scenario.description ?? "No description provided."}
@@ -68,7 +50,7 @@ export default function ScenariosPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -100,7 +82,10 @@ export default function ScenariosPage() {
             <span className={styles.navTitle}>Scenario Manager</span>
           </div>
           <div className={styles.navRight}>
-            <Button type="primary" onClick={() => router.push("/scenarios/create")}>
+            <Button
+              type="primary"
+              onClick={() => router.push("/scenarios/create")}
+            >
               Create New Scenario
             </Button>
             <Avatar icon={<UserOutlined />} className={styles.avatar} />
@@ -111,7 +96,9 @@ export default function ScenariosPage() {
           <div className={styles.contentWrapper}>
             <div className={styles.pageHeader}>
               <h1 className={styles.heading}>Created Scenarios</h1>
-              <p className={styles.subheading}>Review previously created scenarios</p>
+              <p className={styles.subheading}>
+                Review previously created scenarios
+              </p>
             </div>
 
             {error && <p className={styles.errorText}>{error}</p>}
@@ -124,7 +111,11 @@ export default function ScenariosPage() {
                   </p>
                 )}
                 {scenarios?.map((scenario) => (
-                  <ScenarioCard key={scenario.id} scenario={scenario} isDirector={isDirector(scenario.id)} />
+                  <ScenarioCard
+                    key={scenario.id}
+                    scenario={scenario}
+                    isDirector={isDirector(scenario.id)}
+                  />
                 ))}
               </div>
             </Spin>

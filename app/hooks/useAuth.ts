@@ -10,8 +10,14 @@ export const useAuth = () => {
   const api = useApi();
   const userService = useMemo(() => new UserService(api), [api]);
 
-  const { value: token, set: setToken, clear: clearToken, ready: tokenReady } = useLocalStorage<string>("token", "");
-  const { value: userId, set: setUserId, clear: clearUserId, ready: userIdReady } = useLocalStorage<number>("userId", 0);
+  const { value: token, set: setToken, clear: clearToken, ready: tokenReady } =
+    useLocalStorage<string>("token", "");
+  const {
+    value: userId,
+    set: setUserId,
+    clear: clearUserId,
+    ready: userIdReady,
+  } = useLocalStorage<number>("userId", 0);
 
   const isAuthenticated = !!token;
   const authReady = tokenReady && userIdReady;

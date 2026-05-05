@@ -2,7 +2,17 @@
 
 import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {Avatar, Button, ConfigProvider, Spin, Table, theme, message, Modal} from "antd";
+import {
+  Avatar,
+  Button,
+  ConfigProvider,
+  message,
+  Modal,
+  Spin,
+  Table,
+  theme,
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { UserOutlined } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -23,29 +33,29 @@ export default function PlayerStatisticsPage() {
   const api = useApi();
   const characterService = useMemo(
     () => new CharacterService(api),
-    [api]
+    [api],
   );
 
-    const handleKill = (character: Character) => {
-        Modal.confirm({
-            title: `Eliminate ${character.name}?`,
-            content: "This action cannot be undone.",
-            okText: "Kill",
-            okButtonProps: { danger: true },
-            onOk: async () => {
-            try {
-                await characterService.updateCharacter(
-                character.id!,
-                { alive: false },
-                token
-                );
-                message.success(`${character.name} eliminated`);
-            } catch {
-                message.error("Failed to eliminate character");
-            }
-            },
-        });
-    };
+  const handleKill = (character: Character) => {
+    Modal.confirm({
+      title: `Eliminate ${character.name}?`,
+      content: "This action cannot be undone.",
+      okText: "Kill",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await characterService.updateCharacter(
+            character.id!,
+            { alive: false },
+            token,
+          );
+          message.success(`${character.name} eliminated`);
+        } catch {
+          message.error("Failed to eliminate character");
+        }
+      },
+    });
+  };
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -53,10 +63,10 @@ export default function PlayerStatisticsPage() {
     () =>
       characterService.getCharactersByScenario(
         scenarioId,
-        token
+        token,
       ),
     5000,
-    enabled
+    enabled,
   );
 
   useEffect(() => {
@@ -67,7 +77,7 @@ export default function PlayerStatisticsPage() {
 
   if (!authReady || !isAuthenticated) return null;
 
-  const columns = [
+  const columns: ColumnsType<Character> = [
     {
       title: "Name",
       dataIndex: "name",
@@ -99,23 +109,24 @@ export default function PlayerStatisticsPage() {
       key: "totalTextLength",
     },
     {
-        title: "Kill",
-        key: "kill",
-        render: (_: any, record: Character) => {
-            if (!record.alive) {
-            return <span style={{ color: "#6b7280", fontWeight: 500 }}>Dead</span>;
-            }
+      title: "Kill",
+      key: "kill",
+      render: (_, record) => {
+        if (!record.alive) {
+          return (
+            <span style={{ color: "#6b7280", fontWeight: 500 }}>
+              Dead
+            </span>
+          );
+        }
 
-            return (
-            <Button
-                danger
-                onClick={() => handleKill(record)}
-            >
-                Kill
-            </Button>
-            );
-        },
-    }
+        return (
+          <Button danger onClick={() => handleKill(record)}>
+            Kill
+          </Button>
+        );
+      },
+    },
   ];
 
   return (
@@ -143,9 +154,7 @@ export default function PlayerStatisticsPage() {
 
           <div className={styles.navRight}>
             <Button
-              onClick={() =>
-                router.push(`/scenarios/${scenarioId}`)
-              }
+              onClick={() => router.push(`/scenarios/${scenarioId}`)}
             >
               Back to Dashboard
             </Button>
@@ -154,11 +163,10 @@ export default function PlayerStatisticsPage() {
           </div>
         </nav>
 
-        
         <main className={styles.pageBody}>
           <Spin spinning={loading}>
             <div className={styles.contentWrapper}>
-            {/* TABLE */}
+              {/* TABLE */}
               <div className={styles.card}>
                 <Table
                   dataSource={characters ?? []}
