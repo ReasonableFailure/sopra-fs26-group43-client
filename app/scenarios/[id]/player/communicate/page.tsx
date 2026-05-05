@@ -266,6 +266,16 @@ export default function CommunicationFormPage() {
                     rows={10}
                     style={{ resize: "none" }}
                   />
+                  {commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0 && (
+                    <p style={{ marginTop: 6, color: "#dc2626", fontSize: 12, fontWeight: 500 }}>
+                      Warning: You have no messages available. Return to the dashboard and buy more with likes.
+                    </p>
+                  )}
+                  {commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) > 0 && (selectedCharacter?.messageCount ?? 0) <= 2 && (
+                    <p style={{ marginTop: 6, color: "#f59e0b", fontSize: 12, fontWeight: 500 }}>
+                      Warning: Only {selectedCharacter?.messageCount} message{(selectedCharacter?.messageCount ?? 0) === 1 ? "" : "s"} remaining.
+                    </p>
+                  )}
                 </div>
               </div>
 
