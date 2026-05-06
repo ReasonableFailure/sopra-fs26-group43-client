@@ -432,12 +432,9 @@ export default function PlayerDashboardPage() {
                   {scenario?.mastodonProfileUrl && (
                     <Button
                       type="primary"
-                      onClick={() =>
-                        window.open(
-                          scenario.mastodonProfileUrl!,
-                          "_blank",
-                          "noopener,noreferrer",
-                        )}
+                      href={scenario.mastodonProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       Go to Mastodon
                     </Button>
