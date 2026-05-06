@@ -107,9 +107,13 @@ reason).
 |**[reasonableFailure]**|29.04.2026|(Link 2)[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/e5ed40369da41349fd27008d1e3bda3d8d70766d]|added logic for simultaenous creation and user assignment when creating backroomer and removed failing mapping|failing mapping prevented User->Character assignment, backroomer was previously unassigned in DB|
 ---
 
-## Contributions Week 6 - 30-Apr-2026 to 06-may-2026
+## Contributions Week 6 - 30-Apr-2026 to 06-May-2026
+
 | **Student**         | **Date**     | **Link to Commit**                                                                 | **Description**                                                                                                                                 | **Relevance**                                                                                                                                          |
 |--------------------|--------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[@yiruyang2025]** | 02.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/19, https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/24 | Added Message History section to backroom dashboard listing approved/rejected messages with status badges and timestamps; added timestamps to news feed previews on both player and backroom dashboards. | Lets backroomers audit past communication decisions and gives all roles temporal context for unfolding news, completing the dashboard awareness loop. |
+|                    | 03.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/39, https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/43 | Added written low/zero-message warnings on the player dashboard and communication form; added a confirmation modal to the Freeze/Unfreeze toggle on the director dashboard. | Prevents accidental freezes and ensures players are explicitly warned before they hit the message limit, improving game-state safety and clarity. |
+|                    | 04.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/40, https://github.com/ReasonableFailure/sopra-fs26-group43-client/issues/45 | Added a Like button with live counter to pronouncement cards on the news page; added a Newest/Oldest sort selector next to the existing type filter. | Completes the news feed interaction model with the Mastodon-style like affordance and gives users control over feed ordering for longer scenarios. |
 | **[HalaiRhea]** | 29.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/d03c984beaed8ee9f42bd554914d371ba6121ac7| Added functionality to allow for mastodon liking, logic of message purchasing on the backend.| provides for the game mechanism of message limits|
 | **[HalaiRhea]** | 29.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/02d52314923210c81ebcea566ed850da177e0284| Added functionality to allow for mastodon liking, logic of message purchasing on the frontend.| provides for the game mechanism of message limits|
 | **[HalaiRhea]** | 30.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/14b1e269ac506f53e7024384da5760ab3408452d| Backend changes to allow for game states including freezing, day logic|Allows Director to control the state of the game to manage the experience|
@@ -119,6 +123,7 @@ reason).
 | **[HalaiRhea]** | 03.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/fa7e4522e6eef6525e9d1ae771910c89d0fd3064| Added backend categories to role class + logic to deal with them|Allows backroomers better understanding of what directives do|
 | **[HalaiRhea]** | 03.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/c56199c3fd6dd0e12a2629b43b575b35ef95d118| Added ability to create categories in directive form, filtering on backrooms side|Allows backroomers better understanding of what directives do|
 ---
+
 
 ## Contributions Week 7 - [Begin Date] to [End Date]
 
