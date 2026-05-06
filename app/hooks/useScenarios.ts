@@ -4,17 +4,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
 import { Scenario } from "@/types/scenario";
+import {useAuth} from "@/hooks/useAuth";
 
-export const useScenarios = (token: string) => {
+export const useScenarios = (userType: string) => {
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
-
+  const {token} = useAuth();
   const [scenarios, setScenarios] = useState<Scenario[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) return;
+    if (!userType) return;
 
     let cancelled = false;
 
@@ -22,8 +23,10 @@ export const useScenarios = (token: string) => {
       setLoading(true);
       setError(null);
       try {
-        const data = await scenarioService.getScenarios(token);
-        if (!cancelled) setScenarios(data);
+        if(token){
+          const data = await scenarioService.getScenarios(userType + token);
+          if (!cancelled) setScenarios(data);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -39,7 +42,7 @@ export const useScenarios = (token: string) => {
     return () => {
       cancelled = true;
     };
-  }, [scenarioService, token]);
+  }, [scenarioService, userType, token]);
 
   return { scenarios, loading, error };
 };
