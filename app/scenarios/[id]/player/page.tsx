@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
-import { BellOutlined} from "@ant-design/icons";
+import {
+  BellOutlined,
+  ClockCircleOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -42,6 +46,19 @@ function initials(name: string | null): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function timeAgo(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const diff = Date.now() - new Date(iso).getTime();
+  if (Number.isNaN(diff)) return "";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min${mins === 1 ? "" : "s"} ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hr${hrs === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
 // ── Status label ───────────────────────────────────────────────────
@@ -233,14 +250,6 @@ export default function PlayerDashboardPage() {
     return characters.find((c) => c.id === authorId)?.name ?? "Unknown";
   }
 
-  function renderNewsText(item: NewsGetDTO, characters: Character[]) {
-    const base = `${item.title}: ${item.body}`;
-
-    if (!isPronouncement(item)) return base;
-
-    const authorName = getAuthorName(item.authorId, characters);
-    return `${base}\n- ${authorName}`;
-  }
 
   return (
     <ConfigProvider
@@ -358,68 +367,76 @@ export default function PlayerDashboardPage() {
               </p>
 
               <div className={styles.newsFeedCard}>
-              {latestNews.length === 0 ? (
-                <div className={styles.newsFeedPlaceholder}>
-                  <p className={styles.newsFeedPlaceholderTitle}>
-                    No news yet
-                  </p>
-                  <p>News stories will appear here when published.</p>
-                </div>
-              ) : (
-                <div>
-                  {latestNews.map((item, index) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        padding: "14px 0",
-                        borderBottom:
-                          index < latestNews.length - 1
-                            ? "1px solid #e5e7eb"
-                            : "none",
-                        whiteSpace: "pre-line",
-                        textAlign: "center",
-                        color: "#000000",
-                        fontSize: "14px",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {renderNewsText(item, characters)}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: "12px",
-                marginBottom: "16px",
-                gap: "12px",
-              }}
-            >
-              <div>
-                {scenario?.mastodonProfileUrl && (
-                  <Button
-                    type="primary"
-                    onClick={() =>
-                      window.open(scenario.mastodonProfileUrl!, "_blank", "noopener,noreferrer")
-                    }
-                  >
-                    Go to Mastodon
-                  </Button>
+                {latestNews.length === 0 ? (
+                  <div className={styles.newsFeedPlaceholder}>
+                    <p className={styles.newsFeedPlaceholderTitle}>
+                      No news yet
+                    </p>
+                    <p>News stories will appear here when published.</p>
+                  </div>
+                ) : (
+                  <div className={styles.newsList}>
+                    {latestNews.map((item) => {
+                      const pronouncement = isPronouncement(item);
+                      const authorName = pronouncement
+                        ? getAuthorName(item.authorId, characters)
+                        : null;
+                      return (
+                        <article key={item.id} className={styles.newsItem}>
+                          <div className={styles.newsItemTop}>
+                            <div className={styles.newsItemTopLeft}>
+                              <span
+                                className={
+                                  pronouncement
+                                    ? styles.badgePronouncement
+                                    : styles.badgeNews
+                                }
+                              >
+                                {pronouncement ? "Pronouncement" : "New Story"}
+                              </span>
+                              {pronouncement && authorName && (
+                                <span className={styles.newsAuthorRow}>
+                                  <UserOutlined className={styles.newsAuthorIcon} />
+                                  {authorName}
+                                </span>
+                              )}
+                            </div>
+                            <span className={styles.newsTimestamp}>
+                              <ClockCircleOutlined />
+                              {timeAgo(item.createdAt)}
+                            </span>
+                          </div>
+                          <h3 className={styles.newsItemTitle}>{item.title}</h3>
+                          <p className={styles.newsItemBody}>{item.body}</p>
+                        </article>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
+              <div className={styles.newsActions}>
+                <div>
+                  {scenario?.mastodonProfileUrl && (
+                    <Button
+                      type="primary"
+                      onClick={() =>
+                        window.open(scenario.mastodonProfileUrl!, "_blank", "noopener,noreferrer")
+                      }
+                    >
+                      Go to Mastodon
+                    </Button>
+                  )}
+                </div>
 
-              <Button
-                type="primary"
-                onClick={() =>
-                  router.push(`/scenarios/${scenarioId}/news`)
-                }
-              >
-                See All News
-              </Button>
-            </div>
+                <Button
+                  type="primary"
+                  onClick={() =>
+                    router.push(`/scenarios/${scenarioId}/news`)
+                  }
+                >
+                  See All News
+                </Button>
+              </div>
               {/* My Likes & My Messages */}
               <div className={styles.metricsRow}>
                 <div className={styles.metricCard}>

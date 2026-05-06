@@ -31,7 +31,7 @@ function TypeBadge({ isPronouncement }: { isPronouncement: boolean }) {
   return isPronouncement ? (
     <span className={styles.badgePronouncement}>Pronouncement</span>
   ) : (
-    <span className={styles.badgeNews}>News Story</span>
+    <span className={styles.badgeNews}>New Story</span>
   );
 }
 
@@ -167,7 +167,7 @@ export default function NewsPage() {
                 style={{ width: 140 }}
                 options={[
                   { value: "all", label: "All" },
-                  { value: "news", label: "News Story" },
+                  { value: "news", label: "New Story" },
                   { value: "pronouncement", label: "Pronouncement" },
                 ]}
               />

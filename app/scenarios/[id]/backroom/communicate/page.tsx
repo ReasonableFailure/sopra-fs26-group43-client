@@ -131,7 +131,7 @@ export default function BackroomCommunicatePage() {
       return;
     }
     if (overLimit) {
-      messageApi.error("News Story Must not Exceed 500 Characters");
+      messageApi.error("New Story Must not Exceed 500 Characters");
       return;
     }
     setSubmitting(true);
@@ -143,7 +143,7 @@ export default function BackroomCommunicatePage() {
             }, token);
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
-      messageApi.error(err instanceof Error ? err.message : "Failed to create news story.");
+      messageApi.error(err instanceof Error ? err.message : "Failed to create new story.");
     } finally {
       setSubmitting(false);
     }
@@ -184,7 +184,7 @@ export default function BackroomCommunicatePage() {
                 <div>
                   <h1 className={styles.cardTitle}>Communication Form</h1>
                   <p className={styles.cardSubtitle}>
-                    Respond to player directives or publish a news story
+                    Respond to player directives or publish a new story
                   </p>
                 </div>
                 <Button onClick={() => router.push(`/scenarios/${scenarioId}/backroom`)}>
@@ -207,7 +207,7 @@ export default function BackroomCommunicatePage() {
                     }}
                     options={[
                       { value: "response", label: "Response" },
-                      { value: "news_story", label: "News Story" },
+                      { value: "news_story", label: "New Story" },
                     ]}
                     style={{ width: "100%" }}
                   />
@@ -297,7 +297,7 @@ export default function BackroomCommunicatePage() {
                     <Input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Enter news story title"
+                      placeholder="Enter new story title"
                     />
                   </div>
                 )}
@@ -314,7 +314,7 @@ export default function BackroomCommunicatePage() {
                     placeholder={
                       commType === "response"
                         ? "Write your response to this directive..."
-                        : "Write the news story content..."
+                        : "Write the new story content..."
                     }
                     rows={8}
                     style={{ resize: "none" }}
