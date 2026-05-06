@@ -61,7 +61,7 @@ export default function BackroomCommunicatePage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [authReady,isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
@@ -271,6 +271,18 @@ export default function BackroomCommunicatePage() {
                 {/* Directive content — borderless, read-only */}
                 {commType === "response" && selectedDirective && (
                   <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Directive Title</label>
+                    <Input.TextArea
+                      value={selectedDirective.title ?? ""}
+                      readOnly
+                      autoSize={{ minRows: 1 }}
+                      variant="borderless"
+                      style={{
+                        resize: "none",
+                        color: "#374151",
+                        padding: "4px 0",
+                      }}
+                    />
                     <label className={styles.label}>Directive Content</label>
                     <Input.TextArea
                       value={selectedDirective.body ?? ""}
