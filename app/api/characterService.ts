@@ -1,22 +1,71 @@
 import { ApiService } from "@/api/apiService";
-import { Character, CharacterPostDTO } from "@/types/character";
+import {
+  Character,
+  CharacterAssignDTO,
+  CharacterPostDTO,
+  CharacterPutDTO,
+} from "@/types/character";
 
 export class CharacterService {
   constructor(private api: ApiService) {}
 
-  getCharactersByScenario(scenarioId: number, token: string): Promise<Character[]> {
-    return this.api.getWithToken<Character[]>(`/characters/${scenarioId}`, token);
+  public async getCharactersByScenario(
+    scenarioId: number,
+    token: string,
+  ): Promise<Character[]> {
+    return await this.api.get<Character[]>(`/characters/${scenarioId}`, token);
   }
 
-  createCharacter(dto: CharacterPostDTO, directorToken: string): Promise<Character> {
-    return this.api.postWithToken<Character>("/characters", dto, `Director ${directorToken}`);
+  public async createCharacter(
+    dto: CharacterPostDTO,
+    directorToken: string,
+  ): Promise<Character> {
+    return await this.api.postWithToken<Character>(
+      "/characters",
+      dto,
+      directorToken,
+    );
   }
-  getCharacterPoints(scenarioId: number, characterId: number,token: string): Promise<Character> {
-    return this.api.getWithToken<Character>(`/characters/${scenarioId}/${characterId}/points`,token);
+  public async getCharacterPoints(
+    scenarioId: number,
+    characterId: number,
+    token: string,
+  ): Promise<Character> {
+    return await this.api.get<Character>(
+      `/characters/${scenarioId}/${characterId}/points`,
+      token,
+    );
   }
 
-  buyMessage(scenarioId: number, characterId: number,token: string): Promise<Character> {
-    return this.api.postWithToken<Character>(`/characters/${scenarioId}/${characterId}/buy-message`,{},token
+  public async buyMessage(
+    scenarioId: number,
+    characterId: number,
+    token: string,
+  ): Promise<Character> {
+    return await this.api.postWithToken<Character>(
+      `/characters/${scenarioId}/${characterId}/buy-message`,
+      {},
+      token,
+    );
+  }
+
+  public async assignCharacter(
+    dto: CharacterAssignDTO,
+    userToken: string,
+    characterId: number,
+  ): Promise<Character> {
+    return this.api.put<Character>(`/player/${characterId}`, dto, userToken);
+  }
+
+  public async modifyCharacter(
+    dto: CharacterPutDTO,
+    directorToken: string,
+    characterId: number,
+  ): Promise<void> {
+    return await this.api.put<void>(
+      `/player/${characterId}`,
+      dto,
+      directorToken,
     );
   }
 }

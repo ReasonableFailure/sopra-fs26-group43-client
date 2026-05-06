@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
-import { BellOutlined} from "@ant-design/icons";
+import { BellOutlined } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -18,7 +18,7 @@ import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
-import type { Scenario } from "@/types/scenario";
+import { Scenario, ScenarioStatus } from "@/types/scenario";
 import type { NewsGetDTO } from "@/types/news";
 
 import styles from "@/styles/playerDashboard.module.css";
@@ -45,7 +45,9 @@ function initials(name: string | null): string {
 }
 
 // ── Status label ───────────────────────────────────────────────────
-function statusLabel(directive: Directive): { text: string; className: string } {
+function statusLabel(
+  directive: Directive,
+): { text: string; className: string } {
   switch (directive.status) {
     case CommsStatus.ACCEPTED:
       return { text: "Approved", className: styles.accepted };
@@ -82,34 +84,41 @@ export default function PlayerDashboardPage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
-  const { data: directives, loading: directivesLoading } = usePolling<Directive[]>(
-    () => directiveService.getDirectivesByScenario(scenarioId, token),
+  const { data: directives, loading: directivesLoading } = usePolling<
+    Directive[]
+  >(
+    () => directiveService.getDirectivesByScenario(scenarioId, `Role ${token}`),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, token),
+    () => newsService.getNewsByScenario(scenarioId, `Role ${token}`),
     5000,
     enabled,
   );
 
   const { data: liveCharacter } = usePolling<Character>(
     () =>
-      characterId? characterService.getCharacterPoints(scenarioId,characterId,token)
+      characterId
+        ? characterService.getCharacterPoints(
+          scenarioId,
+          characterId,
+          `Role ${token}`,
+        )
         : Promise.reject(),
     15000,
-    enabled && !!characterId
+    enabled && !!characterId,
   );
 
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, token),
+    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
     5000,
-    enabled
+    enabled,
   );
 
   const effectiveScenario = liveScenario ?? scenario;
-  const isGameActive = effectiveScenario?.status === "UNFROZEN";
+  const isGameActive = effectiveScenario?.status === ScenarioStatus.UNFROZEN;
 
   const loading = staticLoading || directivesLoading || newsLoading;
 
@@ -142,8 +151,8 @@ export default function PlayerDashboardPage() {
       setStaticLoading(true);
       try {
         const [chars, scen] = await Promise.all([
-          characterService.getCharactersByScenario(scenarioId, token),
-          scenarioService.getScenarioById(scenarioId, token),
+          characterService.getCharactersByScenario(scenarioId, `Role ${token}`),
+          scenarioService.getScenarioById(scenarioId, `Role ${token}`),
         ]);
         if (!cancelled) {
           setCharacters(chars);
@@ -157,10 +166,13 @@ export default function PlayerDashboardPage() {
     };
 
     fetchStatic();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [enabled, scenarioId, token, characterService, scenarioService]);
 
-  const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
+  const selectedCharacter = characters.find((c) => c.id === characterId) ??
+    null;
 
   useEffect(() => {
     if (liveCharacter) {
@@ -174,6 +186,7 @@ export default function PlayerDashboardPage() {
       setMessageCount(selectedCharacter.messageCount ?? 0);
     }
   }, [
+      selectedCharacter,
     liveCharacter,
     selectedCharacter?.id,
     selectedCharacter?.pointsBalance,
@@ -187,12 +200,12 @@ export default function PlayerDashboardPage() {
   );
 
   const latestNews = [...(newsItems ?? [])]
-  .sort(
-    (a, b) =>
-      new Date(b.createdAt).getTime() -
-      new Date(a.createdAt).getTime(),
-  )
-  .slice(0, 3);
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime(),
+    )
+    .slice(0, 3);
 
   const exchangeRate = effectiveScenario?.exchangeRate ?? 10;
 
@@ -205,7 +218,7 @@ export default function PlayerDashboardPage() {
       const updated = await characterService.buyMessage(
         scenarioId,
         characterId,
-        token
+        `Role ${token}`,
       );
 
       setLikes(updated.pointsBalance ?? 0);
@@ -214,7 +227,7 @@ export default function PlayerDashboardPage() {
       messageApi.success("Message purchased.");
     } catch (err) {
       messageApi.error(
-        err instanceof Error ? err.message : "Purchase failed."
+        err instanceof Error ? err.message : "Purchase failed.",
       );
     } finally {
       setBuying(false);
@@ -291,49 +304,53 @@ export default function PlayerDashboardPage() {
                   disabled={!isGameActive}
                   style={{ opacity: isGameActive ? 1 : 0.5 }}
                   onClick={() =>
-                    router.push(`/scenarios/${scenarioId}/player/communicate?type=directive`)
-                  }
+                    router.push(
+                      `/scenarios/${scenarioId}/player/communicate?type=directive`,
+                    )}
                 >
                   New Directive
                 </Button>
               </div>
 
               <div className={styles.directiveList}>
-                {myDirectives.length === 0 ? (
-                  <p className={styles.emptyDirectives}>
-                    No directives submitted yet.
-                  </p>
-                ) : (
-                  myDirectives.map((d) => {
-                    const { text, className } = statusLabel(d);
-                    return (
-                      <div
-                        key={d.id}
-                        className={styles.directiveCard}
-                        style={{ cursor: "pointer" }}
-                        onClick={() =>
-                          router.push(
-                            `/scenarios/${scenarioId}/player/directives/${d.id}`,
-                          )
-                        }
-                      >
-                        <div className={styles.directiveRow}>
-                          <p className={styles.directiveTitle}>
-                            {d.title ?? d.body ?? "Untitled"}
+                {myDirectives.length === 0
+                  ? (
+                    <p className={styles.emptyDirectives}>
+                      No directives submitted yet.
+                    </p>
+                  )
+                  : (
+                    myDirectives.map((d) => {
+                      const { text, className } = statusLabel(d);
+                      return (
+                        <div
+                          key={d.id}
+                          className={styles.directiveCard}
+                          style={{ cursor: "pointer" }}
+                          onClick={() =>
+                            router.push(
+                              `/scenarios/${scenarioId}/player/directives/${d.id}`,
+                            )}
+                        >
+                          <div className={styles.directiveRow}>
+                            <p className={styles.directiveTitle}>
+                              {d.title ?? d.body ?? "Untitled"}
+                            </p>
+                            {d.createdAt && (
+                              <span className={styles.directiveDay}>
+                                {d.createdAt.slice(0, 10)}
+                              </span>
+                            )}
+                          </div>
+                          <p
+                            className={`${styles.directiveStatus} ${className}`}
+                          >
+                            {text}
                           </p>
-                          {d.createdAt && (
-                            <span className={styles.directiveDay}>
-                              {d.createdAt.slice(0, 10)}
-                            </span>
-                          )}
                         </div>
-                        <p className={`${styles.directiveStatus} ${className}`}>
-                          {text}
-                        </p>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
               </div>
             </aside>
 
@@ -347,8 +364,9 @@ export default function PlayerDashboardPage() {
                   disabled={!isGameActive}
                   style={{ opacity: isGameActive ? 1 : 0.5 }}
                   onClick={() =>
-                    router.push(`/scenarios/${scenarioId}/player/communicate?type=pronouncement`)
-                  }
+                    router.push(
+                      `/scenarios/${scenarioId}/player/communicate?type=pronouncement`,
+                    )}
                 >
                   Post Pronouncement
                 </Button>
@@ -358,68 +376,70 @@ export default function PlayerDashboardPage() {
               </p>
 
               <div className={styles.newsFeedCard}>
-              {latestNews.length === 0 ? (
-                <div className={styles.newsFeedPlaceholder}>
-                  <p className={styles.newsFeedPlaceholderTitle}>
-                    No news yet
-                  </p>
-                  <p>News stories will appear here when published.</p>
-                </div>
-              ) : (
-                <div>
-                  {latestNews.map((item, index) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        padding: "14px 0",
-                        borderBottom:
-                          index < latestNews.length - 1
-                            ? "1px solid #e5e7eb"
-                            : "none",
-                        whiteSpace: "pre-line",
-                        textAlign: "center",
-                        color: "#000000",
-                        fontSize: "14px",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {renderNewsText(item, characters)}
+                {latestNews.length === 0
+                  ? (
+                    <div className={styles.newsFeedPlaceholder}>
+                      <p className={styles.newsFeedPlaceholderTitle}>
+                        No news yet
+                      </p>
+                      <p>News stories will appear here when published.</p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: "12px",
-                marginBottom: "16px",
-                gap: "12px",
-              }}
-            >
-              <div>
-                {scenario?.mastodonProfileUrl && (
-                  <Button
-                    type="primary"
-                    onClick={() =>
-                      window.open(scenario.mastodonProfileUrl!, "_blank", "noopener,noreferrer")
-                    }
-                  >
-                    Go to Mastodon
-                  </Button>
-                )}
+                  )
+                  : (
+                    <div>
+                      {latestNews.map((item, index) => (
+                        <div
+                          key={item.id}
+                          style={{
+                            padding: "14px 0",
+                            borderBottom: index < latestNews.length - 1
+                              ? "1px solid #e5e7eb"
+                              : "none",
+                            whiteSpace: "pre-line",
+                            textAlign: "center",
+                            color: "#000000",
+                            fontSize: "14px",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {renderNewsText(item, characters)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
-
-              <Button
-                type="primary"
-                onClick={() =>
-                  router.push(`/scenarios/${scenarioId}/news`)
-                }
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "12px",
+                  marginBottom: "16px",
+                  gap: "12px",
+                }}
               >
-                See All News
-              </Button>
-            </div>
+                <div>
+                  {scenario?.mastodonProfileUrl && (
+                    <Button
+                      type="primary"
+                      onClick={() =>
+                        globalThis.open(
+                          scenario.mastodonProfileUrl!,
+                          "_blank",
+                          "noopener,noreferrer",
+                        )}
+                    >
+                      Go to Mastodon
+                    </Button>
+                  )}
+                </div>
+
+                <Button
+                  type="primary"
+                  onClick={() => router.push(`/scenarios/${scenarioId}/news`)}
+                >
+                  See All News
+                </Button>
+              </div>
               {/* My Likes & My Messages */}
               <div className={styles.metricsRow}>
                 <div className={styles.metricCard}>
@@ -431,12 +451,15 @@ export default function PlayerDashboardPage() {
                     disabled={likes < exchangeRate}
                     onClick={handleBuyMessage}
                   >
-                    Buy a message with {exchangeRate} Like{exchangeRate !== 1 ? "s" : ""}
+                    Buy a message with {exchangeRate}{" "}
+                    Like{exchangeRate !== 1 ? "s" : ""}
                   </Button>
                 </div>
 
                 <div className={styles.metricCard}>
-                  <p className={styles.metricLabel}>Current Available Messages</p>
+                  <p className={styles.metricLabel}>
+                    Current Available Messages
+                  </p>
                   <p className={styles.metricValue}>{messageCount}</p>
                 </div>
               </div>
@@ -460,8 +483,7 @@ export default function PlayerDashboardPage() {
                     fontWeight: 500,
                   }}
                 >
-                  The Crisis is{" "}
-                  {effectiveScenario
+                  The Crisis is {effectiveScenario
                     ? STATUS_LABEL[effectiveScenario.status]
                     : "Unknown"}
                 </p>
@@ -475,48 +497,61 @@ export default function PlayerDashboardPage() {
               </div>
 
               <div className={styles.characterList}>
-                {characters.length === 0 ? (
-                  <p className={styles.emptyCharacters}>No characters loaded.</p>
-                ) : (
-                  [...characters]
-                    .sort((a, b) => (a.id === characterId ? -1 : b.id === characterId ? 1 : 0))
-                    .map((char, index) => {
-                      const isMe = char.id === characterId;
-                      return (
-                        <div key={char.id ?? char.name} className={styles.characterRow}>
+                {characters.length === 0
+                  ? (
+                    <p className={styles.emptyCharacters}>
+                      No characters loaded.
+                    </p>
+                  )
+                  : (
+                    [...characters]
+                      .sort((a, b) => (a.id === characterId
+                        ? -1
+                        : b.id === characterId
+                        ? 1
+                        : 0)
+                      )
+                      .map((char, index) => {
+                        const isMe = char.id === characterId;
+                        return (
                           <div
-                            className={styles.characterAvatar}
-                            style={{ background: avatarGradient(index) }}
-                            aria-label={char.name ?? "Character"}
+                            key={char.id ?? char.name}
+                            className={styles.characterRow}
                           >
-                            {initials(char.name)}
-                          </div>
-                          <div className={styles.characterInfo}>
-                            <p className={styles.characterName}>
-                              {char.name ?? "Unknown"}
-                              {isMe && (
-                                <span className={styles.youBadge}>You</span>
+                            <div
+                              className={styles.characterAvatar}
+                              style={{ background: avatarGradient(index) }}
+                              aria-label={char.name ?? "Character"}
+                            >
+                              {initials(char.name)}
+                            </div>
+                            <div className={styles.characterInfo}>
+                              <p className={styles.characterName}>
+                                {char.name ?? "Unknown"}
+                                {isMe && (
+                                  <span className={styles.youBadge}>You</span>
+                                )}
+                              </p>
+                              {char.title && (
+                                <p className={styles.characterMeta}>
+                                  {char.title}
+                                </p>
                               )}
-                            </p>
-                            {char.title && (
-                              <p className={styles.characterMeta}>{char.title}</p>
-                            )}
+                            </div>
+                            <Button
+                              type="primary"
+                              className={styles.messageBtn}
+                              onClick={() =>
+                                router.push(
+                                  `/scenarios/${scenarioId}/player/characters/${char.id}`,
+                                )}
+                            >
+                              View
+                            </Button>
                           </div>
-                          <Button
-                            type="primary"
-                            className={styles.messageBtn}
-                            onClick={() =>
-                              router.push(
-                                `/scenarios/${scenarioId}/player/characters/${char.id}`,
-                              )
-                            }
-                          >
-                            View
-                          </Button>
-                        </div>
-                      );
-                    })
-                )}
+                        );
+                      })
+                  )}
               </div>
             </aside>
           </div>

@@ -2,7 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Input, message, Select, Spin, theme } from "antd";
+import {
+  Avatar,
+  Button,
+  ConfigProvider,
+  Input,
+  message,
+  Select,
+  Spin,
+  theme,
+} from "antd";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
@@ -49,8 +58,12 @@ export default function CommunicationFormPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const [commType, setCommType] = useState<CommType>(preselectedType ?? "direct_message");
-  const [recipientId, setRecipientId] = useState<number | null>(preselectedRecipient);
+  const [commType, setCommType] = useState<CommType>(
+    preselectedType ?? "direct_message",
+  );
+  const [recipientId, setRecipientId] = useState<number | null>(
+    preselectedRecipient,
+  );
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const MAX_POST_LENGTH = 500;
@@ -58,43 +71,47 @@ export default function CommunicationFormPage() {
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, token),
+    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
     5000,
-    enabled
+    enabled,
   );
 
   const isGameActive = liveScenario?.status === "UNFROZEN";
 
-
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, authReady]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
     let cancelled = false;
     setLoading(true);
     characterService
-      .getCharactersByScenario(scenarioId, token)
-      .then((chars) => { if (!cancelled) setCharacters(chars); })
+      .getCharactersByScenario(scenarioId, `Role ${token}`)
+      .then((chars) => {
+        if (!cancelled) setCharacters(chars);
+      })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthenticated, scenarioId, token, characterService]);
-
 
   const [messageApi, contextHolder] = message.useMessage();
 
   if (!authReady || !isAuthenticated) return null;
 
-  const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
+  const selectedCharacter = characters.find((c) => c.id === characterId) ??
+    null;
 
   const authorName = selectedCharacter?.name ?? "Unknown";
 
-  const totalLength =
-    commType === "pronouncement"
-      ? `${title}: ${content}\n-${authorName}`.length
-      : `${title}: ${content}`.length;
+  const totalLength = commType === "pronouncement"
+    ? `${title}: ${content}\n-${authorName}`.length
+    : `${title}: ${content}`.length;
 
   const overLimit = totalLength > MAX_POST_LENGTH;
 
@@ -110,7 +127,9 @@ export default function CommunicationFormPage() {
 
   const handleSubmit = async () => {
     if (!characterId) {
-      messageApi.error("No character selected. Please go back to the lobby and select a character first.");
+      messageApi.error(
+        "No character selected. Please go back to the lobby and select a character first.",
+      );
       return;
     }
     if (!title.trim() || !content.trim()) {
@@ -122,7 +141,10 @@ export default function CommunicationFormPage() {
       return;
     }
 
-    if (( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0)) {
+    if (
+      (commType === "direct_message" &&
+        (selectedCharacter?.messageCount ?? 0) <= 0)
+    ) {
       messageApi.error("No Messages Available");
       return;
     }
@@ -131,14 +153,22 @@ export default function CommunicationFormPage() {
     try {
       if (commType === "direct_message") {
         await messageService.createMessage(
-          { title, body: content, creatorId: characterId, recipientId: recipientId!, scenarioId },
-          token,
+          {
+            title,
+            body: content,
+            creatorId: characterId,
+            recipientId: recipientId!,
+            scenarioId,
+          },
+          `Role ${token}`,
         );
-        router.push(`/scenarios/${scenarioId}/player/characters/${recipientId}`);
+        router.push(
+          `/scenarios/${scenarioId}/player/characters/${recipientId}`,
+        );
       } else if (commType === "directive") {
         await directiveService.createDirective(
           { title, body: content, creatorId: characterId, scenarioId },
-          token,
+          `Role ${token}`,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
@@ -153,12 +183,14 @@ export default function CommunicationFormPage() {
             scenarioId,
             authorId: characterId,
           },
-          token,
+          `Role ${token}`,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       }
     } catch (err) {
-      const detail = err instanceof Error ? err.message : "Submission failed. Please try again.";
+      const detail = err instanceof Error
+        ? err.message
+        : "Submission failed. Please try again.";
       messageApi.error(detail);
     } finally {
       setSubmitting(false);
@@ -207,7 +239,9 @@ export default function CommunicationFormPage() {
                     Create and submit your directive, pronouncement, or message
                   </p>
                 </div>
-                <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
+                <Button
+                  onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
+                >
                   Back to Dashboard
                 </Button>
               </div>
@@ -219,33 +253,38 @@ export default function CommunicationFormPage() {
                   <Select
                     options={commTypeOptions}
                     value={commType}
-                    onChange={(v) => { setCommType(v as CommType); setRecipientId(null); }}
+                    onChange={(v) => {
+                      setCommType(v as CommType);
+                      setRecipientId(null);
+                    }}
                     style={{ width: "100%" }}
                   />
                 </div>
 
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Select Recipient</label>
-                  {commType === "direct_message" ? (
-                    <Select
-                      options={dmRecipientOptions}
-                      value={recipientId ?? undefined}
-                      onChange={(v) => setRecipientId(v)}
-                      placeholder="Select recipient"
-                      style={{ width: "100%" }}
-                    />
-                  ) : (
-                    <Select
-                      value={commType === "directive" ? "backroomer" : "all"}
-                      disabled
-                      options={[
-                        commType === "directive"
-                          ? { value: "backroomer", label: "Backroom" }
-                          : { value: "all", label: "All" },
-                      ]}
-                      style={{ width: "100%" }}
-                    />
-                  )}
+                  {commType === "direct_message"
+                    ? (
+                      <Select
+                        options={dmRecipientOptions}
+                        value={recipientId ?? undefined}
+                        onChange={(v) => setRecipientId(v)}
+                        placeholder="Select recipient"
+                        style={{ width: "100%" }}
+                      />
+                    )
+                    : (
+                      <Select
+                        value={commType === "directive" ? "backroomer" : "all"}
+                        disabled
+                        options={[
+                          commType === "directive"
+                            ? { value: "backroomer", label: "Backroom" }
+                            : { value: "all", label: "All" },
+                        ]}
+                        style={{ width: "100%" }}
+                      />
+                    )}
                 </div>
 
                 <div className={styles.fieldGroup}>
@@ -281,19 +320,20 @@ export default function CommunicationFormPage() {
                 >
                   {totalLength} / {MAX_POST_LENGTH}
                 </div>
-                <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
+                <Button
+                  onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
+                >
                   Cancel
                 </Button>
                 <Button
                   type="primary"
                   loading={submitting}
                   onClick={handleSubmit}
-                  disabled={
-                    submitting ||
+                  disabled={submitting ||
                     !isGameActive ||
-                    ( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0) ||
-                    (commType === "pronouncement" && overLimit)
-                  }
+                    (commType === "direct_message" &&
+                      (selectedCharacter?.messageCount ?? 0) <= 0) ||
+                    (commType === "pronouncement" && overLimit)}
                   style={{ opacity: isGameActive ? 1 : 0.5 }}
                 >
                   Submit

@@ -1,10 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Avatar, Button, ConfigProvider, Form, Input, InputNumber,
-  Modal, Space, theme,
+  Avatar,
+  Button,
+  ConfigProvider,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Space,
+  theme,
 } from "antd";
 import { DeleteOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +21,10 @@ import { CharacterService } from "@/api/characterService";
 import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import type { ScenarioPostDTO } from "@/types/scenario";
 import styles from "@/styles/createScenario.module.css";
+import { DirectorService } from "@/api/directorService";
+import { useDirector } from "@/hooks/useDirector";
+import { DirectorPutDTO } from "@/types/director";
+import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 interface ScenarioFormValues {
   title: string;
@@ -43,7 +54,10 @@ export default function CreateScenarioPage() {
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
+  const directorService = useMemo(() => new DirectorService(api), [api]);
+  const { setDirectorId, setDirectorToken } = useDirector(userId);
   const { addDirectedScenario } = useDirectedScenarios(userId);
+  const { setPlayerRole } = usePlayerRole();
 
   const [form] = Form.useForm<ScenarioFormValues>();
   const [characterForm] = Form.useForm<CharacterFormValues>();
@@ -56,7 +70,7 @@ export default function CreateScenarioPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, authReady]);
 
   const openModal = () => {
     characterForm.resetFields();
@@ -83,34 +97,40 @@ export default function CreateScenarioPage() {
   };
 
   const handleSubmit = async (values: ScenarioFormValues) => {
-    const data: ScenarioPostDTO = {
+    const scenarioData: ScenarioPostDTO = {
       title: values.title,
       description: values.description ?? null,
       exchangeRate: values.exchangeRate,
       startingMessageCount: values.startingMessageCount,
     };
+
+    const directorData: DirectorPutDTO = {
+      id: userId,
+    };
+
     setSubmitting(true);
+
     try {
-      const created = await scenarioService.createScenario(data, token);
-      addDirectedScenario(created.id);
-      if (created.directorToken && characters.length > 0) { //the association of tokens must always be with a human or class that represents a human, like player, Role, Director, Backroomer or User.
-        await Promise.all(
-          characters.map((c) =>
-            characterService.createCharacter(
-              {
-                name: c.name,
-                title: c.title || null,
-                description: c.description || null,
-                portrait: null,
-                secret: c.secret || null,
-                scenarioId: created.id,
-              },
-              created.directorToken!,
-            ),
-          ),
-        );
+      const createdDirector = await directorService.becomeDirector(
+        directorData,
+        `Bearer ${token}`,
+      );
+      const createdScenario = await scenarioService.createScenario(
+        scenarioData,
+        `Bearer ${token}`,
+      );
+
+      if (createdDirector.directorId) {
+        setDirectorId(createdDirector.directorId);
       }
-      router.push(`/scenarios/${created.id}`);
+      if (createdDirector.directorToken) {
+        setDirectorToken(createdDirector.directorToken);
+      }
+      if (createdScenario) {
+        addDirectedScenario(createdScenario.id);
+      }
+      setPlayerRole("director");
+      router.push(`/scenarios/${createdScenario.id}`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to create scenario");
     } finally {
@@ -163,13 +183,19 @@ export default function CreateScenarioPage() {
                 <Form.Item
                   name="title"
                   label="Scenario Title"
-                  rules={[{ required: true, message: "Please enter a scenario title" }]}
+                  rules={[{
+                    required: true,
+                    message: "Please enter a scenario title",
+                  }]}
                 >
                   <Input placeholder="Enter scenario title" />
                 </Form.Item>
 
                 <Form.Item name="description" label="Description">
-                  <Input.TextArea rows={4} placeholder="Describe the scenario" />
+                  <Input.TextArea
+                    rows={4}
+                    placeholder="Describe the scenario"
+                  />
                 </Form.Item>
 
                 {/* Characters */}
@@ -178,7 +204,9 @@ export default function CreateScenarioPage() {
                     <h3 className={styles.sectionTitle}>
                       Characters
                       {characters.length > 0 && (
-                        <span className={styles.sectionCount}>{characters.length}</span>
+                        <span className={styles.sectionCount}>
+                          {characters.length}
+                        </span>
                       )}
                     </h3>
                     <Button type="primary" onClick={openModal}>
@@ -186,59 +214,82 @@ export default function CreateScenarioPage() {
                     </Button>
                   </div>
 
-                  {characters.length === 0 ? (
-                    <p className={styles.sectionEmpty}>
-                      {`No characters added yet. Click "Add Character" to get started.`}
-                    </p>
-                  ) : (
-                    <div className={styles.characterList}>
-                      {characters.map((c) => (
-                        <div key={c.key} className={styles.characterRow}>
-                          <div className={styles.characterAvatar}>
-                            {c.name.slice(0, 2).toUpperCase()}
+                  {characters.length === 0
+                    ? (
+                      <p className={styles.sectionEmpty}>
+                        {`No characters added yet. Click "Add Character" to get started.`}
+                      </p>
+                    )
+                    : (
+                      <div className={styles.characterList}>
+                        {characters.map((c) => (
+                          <div key={c.key} className={styles.characterRow}>
+                            <div className={styles.characterAvatar}>
+                              {c.name.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className={styles.characterInfo}>
+                              <span className={styles.characterName}>
+                                {c.name}
+                              </span>
+                              {c.title && (
+                                <span className={styles.characterMeta}>
+                                  {c.title}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              type="text"
+                              danger
+                              icon={<DeleteOutlined />}
+                              onClick={() =>
+                                handleRemoveCharacter(c.key)}
+                              aria-label={`Remove ${c.name}`}
+                            />
                           </div>
-                          <div className={styles.characterInfo}>
-                            <span className={styles.characterName}>{c.name}</span>
-                            {c.title && (
-                              <span className={styles.characterMeta}>{c.title}</span>
-                            )}
-                          </div>
-                          <Button
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined />}
-                            onClick={() => handleRemoveCharacter(c.key)}
-                            aria-label={`Remove ${c.name}`}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 <Form.Item
                   name="exchangeRate"
                   label="Message Cost"
-                  rules={[{ required: true, message: "Please enter the message cost" }]}
+                  rules={[{
+                    required: true,
+                    message: "Please enter the message cost",
+                  }]}
                 >
                   <Space.Compact style={{ width: "100%" }}>
                     <InputNumber min={0} style={{ flex: 1 }} placeholder="0" />
                     <Input value="likes" disabled style={{ width: 72 }} />
                   </Space.Compact>
                 </Form.Item>
-                <p className={styles.fieldHint}>Likes required to buy a message</p>
+                <p className={styles.fieldHint}>
+                  Likes required to buy a message
+                </p>
 
                 <Form.Item
                   name="startingMessageCount"
                   label="Starting Messages"
-                  rules={[{ required: true, message: "Please enter the starting message count" }]}
+                  rules={[{
+                    required: true,
+                    message: "Please enter the starting message count",
+                  }]}
                 >
-                  <InputNumber min={0} style={{ width: "100%" }} placeholder="15" />
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="15"
+                  />
                 </Form.Item>
-                <p className={styles.fieldHint}>Number of messages each player starts with</p>
+                <p className={styles.fieldHint}>
+                  Number of messages each player starts with
+                </p>
 
                 <div className={styles.formFooter}>
-                  <Button onClick={() => router.push("/scenarios")}>Cancel</Button>
+                  <Button onClick={() => router.push("/scenarios")}>
+                    Cancel
+                  </Button>
                   <Button type="primary" htmlType="submit" loading={submitting}>
                     Save Scenario
                   </Button>
@@ -266,27 +317,61 @@ export default function CreateScenarioPage() {
           <Form.Item
             name="name"
             label="Name"
-            rules={[{ required: true, message: "Please enter the character's name" }]}
+            rules={[{
+              required: true,
+              message: "Please enter the character's name",
+            }]}
           >
             <Input placeholder="e.g. President Johnson" />
           </Form.Item>
 
-          <Form.Item name="title" label="Title"
-            rules={[{ required: true, message: "Please enter the character's title" }]}>
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[{
+              required: true,
+              message: "Please enter the character's title",
+            }]}
+          >
             <Input placeholder="e.g. Head of State" />
           </Form.Item>
 
-          <Form.Item name="description" label="Description"
-            rules={[{ required: true, message: "Please enter the character's description" }]}>
-            <Input.TextArea rows={3} placeholder="Public-facing character description" />
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[{
+              required: true,
+              message: "Please enter the character's description",
+            }]}
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="Public-facing character description"
+            />
           </Form.Item>
 
-          <Form.Item name="secret" label="Secret"
-            rules={[{ required: true, message: "Please enter the character's secret" }]}>
-            <Input.TextArea rows={3} placeholder="Hidden information only this player can see" />
+          <Form.Item
+            name="secret"
+            label="Secret"
+            rules={[{
+              required: true,
+              message: "Please enter the character's secret",
+            }]}
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="Hidden information only this player can see"
+            />
           </Form.Item>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 8,
+              paddingTop: 8,
+            }}
+          >
             <Button onClick={() => setModalOpen(false)}>Cancel</Button>
             <Button type="primary" htmlType="submit">Add</Button>
           </div>
