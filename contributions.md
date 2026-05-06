@@ -105,6 +105,8 @@ reason).
 | **[HalaiRhea]** | 22.04.2026   | (https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/dbee34de106762e170f9adb4ab67df4309d3a45e)|Added frontend mastodon account linking| Enables the link with the external API| 
 |**[reasonableFailure]**|29.04.2026|(Link 1)[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/e5ed40369da41349fd27008d1e3bda3d8d70766d] |added linking and storing fuctionality for user and backroomer assignment with authorization| enables guarding against unauthorized access |
 |**[reasonableFailure]**|29.04.2026|(Link 2)[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/e5ed40369da41349fd27008d1e3bda3d8d70766d]|added logic for simultaenous creation and user assignment when creating backroomer and removed failing mapping|failing mapping prevented User->Character assignment, backroomer was previously unassigned in DB|
+| **[zeyuwang-uzh]** | [23.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/5a5771f58aa3b55f97bc2251129156729ee5889e]|Refine player dashboard and wire directive submition with fixes|More informative UI for players and implementation of a core function |
+| **[zeyuwang-uzh]** | [23.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/055b8406d55673685f93cc54871e05e4a81aa9ba]|Add directive detail pages and communication form for backroom|Allows to view submitted directive logs and implement backroom core function |
 ---
 
 ## Contributions Week 6 - 30-Apr-2026 to 06-may-2026
@@ -116,6 +118,8 @@ reason).
 | **[HalaiRhea]** | 30.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/0f4345599df21a36a3636bbe10889af05a339f24| Frontend changes to allow for game states including freezing, day logic|Allows Director to control the state of the game to manage the experience|
 | **[HalaiRhea]** | 01.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/fa7e4522e6eef6525e9d1ae771910c89d0fd3064| Added User statistics and corresponding functioning to backend|Allows Director to better understand what the characters have done|
 | **[HalaiRhea]** | 01.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/fadc600b02c3be902bb244c1234cc9318b648138| Added User statistics and corresponding functioning to backend|Allows Director to better understand what the characters have done|
+| **[zeyuwang-uzh]** |was sick|will catch up progress and update next week |||
+| **[zeyuwang-uzh]** |was sick|will catch up progress and update next week |||
 ---
 
 ## Contributions Week 7 - [Begin Date] to [End Date]
