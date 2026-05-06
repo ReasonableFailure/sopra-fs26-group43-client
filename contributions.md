@@ -116,6 +116,8 @@ reason).
 | **[HalaiRhea]** | 30.04.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/0f4345599df21a36a3636bbe10889af05a339f24| Frontend changes to allow for game states including freezing, day logic|Allows Director to control the state of the game to manage the experience|
 | **[HalaiRhea]** | 01.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/fa7e4522e6eef6525e9d1ae771910c89d0fd3064| Added User statistics and corresponding functioning to backend|Allows Director to better understand what the characters have done|
 | **[HalaiRhea]** | 01.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/fadc600b02c3be902bb244c1234cc9318b648138| Added User statistics and corresponding functioning to backend|Allows Director to better understand what the characters have done|
+| **[HalaiRhea]** | 03.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/fa7e4522e6eef6525e9d1ae771910c89d0fd3064| Added backend categories to role class + logic to deal with them|Allows backroomers better understanding of what directives do|
+| **[HalaiRhea]** | 03.05.2026   | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/c56199c3fd6dd0e12a2629b43b575b35ef95d118| Added ability to create categories in directive form, filtering on backrooms side|Allows backroomers better understanding of what directives do|
 ---
 
 ## Contributions Week 7 - [Begin Date] to [End Date]
