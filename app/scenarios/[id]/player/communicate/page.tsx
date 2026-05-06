@@ -369,16 +369,17 @@ export default function CommunicationFormPage() {
               {/* Footer */}
               <div className={styles.cardFooter}>
                 {commType === "pronouncement" && (
-                    <div
-                      style={{
-                        marginTop: 6,
-                        textAlign: "right",
-                        fontSize: 12,
-                        color: overLimit ? "#dc2626" : "#6b7280",
-                  }}
-                >
-                  {totalLength} / {MAX_POST_LENGTH}
-                </div>)}
+                  <div
+                    style={{
+                      marginTop: 6,
+                      textAlign: "right",
+                      fontSize: 12,
+                      color: overLimit ? "#dc2626" : "#6b7280",
+                    }}
+                  >
+                    {totalLength} / {MAX_POST_LENGTH}
+                  </div>
+                )}
                 <Button
                   onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
                 >

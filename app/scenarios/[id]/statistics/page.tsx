@@ -29,6 +29,7 @@ export default function PlayerStatisticsPage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const [modal, contextHolder] = Modal.useModal();
 
   const api = useApi();
   const characterService = useMemo(
@@ -37,7 +38,7 @@ export default function PlayerStatisticsPage() {
   );
 
   const handleKill = (character: Character) => {
-    Modal.confirm({
+    modal.confirm({
       title: `Eliminate ${character.name}?`,
       content: "This action cannot be undone.",
       okText: "Kill",
@@ -143,6 +144,7 @@ export default function PlayerStatisticsPage() {
       }}
     >
       <div className={styles.pageRoot}>
+        {contextHolder}
         {/* NAVBAR */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>

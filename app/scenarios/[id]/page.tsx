@@ -208,7 +208,7 @@ export default function DirectorDashboardPage() {
             <Button
               onClick={() => router.push(`/scenarios/${scenarioId}/statistics`)}
             >
-              Player Statistics
+              Player Overview
             </Button>
             <Avatar icon={<UserOutlined />} />
           </div>

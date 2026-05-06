@@ -137,6 +137,32 @@ export default function BackroomDashboardPage() {
 
   const loading = directivesLoading || messagesLoading || newsLoading;
 
+  const CATEGORY_STYLES: Record<
+    DirectiveCategory,
+    { bg: string; border: string }
+  > = {
+    MILITARY: {
+      bg: "#fef3c7", 
+      border: "#f59e0b",
+    },
+    POLITICAL: {
+      bg: "#e0f2fe", 
+      border: "#0ea5e9",
+    },
+    PUBLIC: {
+      bg: "#dcfce7",
+      border: "#22c55e",
+    },
+    INTELLIGENCE: {
+      bg: "#ede9fe",
+      border: "#8b5cf6",
+    },
+    OTHER: {
+      bg: "#f3f4f6",
+      border: "#9ca3af",
+    },
+  };
+
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
@@ -252,15 +278,24 @@ export default function BackroomDashboardPage() {
                   onChange={(v) => setSelectedCategory(v)}
                   style={{ width: "100%" }}
                   options={[
-                    { value: "ALL", label: "All Categories" },
-                    { value: DirectiveCategory.MILITARY, label: "Military" },
-                    { value: DirectiveCategory.POLITICAL, label: "Political" },
-                    { value: DirectiveCategory.PUBLIC, label: "Public" },
                     {
-                      value: DirectiveCategory.INTELLIGENCE,
-                      label: "Intelligence",
+                      value: "ALL",
+                      label: "All Categories",
                     },
-                    { value: DirectiveCategory.OTHER, label: "Other" },
+                    ...Object.values(DirectiveCategory).map((cat) => ({
+                      value: cat,
+                      label: (
+                        <div
+                          style={{
+                            background: CATEGORY_STYLES[cat].bg,
+                            padding: "4px 8px",
+                            borderRadius: 4,
+                          }}
+                        >
+                          {cat}
+                        </div>
+                      ),
+                    })),
                   ]}
                 />
               </div>
@@ -288,58 +323,66 @@ export default function BackroomDashboardPage() {
                   No directives submitted yet.
                 </p>
               )}
+              {filteredDirectives.map((directive) => {
+                const style = directive.category
+                  ? CATEGORY_STYLES[directive.category]
+                  : CATEGORY_STYLES.OTHER;
 
-              {filteredDirectives.map((directive) => (
-                <div
-                  key={directive.id}
-                  className={styles.tableRow}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    if (
-                      directive.status === CommsStatus.PENDING ||
-                      directive.status === null
-                    ) {
-                      router.push(
-                        `/scenarios/${scenarioId}/backroom/communicate?type=response&directiveId=${directive.id}`,
-                      );
-                    } else {
-                      router.push(
-                        `/scenarios/${scenarioId}/backroom/directives/${directive.id}`,
-                      );
-                    }
-                  }}
-                >
+                return (
                   <div
-                    className={`${styles.playerCell} ${styles.colPlayerName}`}
+                    key={directive.id}
+                    className={styles.tableRow}
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor: style.bg,
+                      borderLeft: `4px solid ${style.border}`,
+                    }}
+                    onClick={() => {
+                      if (
+                        directive.status === CommsStatus.PENDING ||
+                        directive.status === null
+                      ) {
+                        router.push(
+                          `/scenarios/${scenarioId}/backroom/communicate?type=response&directiveId=${directive.id}`,
+                        );
+                      } else {
+                        router.push(
+                          `/scenarios/${scenarioId}/backroom/directives/${directive.id}`,
+                        );
+                      }
+                    }}
                   >
-                    <div className={styles.playerAvatar}>
-                      {initials(characterName(directive.creatorId ?? null))}
-                    </div>
-                    <span className={styles.playerName}>
-                      {characterName(directive.creatorId ?? null)}
-                    </span>
-                  </div>
-
-                  <div
-                    className={`${styles.directiveCell} ${styles.colDirectiveTitle}`}
-                  >
-                    <span className={styles.directiveTitle}>
-                      {directive.title ?? directive.body ?? "Untitled"}
-                    </span>
-                    {directive.createdAt && (
-                      <span className={styles.directiveDay}>
-                        {directive.createdAt.slice(0, 10)}
+                    <div
+                      className={`${styles.playerCell} ${styles.colPlayerName}`}
+                    >
+                      <div className={styles.playerAvatar}>
+                        {initials(characterName(directive.creatorId ?? null))}
+                      </div>
+                      <span className={styles.playerName}>
+                        {characterName(directive.creatorId ?? null)}
                       </span>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className={styles.statusCell}>
-                    <DirectiveBadge status={directive.status} />
+                    <div
+                      className={`${styles.directiveCell} ${styles.colDirectiveTitle}`}
+                    >
+                      <span className={styles.directiveTitle}>
+                        {directive.title ?? directive.body ?? "Untitled"}
+                      </span>
+                      {directive.createdAt && (
+                        <span className={styles.directiveDay}>
+                          {directive.createdAt.slice(0, 10)}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.statusCell}>
+                      <DirectiveBadge status={directive.status} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-
             {/* ── Center: News Feed ── */}
             <div className={styles.centerPanel}>
               <div className={styles.panelHeader}>
