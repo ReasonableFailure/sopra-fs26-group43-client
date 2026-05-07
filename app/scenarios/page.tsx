@@ -69,7 +69,7 @@ export default function ScenariosPage() {
   const { token, userId, isAuthenticated, authReady } = useAuth();
   const { isDirector } = useDirectedScenarios(userId);
   const router = useRouter();
-  const { scenarios, loading, error } = useScenarios(`Bearer ${token}`);
+  const { scenarios, loading, error } = useScenarios(`Bearer`);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
