@@ -19,14 +19,8 @@ import type { Directive } from "@/types/directive";
 import { DirectiveCategory } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import type { Message } from "@/types/message";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/backroomDashboard.module.css";
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function DirectiveBadge({ status }: { status: CommsStatus | null }) {
   if (status === CommsStatus.ACCEPTED) {
@@ -142,11 +136,11 @@ export default function BackroomDashboardPage() {
     { bg: string; border: string }
   > = {
     MILITARY: {
-      bg: "#fef3c7", 
+      bg: "#fef3c7",
       border: "#f59e0b",
     },
     POLITICAL: {
-      bg: "#e0f2fe", 
+      bg: "#e0f2fe",
       border: "#0ea5e9",
     },
     PUBLIC: {
@@ -192,6 +186,16 @@ export default function BackroomDashboardPage() {
     if (id === null) return "Unknown";
     return characters.find((c) => c.id === id)?.name ?? "Unknown";
   };
+
+  function portraitSrc(character?: Character | null): string | null {
+    if (!character?.portrait) return null;
+
+    if (character.portrait.startsWith("data:")) {
+      return character.portrait;
+    }
+
+    return `data:image/jpeg;base64,${character.portrait}`;
+  }
 
   const handleMessageAction = async (
     messageId: number | null,
@@ -355,9 +359,29 @@ export default function BackroomDashboardPage() {
                     <div
                       className={`${styles.playerCell} ${styles.colPlayerName}`}
                     >
-                      <div className={styles.playerAvatar}>
-                        {initials(characterName(directive.creatorId ?? null))}
-                      </div>
+                      {(() => {
+                        const character = characters.find(
+                          (c) => c.id === directive.creatorId,
+                        );
+
+                        const portrait = portraitSrc(character);
+
+                        return portrait
+                          ? (
+                            <img
+                              src={portrait}
+                              alt={character?.name ?? "Character"}
+                              className={styles.AvatarImage}
+                            />
+                          )
+                          : (
+                            <div className={styles.playerAvatar}>
+                              {initials(
+                                characterName(directive.creatorId ?? null),
+                              )}
+                            </div>
+                          );
+                      })()}
                       <span className={styles.playerName}>
                         {characterName(directive.creatorId ?? null)}
                       </span>
@@ -496,9 +520,28 @@ export default function BackroomDashboardPage() {
                 {pendingMessages.map((message) => (
                   <div key={message.id} className={styles.messageCard}>
                     <div className={styles.messageCardHeader}>
-                      <div className={styles.senderAvatar}>
-                        {initials(characterName(message.creatorId))}
-                      </div>
+                      {(() => {
+                        const character = characters.find(
+                          (c) =>
+                            c.id === message.creatorId,
+                        );
+
+                        const portrait = portraitSrc(character);
+
+                        return portrait
+                          ? (
+                            <img
+                              src={portrait}
+                              alt={character?.name ?? "Character"}
+                              className={styles.AvatarImage}
+                            />
+                          )
+                          : (
+                            <div className={styles.senderAvatar}>
+                              {initials(characterName(message.creatorId))}
+                            </div>
+                          );
+                      })()}
                       <div className={styles.senderInfo}>
                         <span className={styles.senderName}>
                           {characterName(message.creatorId)}

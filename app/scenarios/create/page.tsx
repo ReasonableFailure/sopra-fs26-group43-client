@@ -9,11 +9,19 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Space,
   theme,
+  Upload,
 } from "antd";
-import { DeleteOutlined, EditOutlined, UserOutlined } from "@ant-design/icons";
+import type { UploadFile } from "antd/es/upload/interface";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  UploadOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
@@ -34,6 +42,7 @@ interface CharacterFormValues {
   title: string;
   description: string;
   secret: string;
+  portrait: string | null;
 }
 
 interface DraftCharacter {
@@ -42,6 +51,23 @@ interface DraftCharacter {
   title: string;
   description: string;
   secret: string;
+  portrait: string | null;
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+
+    reader.onload = () => {
+      resolve(reader.result as string);
+    };
+
+    reader.onerror = (error) => {
+      reject(error);
+    };
+  });
 }
 
 export default function CreateScenarioPage() {
@@ -54,6 +80,7 @@ export default function CreateScenarioPage() {
 
   const [form] = Form.useForm<ScenarioFormValues>();
   const [characterForm] = Form.useForm<CharacterFormValues>();
+  const watchedPortrait = Form.useWatch("portrait", characterForm);
   const [submitting, setSubmitting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [characters, setCharacters] = useState<DraftCharacter[]>([]);
@@ -61,6 +88,7 @@ export default function CreateScenarioPage() {
     DraftCharacter | null
   >(null);
   const [nextKey, setNextKey] = useState(0);
+  const [uploadFileList, setUploadFileList] = useState<UploadFile[]>([]);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
@@ -72,10 +100,25 @@ export default function CreateScenarioPage() {
     if (character) {
       setEditingCharacter(character);
       characterForm.setFieldsValue(character);
+
+      if (character.portrait) {
+        setUploadFileList([
+          {
+            uid: "-1",
+            name: "portrait",
+            status: "done",
+            url: character.portrait,
+          },
+        ]);
+      } else {
+        setUploadFileList([]);
+      }
     } else {
       setEditingCharacter(null);
       characterForm.resetFields();
+      setUploadFileList([]);
     }
+
     setModalOpen(true);
   };
 
@@ -83,7 +126,9 @@ export default function CreateScenarioPage() {
     if (editingCharacter) {
       setCharacters((prev) =>
         prev.map((c) =>
-          c.key === editingCharacter.key ? { ...c, ...values } : c
+          c.key === editingCharacter.key
+            ? { ...c, ...values, portrait: values.portrait ?? null }
+            : c
         )
       );
     } else {
@@ -92,6 +137,7 @@ export default function CreateScenarioPage() {
         {
           key: nextKey,
           ...values,
+          portrait: values.portrait ?? null,
         },
       ]);
       setNextKey((k) => k + 1);
@@ -124,7 +170,7 @@ export default function CreateScenarioPage() {
                 name: c.name,
                 title: c.title || null,
                 description: c.description || null,
-                portrait: null,
+                portrait: c.portrait,
                 secret: c.secret || null,
                 scenarioId: created.id,
               },
@@ -228,7 +274,22 @@ export default function CreateScenarioPage() {
                         {characters.map((c) => (
                           <div key={c.key} className={styles.characterRow}>
                             <div className={styles.characterAvatar}>
-                              {c.name.slice(0, 2).toUpperCase()}
+                              {c.portrait
+                                ? (
+                                  <img
+                                    src={c.portrait}
+                                    alt={c.name}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                      borderRadius: "50%",
+                                    }}
+                                  />
+                                )
+                                : (
+                                  c.name.slice(0, 2).toUpperCase()
+                                )}
                             </div>
                             <div className={styles.characterInfo}>
                               <span className={styles.characterName}>
@@ -324,6 +385,61 @@ export default function CreateScenarioPage() {
           onFinish={handleAddCharacter}
           style={{ marginTop: 16 }}
         >
+          {watchedPortrait && (
+            <img
+              src={watchedPortrait}
+              alt="Portrait preview"
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: "50%",
+                objectFit: "cover",
+                marginTop: 8,
+              }}
+            />
+          )}
+          <Form.Item name="portrait" hidden>
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="Portrait">
+            <Upload
+              fileList={uploadFileList}
+              maxCount={1}
+              accept="image/*"
+              beforeUpload={async (file) => {
+                if (file.size > 2 * 1024 * 1024) {
+                  message.error("Image must be smaller than 2MB");
+                  return Upload.LIST_IGNORE;
+                }
+
+                const base64 = await fileToBase64(file as File);
+
+                characterForm.setFieldValue("portrait", base64);
+
+                setUploadFileList([
+                  {
+                    uid: file.uid,
+                    name: file.name,
+                    status: "done",
+                    url: base64,
+                  },
+                ]);
+
+                return false;
+              }}
+              onRemove={() => {
+                characterForm.setFieldValue("portrait", null);
+                setUploadFileList([]);
+              }}
+              showUploadList
+            >
+              <Button icon={<UploadOutlined />}>
+                Upload Portrait
+              </Button>
+            </Upload>
+          </Form.Item>
+
           <Form.Item
             name="name"
             label="Name"

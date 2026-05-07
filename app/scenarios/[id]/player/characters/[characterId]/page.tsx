@@ -20,14 +20,8 @@ import { MessageService } from "@/api/messageService";
 import type { Character } from "@/types/character";
 import type { Message } from "@/types/message";
 import { CommsStatus } from "@/types/directive";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/characterProfile.module.css";
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";

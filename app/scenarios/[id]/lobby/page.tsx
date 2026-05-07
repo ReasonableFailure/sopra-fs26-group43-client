@@ -24,10 +24,34 @@ function CharacterCard({ character, onSelect }: CharacterCardProps) {
       role="button"
       tabIndex={0}
     >
-      <h3 className={styles.characterName}>{character.name}</h3>
-      <p className={styles.characterDesc}>
-        {character.description ?? "No description provided."}
-      </p>
+      <div className={styles.cardHeader}>
+        <div className={styles.cardText}>
+          <h3 className={styles.characterName}>
+            {character.name}
+          </h3>
+
+          <p className={styles.characterTitle}>
+            {character.title ?? "No title provided."}
+          </p>
+        </div>
+
+        <div className={styles.characterPortraitWrapper}>
+          {character.portrait
+            ? (
+              <img
+                src={character.portrait}
+                alt={character.name ?? "Character portrait"}
+                className={styles.characterPortrait}
+              />
+            )
+            : (
+              <div className={styles.characterPortraitFallback}>
+                {(character.name ?? "?").slice(0, 2).toUpperCase()}
+              </div>
+            )}
+        </div>
+      </div>
+
       <div className={styles.selectHint}>
         <InfoCircleOutlined className={styles.hintIcon} />
         <span className={styles.hintText}>Hover to select</span>

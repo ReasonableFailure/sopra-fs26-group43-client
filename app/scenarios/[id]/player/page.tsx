@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { initials } from "@/helpers/helperFunctions";
 
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
@@ -35,13 +36,6 @@ const AVATAR_GRADIENTS = [
 
 function avatarGradient(index: number) {
   return AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length];
-}
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 // ── Status label ───────────────────────────────────────────────────
@@ -298,8 +292,12 @@ export default function PlayerDashboardPage() {
               shape="circle"
               className={styles.bellButton}
             />
-            <Avatar className={styles.navAvatar}>
-              {initials(selectedCharacter?.name ?? null)}
+            <Avatar
+              className={styles.navAvatar}
+              src={selectedCharacter?.portrait ?? undefined}
+            >
+              {!selectedCharacter?.portrait &&
+                initials(selectedCharacter?.name ?? null)}
             </Avatar>
           </div>
         </nav>
@@ -537,10 +535,22 @@ export default function PlayerDashboardPage() {
                           >
                             <div
                               className={styles.characterAvatar}
-                              style={{ background: avatarGradient(index) }}
+                              style={{
+                                background: char.portrait
+                                  ? "transparent"
+                                  : avatarGradient(index),
+                              }}
                               aria-label={char.name ?? "Character"}
                             >
-                              {initials(char.name)}
+                              {char.portrait
+                                ? (
+                                  <img
+                                    src={char.portrait}
+                                    alt={char.name ?? "Character portrait"}
+                                    className={styles.characterPortrait}
+                                  />
+                                )
+                                : initials(char.name)}
                             </div>
                             <div className={styles.characterInfo}>
                               <p className={styles.characterName}>

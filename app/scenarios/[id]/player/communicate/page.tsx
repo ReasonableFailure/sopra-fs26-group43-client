@@ -24,16 +24,10 @@ import { MessageService } from "@/api/messageService";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/communicationForm.module.css";
 
 type CommType = "direct_message" | "directive" | "pronouncement";
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 export default function CommunicationFormPage() {
   const { token, isAuthenticated, authReady } = useAuth();
@@ -252,8 +246,12 @@ export default function CommunicationFormPage() {
               Your Character has Died.
             </div>
           )}
-          <Avatar className={styles.navAvatar}>
-            {initials(selectedCharacter?.name ?? null)}
+          <Avatar
+            className={styles.navAvatar}
+            src={selectedCharacter?.portrait ?? undefined}
+          >
+            {!selectedCharacter?.portrait &&
+              initials(selectedCharacter?.name ?? null)}
           </Avatar>
         </nav>
 
