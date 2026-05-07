@@ -24,7 +24,7 @@ export const useScenarios = (userType: string) => {
       setError(null);
       try {
         if(token){
-          const data = await scenarioService.getScenarios(userType + token);
+          const data = await scenarioService.getScenarios(userType + " " + token);
           if (!cancelled) setScenarios(data);
         }
       } catch (err) {
