@@ -337,7 +337,8 @@ export default function CreateScenarioPage() {
                   </Space.Compact>
                 </Form.Item>
                 <p className={styles.fieldHint}>
-                  Likes required to buy a message
+                  This is the number of likes a player must receive on their
+                  mastodon pronouncements to send one message.
                 </p>
 
                 <Form.Item
@@ -355,7 +356,7 @@ export default function CreateScenarioPage() {
                   />
                 </Form.Item>
                 <p className={styles.fieldHint}>
-                  Number of messages each player starts with
+                  This is the number of messages each player starts with
                 </p>
 
                 <div className={styles.formFooter}>

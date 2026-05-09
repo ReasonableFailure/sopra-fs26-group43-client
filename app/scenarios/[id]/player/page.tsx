@@ -2,8 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
-import { BellOutlined } from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  ConfigProvider,
+  message,
+  Modal,
+  Spin,
+  theme,
+} from "antd";
+import { BellOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { InputNumber } from "antd";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -76,6 +84,7 @@ export default function PlayerDashboardPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [buying, setBuying] = useState(false);
   const [buyAmount, setBuyAmount] = useState(1);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -451,13 +460,24 @@ export default function PlayerDashboardPage() {
                 <div className={styles.metricCard}>
                   <p className={styles.metricLabel}>Current Like Balance</p>
                   <p className={styles.metricValue}>{likes}</p>
-                  <InputNumber
-                    min={1}
-                    max={Math.floor(likes / exchangeRate)}
-                    value={buyAmount}
-                    onChange={(v) => setBuyAmount(v ?? 1)}
-                  />
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <InputNumber
+                      className={styles.buyInput}
+                      min={1}
+                      max={Math.floor(likes / exchangeRate)}
+                      value={buyAmount}
+                      onChange={(v) => setBuyAmount(v ?? 1)}
+                      style={{
+                        width: 80,
+                      }}
+                    />
                     <Button
                       type="primary"
                       className={styles.buyButton}
@@ -465,6 +485,11 @@ export default function PlayerDashboardPage() {
                         buyAmount < 1 ||
                         likes < exchangeRate * buyAmount}
                       onClick={handleBuyMessage}
+                      style={{
+                        height: 48,
+                        display: "flex",
+                        alignItems: "center",
+                      }}
                     >
                       Buy {buyAmount} message{buyAmount !== 1 ? "s" : ""}
                     </Button>
@@ -476,6 +501,18 @@ export default function PlayerDashboardPage() {
                     Current Available Messages
                   </p>
                   <p className={styles.metricValue}>{messageCount}</p>
+                  <Button
+                    className={styles.tutorialButton}
+                    type="default"
+                    size="large"
+                    icon={<QuestionCircleOutlined />}
+                    onClick={() => setIsTutorialOpen(true)}
+                    style={{
+                      height: 48,
+                      paddingInline: 24,
+                      fontWeight: 600,
+                    }}
+                  />
                 </div>
               </div>
               <div className={styles.metricCard}>
@@ -583,6 +620,43 @@ export default function PlayerDashboardPage() {
             </aside>
           </div>
         </Spin>
+        <Modal
+          title="Likes & Messages"
+          open={isTutorialOpen}
+          onCancel={() =>
+            setIsTutorialOpen(false)}
+          footer={[
+            <Button
+              key="close"
+              onClick={() =>
+                setIsTutorialOpen(false)}
+            >
+              Close
+            </Button>,
+          ]}
+        >
+          <ol
+            style={{
+              paddingLeft: 20,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              lineHeight: 1.6,
+            }}
+          >
+            <li>
+              Others can like your prounouncements on mastodon, to show support.
+            </li>
+            <li>
+              The number of private message are limited by the number of likes
+              you have received.
+            </li>
+            <li>
+              After the initial free messages are used up, you can purchase one
+              additional message for {buyAmount} Likes.
+            </li>
+          </ol>
+        </Modal>
       </div>
     </ConfigProvider>
   );
