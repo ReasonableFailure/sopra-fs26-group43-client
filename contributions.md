@@ -129,8 +129,14 @@ reason).
 
 ## Contributions Week 7 - [Begin Date] to [End Date]
 
-| **[HalaiRhea]** | 07.05.2026 | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/bda2c6d6b52e710115608bc06a42a327322aba56 | Adjust backend to allow the uploading and accessing of portraits for characters| allow for in-game visual identity  
-| **[HalaiRhea]** | 07.05.2026 |https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/f5e4f9e7994d2f7427bd07415aadeac06464635c | Allow addition of portraits in character creation, access in various pages| allow for in-game visual identity
+| **[HalaiRhea]** | 07.05.2026 |
+https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/bda2c6d6b52e710115608bc06a42a327322aba56
+| Adjust backend to allow the uploading and accessing of portraits for
+characters| allow for in-game visual identity\
+| **[HalaiRhea]** | 07.05.2026
+|https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/f5e4f9e7994d2f7427bd07415aadeac06464635c
+| Allow addition of portraits in character creation, access in various pages|
+allow for in-game visual identity
 
 ---
 

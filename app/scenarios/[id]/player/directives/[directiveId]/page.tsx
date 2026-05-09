@@ -44,7 +44,7 @@ function StatusBadge({ status }: { status: CommsStatus | null }) {
 function approvalStatusText(status: CommsStatus | null): string {
   switch (status) {
     case CommsStatus.ACCEPTED:
-      return "Your directive has been approved by the backroom team and will start to affect the scenario from next round.";
+      return "Your directive has been approved by the backroom team and will start to affect the scenario from the next day.";
     case CommsStatus.REJECTED:
       return "Your directive has been rejected by the backroom team.";
     case CommsStatus.FAILED:
