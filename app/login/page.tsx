@@ -22,7 +22,6 @@ interface RegisterFields {
 const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
-  const [form] = Form.useForm();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [loginForm] = Form.useForm<LoginFields>();
   const [registerForm] = Form.useForm<RegisterFields>();
@@ -68,9 +67,10 @@ const Login: React.FC = () => {
   };
 
   const switchMode = (next: "login" | "register") => {
-    form.resetFields();
-    setMode(next);
-  };
+  loginForm.resetFields();
+  registerForm.resetFields();
+  setMode(next);
+};
 
   return (
     <ConfigProvider
