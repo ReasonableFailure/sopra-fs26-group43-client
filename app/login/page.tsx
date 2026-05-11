@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import  {useAuth} from "@/hooks/useAuth";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import { User } from "@/types/user";
+import {User, UserPostDTO} from "@/types/user";
 import { Button, Form, Input } from "antd";
 
 interface LoginFields {
@@ -47,16 +47,14 @@ const Login: React.FC = () => {
   const handleRegister = async (values: RegisterFields) => {
     setLoading(true);
     try {
-      const response = await useAuth.register("/users", {
+      const data: UserPostDTO = {
         username: values.username,
         password: values.password,
-        ...(values.bio?.trim() ? { bio: values.bio.trim() } : {}),
-      });
-      if (response.token) setToken(response.token);
-      if (response.id) setUserId(response.id);
-      if(authReady){
-        router.push("/scenarios");
+        bio: values.bio,
       }
+      const res = await register(data);
+      if(res.id) setUserId(res.id);
+      if(res.token) setToken(res.token);
     } catch (error) {
       if (error instanceof Error) {
         alert(`Registration failed:\n${error.message}`);
