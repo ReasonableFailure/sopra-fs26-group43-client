@@ -25,6 +25,7 @@ import { DirectorService } from "@/api/directorService";
 import { useDirector } from "@/hooks/useDirector";
 import { DirectorPutDTO } from "@/types/director";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
+import {CharacterPostDTO} from "@/types/character";
 
 interface ScenarioFormValues {
   title: string;
@@ -97,26 +98,13 @@ export default function CreateScenarioPage() {
   };
 
   const handleSubmit = async (values: ScenarioFormValues) => {
-    const scenarioData: ScenarioPostDTO = {
-      title: values.title,
-      description: values.description ?? null,
-      exchangeRate: values.exchangeRate,
-      startingMessageCount: values.startingMessageCount,
-    };
-
     const directorData: DirectorPutDTO = {
       id: userId,
     };
-
     setSubmitting(true);
-
     try {
       const createdDirector = await directorService.becomeDirector(
         directorData,
-        `Bearer ${token}`,
-      );
-      const createdScenario = await scenarioService.createScenario(
-        scenarioData,
         `Bearer ${token}`,
       );
 
@@ -126,10 +114,37 @@ export default function CreateScenarioPage() {
       if (createdDirector.directorToken) {
         setDirectorToken(createdDirector.directorToken);
       }
+      const scenarioData: ScenarioPostDTO = {
+        title: values.title,
+        description: values.description ?? null,
+        exchangeRate: values.exchangeRate,
+        startingMessageCount: values.startingMessageCount,
+        director: createdDirector.directorId,
+      };
+
+      const createdScenario = await scenarioService.createScenario(
+          scenarioData,
+          `Bearer ${token}`,
+      );
       if (createdScenario) {
         addDirectedScenario(createdScenario.id);
       }
       setPlayerRole("director");
+
+      if (createdScenario && characters.length > 0) {
+        // Loop through drafted characters and create them in the backend
+        for (const char of characters) {
+          const characterData: CharacterPostDTO = {
+            name: char.name,
+            title: char.title,
+            description: char.description,
+            portrait: null,
+            secret: char.secret,
+            scenarioId: createdScenario.id,
+          }
+          const res = await characterService.createCharacter(characterData, `Director ${token}`);
+        }
+      }
       router.push(`/scenarios/${createdScenario.id}`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to create scenario");
