@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Select, Spin, theme } from "antd";
-import { ClockCircleOutlined, FilterOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  FilterOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { NewsService } from "@/api/newsService";
@@ -12,6 +16,7 @@ import { ScenarioService } from "@/api/scenarioService";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
 import styles from "@/styles/newsPage.module.css";
+import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 type FilterType = "all" | "news" | "pronouncement";
 
@@ -28,11 +33,9 @@ function timeAgo(iso: string | null): string {
 }
 
 function TypeBadge({ isPronouncement }: { isPronouncement: boolean }) {
-  return isPronouncement ? (
-    <span className={styles.badgePronouncement}>Pronouncement</span>
-  ) : (
-    <span className={styles.badgeNews}>News Story</span>
-  );
+  return isPronouncement
+    ? <span className={styles.badgePronouncement}>Pronouncement</span>
+    : <span className={styles.badgeNews}>News Story</span>;
 }
 
 interface FeedCardProps {
@@ -70,6 +73,7 @@ export default function NewsPage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { playerRole } = usePlayerRole();
 
   const api = useApi();
   const newsService = useMemo(() => new NewsService(api), [api]);
@@ -84,7 +88,7 @@ export default function NewsPage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, authReady]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
@@ -92,9 +96,12 @@ export default function NewsPage() {
     setLoading(true);
 
     Promise.all([
-      newsService.getNewsByScenario(scenarioId, token),
-      characterService.getCharactersByScenario(scenarioId, token),
-      scenarioService.getScenarioById(scenarioId, token),
+      newsService.getNewsByScenario(scenarioId, `${playerRole} ${token}`),
+      characterService.getCharactersByScenario(
+        scenarioId,
+        `${playerRole} ${token}`,
+      ),
+      scenarioService.getScenarioById(scenarioId, `${playerRole} ${token}`),
     ])
       .then(([news, chars, scenario]) => {
         if (cancelled) return;
@@ -103,10 +110,22 @@ export default function NewsPage() {
         setScenarioTitle(scenario.title);
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, token, newsService, characterService, scenarioService]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isAuthenticated,
+    scenarioId,
+    token,
+    newsService,
+    characterService,
+    scenarioService,
+    playerRole,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -157,8 +176,12 @@ export default function NewsPage() {
           <div className={styles.contentWrapper}>
             <div className={styles.pageHeader}>
               <div>
-                <h1 className={styles.heading}>{scenarioTitle ?? "Loading…"}</h1>
-                <p className={styles.subheading}>Stay updated with the latest developments</p>
+                <h1 className={styles.heading}>
+                  {scenarioTitle ?? "Loading…"}
+                </h1>
+                <p className={styles.subheading}>
+                  Stay updated with the latest developments
+                </p>
               </div>
               <Select
                 value={filter}

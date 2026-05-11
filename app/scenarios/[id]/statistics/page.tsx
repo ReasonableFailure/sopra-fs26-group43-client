@@ -2,14 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Avatar,
-  Button,
-  ConfigProvider,
-  Spin,
-  Table,
-  theme,
-} from "antd";
+import { Avatar, Button, ConfigProvider, Spin, Table, theme } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -30,7 +23,7 @@ export default function PlayerStatisticsPage() {
   const api = useApi();
   const characterService = useMemo(
     () => new CharacterService(api),
-    [api]
+    [api],
   );
 
   const enabled = isAuthenticated && !!scenarioId;
@@ -39,10 +32,10 @@ export default function PlayerStatisticsPage() {
     () =>
       characterService.getCharactersByScenario(
         scenarioId,
-        token
+        token,
       ),
     5000,
-    enabled
+    enabled,
   );
 
   useEffect(() => {
@@ -111,9 +104,7 @@ export default function PlayerStatisticsPage() {
 
           <div className={styles.navRight}>
             <Button
-              onClick={() =>
-                router.push(`/scenarios/${scenarioId}`)
-              }
+              onClick={() => router.push(`/scenarios/${scenarioId}`)}
             >
               Back to Dashboard
             </Button>
@@ -122,11 +113,10 @@ export default function PlayerStatisticsPage() {
           </div>
         </nav>
 
-        
         <main className={styles.pageBody}>
           <Spin spinning={loading}>
             <div className={styles.contentWrapper}>
-            {/* TABLE */}
+              {/* TABLE */}
               <div className={styles.card}>
                 <Table
                   dataSource={characters ?? []}

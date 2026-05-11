@@ -14,13 +14,9 @@ import type { Engagement, RoleType } from "@/types/engagement";
 import { routeForEngagement } from "@/utils/engagementRouting";
 import styles from "@/styles/scenarios.module.css";
 
-function ScenarioCard({
-  scenario,
-  engagement,
-}: {
-  scenario: Scenario;
-  engagement: Engagement | null;
-}) {
+function ScenarioCard(
+  { scenario, isDirector }: { scenario: Scenario; isDirector: boolean },
+) {
   const router = useRouter();
 
   const moreMenu: MenuProps = {
@@ -34,7 +30,8 @@ function ScenarioCard({
         key: "delete",
         label: "Delete",
         danger: true,
-        onClick: () => alert(`Delete scenario "${scenario.title}"? (not yet implemented)`),
+        onClick: () =>
+          alert(`Delete scenario "${scenario.title}"? (not yet implemented)`),
       },
     ],
   };
@@ -46,7 +43,11 @@ function ScenarioCard({
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>{scenario.title}</h2>
         <Dropdown menu={moreMenu} trigger={["click"]}>
-          <Button type="text" icon={<MoreOutlined />} aria-label="More options" />
+          <Button
+            type="text"
+            icon={<MoreOutlined />}
+            aria-label="More options"
+          />
         </Dropdown>
       </div>
       <p className={styles.cardDesc}>
@@ -113,21 +114,13 @@ function EngagementCard({ engagement }: { engagement: Engagement }) {
 export default function ScenariosPage() {
   const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
-  const { scenarios, loading, error } = useScenarios(token);
-  const { engagements, loading: engagementsLoading, error: engagementsError } =
-    useEngagedScenarios(userId, token);
-  const [activeTab, setActiveTab] = useState<string>("all");
-
-  const engagementByScenario = useMemo(
-    () => new Map((engagements ?? []).map((e) => [e.scenarioId, e])),
-    [engagements],
-  );
+  const { scenarios, loading, error } = useScenarios(`Bearer`);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, authReady]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -202,7 +195,10 @@ export default function ScenariosPage() {
             <span className={styles.navTitle}>Scenario Manager</span>
           </div>
           <div className={styles.navRight}>
-            <Button type="primary" onClick={() => router.push("/scenarios/create")}>
+            <Button
+              type="primary"
+              onClick={() => router.push("/scenarios/create")}
+            >
               Create New Scenario
             </Button>
             <Avatar icon={<UserOutlined />} className={styles.avatar} />
@@ -212,25 +208,30 @@ export default function ScenariosPage() {
         <main className={styles.pageBody}>
           <div className={styles.contentWrapper}>
             <div className={styles.pageHeader}>
-              <h1 className={styles.heading}>
-                {activeTab === "mine" ? "My Crises" : "Created Scenarios"}
-              </h1>
+              <h1 className={styles.heading}>Created Scenarios</h1>
               <p className={styles.subheading}>
-                {activeTab === "mine"
-                  ? "Scenarios you're engaged in as a Director, Backroomer, or Character"
-                  : "Review previously created scenarios"}
+                Review previously created scenarios
               </p>
             </div>
 
-            <Tabs
-              className={styles.tabsRow}
-              activeKey={activeTab}
-              onChange={setActiveTab}
-              items={[
-                { key: "all", label: "All Scenarios", children: allTab },
-                { key: "mine", label: "My Crises", children: myCrisesTab },
-              ]}
-            />
+            {error && <p className={styles.errorText}>{error}</p>}
+
+            <Spin spinning={loading}>
+              <div className={styles.cardList}>
+                {!loading && scenarios?.length === 0 && (
+                  <p className={styles.emptyText}>
+                    No scenarios yet. Create your first one above.
+                  </p>
+                )}
+                {scenarios?.map((scenario) => (
+                  <ScenarioCard
+                    key={scenario.id}
+                    scenario={scenario}
+                    isDirector={isDirector(scenario.id)}
+                  />
+                ))}
+              </div>
+            </Spin>
           </div>
         </main>
       </div>

@@ -1,5 +1,5 @@
 export enum ScenarioStatus {
-  UNSTARTED= "UNSTARTED",
+  UNSTARTED = "UNSTARTED",
   FROZEN = "FROZEN",
   UNFROZEN = "UNFROZEN",
   COMPLETED = "COMPLETED",
@@ -13,7 +13,6 @@ export interface Scenario {
   dayNumber: number;
   exchangeRate: number;
   startingMessageCount: number;
-  directorToken?: string; // returned by backend once ScenarioGetDTO includes it
   mastodonProfileUrl?: string | null;
 }
 
@@ -23,6 +22,7 @@ export interface ScenarioPostDTO {
   description: string | null;
   exchangeRate: number;
   startingMessageCount: number;
+  director: number;
 }
 
 /** PUT /scenarios/{id} */
