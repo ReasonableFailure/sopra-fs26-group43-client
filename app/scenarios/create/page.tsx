@@ -23,7 +23,7 @@ import type { ScenarioPostDTO } from "@/types/scenario";
 import styles from "@/styles/createScenario.module.css";
 import { DirectorService } from "@/api/directorService";
 import { useDirector } from "@/hooks/useDirector";
-import { DirectorPutDTO } from "@/types/director";
+import { DirectorPostDTO } from "@/types/director";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { CharacterPostDTO } from "@/types/character";
 
@@ -98,7 +98,7 @@ export default function CreateScenarioPage() {
   };
 
   const handleSubmit = async (values: ScenarioFormValues) => {
-    const directorData: DirectorPutDTO = {
+    const directorData: DirectorPostDTO = {
       id: userId,
     };
     setSubmitting(true);

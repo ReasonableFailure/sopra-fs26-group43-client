@@ -5,7 +5,7 @@ export interface Director {
   directorToken: string;
 }
 
-export interface DirectorPutDTO {
+export interface DirectorPostDTO {
   id: number;
 }
 export interface DirectorGetDTO {
