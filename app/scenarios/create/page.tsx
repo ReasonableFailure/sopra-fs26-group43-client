@@ -142,7 +142,7 @@ export default function CreateScenarioPage() {
             secret: char.secret,
             scenarioId: createdScenario.id,
           }
-          const res = await characterService.createCharacter(characterData, `Director ${token}`);
+          const res = await characterService.createCharacter(characterData, `Director ${createdDirector.directorToken}`);
         }
       }
       router.push(`/scenarios/${createdScenario.id}`);
