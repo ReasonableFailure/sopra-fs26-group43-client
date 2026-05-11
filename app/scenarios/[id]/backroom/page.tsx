@@ -181,6 +181,14 @@ export default function BackroomDashboardPage() {
   const pendingMessages = (messages ?? []).filter((m) =>
     m.status === CommsStatus.PENDING || m.status === null
   );
+  const messageHistory = (messages ?? [])
+    .filter((m) =>
+      m.status === CommsStatus.ACCEPTED || m.status === CommsStatus.REJECTED
+    )
+    .sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   const characterName = (id: number | null): string => {
     if (id === null) return "Unknown";
@@ -265,17 +273,17 @@ export default function BackroomDashboardPage() {
           />
         </nav>
 
-        <Spin spinning={loading} style={{ flex: 1, display: "flex" }}>
-          <div className={styles.body}>
-            {/* ── Left: Directives ── */}
-            <div className={styles.leftPanel}>
-              <div className={styles.panelHeader}>
-                <h2 className={styles.panelTitle}>Directives</h2>
-                <p className={styles.panelSubtitle}>
-                  Review and manage player directives
-                </p>
-              </div>
-
+        <Spin spinning={loading} fullscreen={false} />
+        <div className={styles.body}>
+          {/* ── Left: Directives ── */}
+          <div className={styles.leftPanel}>
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>Directives</h2>
+              <p className={styles.panelSubtitle}>
+                Review and manage player directives
+              </p>
+            </div>
+            <div className={styles.leftPanelContent}>
               <div style={{ marginBottom: "12px" }}>
                 <Select
                   value={selectedCategory}
@@ -407,53 +415,54 @@ export default function BackroomDashboardPage() {
                 );
               })}
             </div>
-            {/* ── Center: News Feed ── */}
-            <div className={styles.centerPanel}>
-              <div className={styles.panelHeader}>
+          </div>
+          {/* ── Center: News Feed ── */}
+          <div className={styles.centerPanel}>
+            <div className={styles.panelHeader}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  width: "100%",
+                  gap: "16px",
+                }}
+              >
+                <div>
+                  <h2 className={styles.panelTitle}>News Feed</h2>
+                  <p className={styles.panelSubtitle}>
+                    Publish stories to all players
+                  </p>
+                </div>
                 <div
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    width: "100%",
-                    gap: "16px",
+                    flexDirection: "column",
+                    gap: "8px",
+                    alignItems: "flex-end",
                   }}
                 >
-                  <div>
-                    <h2 className={styles.panelTitle}>News Feed</h2>
-                    <p className={styles.panelSubtitle}>
-                      Publish stories to all players
-                    </p>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
-                      alignItems: "flex-end",
-                    }}
+                  <Button
+                    type="primary"
+                    onClick={() => router.push(`/scenarios/${scenarioId}/news`)}
                   >
+                    See All News
+                  </Button>
+
+                  {scenario?.mastodonProfileUrl && (
                     <Button
                       type="primary"
-                      onClick={() =>
-                        router.push(`/scenarios/${scenarioId}/news`)}
+                      href={scenario.mastodonProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      See All News
+                      Go to Mastodon
                     </Button>
-
-                    {scenario?.mastodonProfileUrl && (
-                      <Button
-                        type="primary"
-                        href={scenario.mastodonProfileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Go to Mastodon
-                      </Button>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
+            </div>
+            <div className={styles.centerPanelContent}>
               <div className={styles.newsFeedBody}>
                 {latestNews.length === 0
                   ? (
@@ -484,102 +493,185 @@ export default function BackroomDashboardPage() {
                           }}
                         >
                           {renderNewsText(item)}
+                          {item.createdAt && (
+                            <div
+                              style={{
+                                marginTop: 4,
+                                fontSize: 12,
+                                color: "#6b7280",
+                              }}
+                            >
+                              {item.createdAt.slice(0, 19).replace("T", " ")}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
                   )}
               </div>
-              <div className={styles.newStoryFooter}>
-                <Button
-                  type="primary"
-                  className={styles.newStoryBtn}
-                  onClick={() =>
-                    router.push(
-                      `/scenarios/${scenarioId}/backroom/communicate?type=news_story`,
-                    )}
-                >
-                  Post a New Story
-                </Button>
-              </div>
             </div>
-
-            {/* ── Right: Pending Messages ── */}
-            <div className={styles.rightPanel}>
-              <div className={styles.panelHeader}>
-                <h2 className={styles.panelTitle}>Pending Messages</h2>
-                <p className={styles.panelSubtitle}>
-                  Approve or reject player communications
-                </p>
-              </div>
-
-              {pendingMessages.length === 0 && !loading && (
-                <p className={styles.emptyState}>No pending messages.</p>
-              )}
-
-              <div className={styles.messagesList}>
-                {pendingMessages.map((message) => (
-                  <div key={message.id} className={styles.messageCard}>
-                    <div className={styles.messageCardHeader}>
-                      {(() => {
-                        const character = characters.find(
-                          (c) =>
-                            c.id === message.creatorId,
-                        );
-
-                        const portrait = portraitSrc(character);
-
-                        return portrait
-                          ? (
-                            <img
-                              src={portrait}
-                              alt={character?.name ?? "Character"}
-                              className={styles.AvatarImage}
-                            />
-                          )
-                          : (
-                            <div className={styles.senderAvatar}>
-                              {initials(characterName(message.creatorId))}
-                            </div>
-                          );
-                      })()}
-                      <div className={styles.senderInfo}>
-                        <span className={styles.senderName}>
-                          {characterName(message.creatorId)}
-                        </span>
-                        <span className={styles.recipientLabel}>
-                          To: {characterName(message.recipientId)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className={styles.messageBody}>
-                      {message.body ?? message.title ?? ""}
-                    </p>
-
-                    <div className={styles.messageActions}>
-                      <Button
-                        className={styles.approveBtn}
-                        loading={actionLoading === message.id}
-                        onClick={() =>
-                          handleMessageAction(message.id, CommsStatus.ACCEPTED)}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        className={styles.rejectBtn}
-                        loading={actionLoading === message.id}
-                        onClick={() =>
-                          handleMessageAction(message.id, CommsStatus.REJECTED)}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className={styles.newStoryFooter}>
+              <Button
+                type="primary"
+                className={styles.newStoryBtn}
+                onClick={() =>
+                  router.push(
+                    `/scenarios/${scenarioId}/backroom/communicate?type=news_story`,
+                  )}
+              >
+                Post a New Story
+              </Button>
             </div>
           </div>
-        </Spin>
+
+          {/* ── Right: Messages ── */}
+          <div className={styles.rightPanel}>
+            {/* Pending section */}
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>Pending Messages</h2>
+              <p className={styles.panelSubtitle}>
+                Approve or reject player communications
+              </p>
+            </div>
+
+            <div className={styles.scrollSection}>
+              {pendingMessages.length === 0 && !loading
+                ? <p className={styles.emptyState}>No pending messages.</p>
+                : (
+                  <div className={styles.scrollList}>
+                    {pendingMessages.map((message) => (
+                      <div key={message.id} className={styles.messageCard}>
+                        <div className={styles.messageCardHeader}>
+                          {(() => {
+                            const character = characters.find(
+                              (c) =>
+                                c.id === message.creatorId,
+                            );
+
+                            const portrait = portraitSrc(character);
+
+                            return portrait
+                              ? (
+                                <img
+                                  src={portrait}
+                                  alt={character?.name ?? "Character"}
+                                  className={styles.AvatarImage}
+                                />
+                              )
+                              : (
+                                <div className={styles.senderAvatar}>
+                                  {initials(characterName(message.creatorId))}
+                                </div>
+                              );
+                          })()}
+
+                          <div className={styles.senderInfo}>
+                            <span className={styles.senderName}>
+                              {characterName(message.creatorId)}
+                            </span>
+
+                            <span className={styles.recipientLabel}>
+                              To: {characterName(message.recipientId)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className={styles.messageBody}>
+                          {message.body ?? message.title ?? ""}
+                        </p>
+
+                        <div className={styles.messageActions}>
+                          <Button
+                            className={styles.approveBtn}
+                            loading={actionLoading === message.id}
+                            onClick={() =>
+                              handleMessageAction(
+                                message.id,
+                                CommsStatus.ACCEPTED,
+                              )}
+                          >
+                            Approve
+                          </Button>
+
+                          <Button
+                            className={styles.rejectBtn}
+                            loading={actionLoading === message.id}
+                            onClick={() =>
+                              handleMessageAction(
+                                message.id,
+                                CommsStatus.REJECTED,
+                              )}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+
+            {/* History section */}
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>Message History</h2>
+
+              <p className={styles.panelSubtitle}>
+                Previously approved or rejected messages
+              </p>
+            </div>
+
+            <div className={styles.scrollSection}>
+              {messageHistory.length === 0 && !loading
+                ? <p className={styles.emptyState}>No handled messages yet.</p>
+                : (
+                  <div className={styles.scrollList}>
+                    {messageHistory.map((message) => (
+                      <div
+                        key={`hist-${message.id}`}
+                        className={styles.messageCard}
+                      >
+                        <div className={styles.messageCardHeader}>
+                          <div className={styles.senderAvatar}>
+                            {initials(characterName(message.creatorId))}
+                          </div>
+
+                          <div className={styles.senderInfo}>
+                            <span className={styles.senderName}>
+                              {characterName(message.creatorId)}
+                            </span>
+
+                            <span className={styles.recipientLabel}>
+                              To: {characterName(message.recipientId)}
+                            </span>
+                          </div>
+
+                          <div style={{ marginLeft: "auto" }}>
+                            <DirectiveBadge status={message.status} />
+                          </div>
+                        </div>
+
+                        <p className={styles.messageBody}>
+                          {message.body ?? message.title ?? ""}
+                        </p>
+
+                        {message.createdAt && (
+                          <p
+                            style={{
+                              fontSize: 12,
+                              color: "#6b7280",
+                              margin: 0,
+                            }}
+                          >
+                            {message.createdAt.slice(0, 19).replace("T", " ")}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+          </div>
+        </div>
       </div>
     </ConfigProvider>
   );
