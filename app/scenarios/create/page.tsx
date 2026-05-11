@@ -124,7 +124,7 @@ export default function CreateScenarioPage() {
 
       const createdScenario = await scenarioService.createScenario(
         scenarioData,
-        `Bearer ${token}`,
+        `Director ${createdDirector.directorToken}`,
       );
       if (createdScenario) {
         addDirectedScenario(createdScenario.id);

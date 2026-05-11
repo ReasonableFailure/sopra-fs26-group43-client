@@ -4,7 +4,7 @@ export enum UserStatus {
 }
 
 export interface User {
-  id: number | null;
+  id: number;
   username: string | null;
   token: string | null;
   status: UserStatus | null;
