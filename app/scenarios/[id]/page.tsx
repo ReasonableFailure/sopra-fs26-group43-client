@@ -458,21 +458,21 @@ export default function DirectorDashboardPage() {
                 Create or log into your Mastodon account.
               </li>
               <li>
-                Under Settings, navigate to "Development"
+                Under Settings, navigate to &quot;Development&quot;
               </li>
               <li>
-                Select "New Application"
+                Select &quot;New Application&quot;
               </li>
               <li>
-                Give your application a name, and select "read:statuses" and
-                "write:statuses" permissions.
+                Give your application a name, and select &quot;read:statuses&quot; and
+                &quot;write:statuses&quot; permissions.
               </li>
               <li>
                 Generate an access token for the application.
               </li>
               <li>
                 Copy the access token, along with the Mastodon server URL (e.g.
-                https://mastodon.social), into the "Add Mastodon Account" form.
+                https://mastodon.social), into the &quot;Add Mastodon Account&quot; form.
               </li>
               <li>
                 Save the configuration.
