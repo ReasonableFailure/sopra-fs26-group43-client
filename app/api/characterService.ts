@@ -54,7 +54,7 @@ export class CharacterService {
     userToken: string,
     characterId: number,
   ): Promise<Character> {
-    return this.api.put<Character>(`/player/${characterId}`, dto, userToken);
+    return await this.api.put<Character>(`/player/${characterId}`, dto, userToken);
   }
 
   public async modifyCharacter(

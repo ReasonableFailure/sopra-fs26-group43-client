@@ -25,7 +25,7 @@ import { DirectorService } from "@/api/directorService";
 import { useDirector } from "@/hooks/useDirector";
 import { DirectorPutDTO } from "@/types/director";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
-import {CharacterPostDTO} from "@/types/character";
+import { CharacterPostDTO } from "@/types/character";
 
 interface ScenarioFormValues {
   title: string;
@@ -123,8 +123,8 @@ export default function CreateScenarioPage() {
       };
 
       const createdScenario = await scenarioService.createScenario(
-          scenarioData,
-          `Bearer ${token}`,
+        scenarioData,
+        `Bearer ${token}`,
       );
       if (createdScenario) {
         addDirectedScenario(createdScenario.id);
@@ -141,8 +141,11 @@ export default function CreateScenarioPage() {
             portrait: null,
             secret: char.secret,
             scenarioId: createdScenario.id,
-          }
-          const res = await characterService.createCharacter(characterData, `Director ${createdDirector.directorToken}`);
+          };
+          const res = await characterService.createCharacter(
+            characterData,
+            `Director ${createdDirector.directorToken}`,
+          );
         }
       }
       router.push(`/scenarios/${createdScenario.id}`);
