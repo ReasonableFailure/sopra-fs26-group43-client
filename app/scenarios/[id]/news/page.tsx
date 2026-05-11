@@ -193,8 +193,8 @@ export default function NewsPage() {
                 style={{ width: 140 }}
                 options={[
                   { value: "all", label: "All" },
-                  { value: "news", label: "News Story" },
-                  { value: "pronouncement", label: "Pronouncement" },
+                  { value: "news", label: "News Stories" },
+                  { value: "pronouncement", label: "Pronouncements" },
                 ]}
               />
             </div>
