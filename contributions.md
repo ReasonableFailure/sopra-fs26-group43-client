@@ -104,7 +104,8 @@ reason).
 | **[HalaiRhea]**         | 22.04.2026 | (https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/dbee34de106762e170f9adb4ab67df4309d3a45e)                                   | Added frontend mastodon account linking                                                                                                     | Enables the link with the external API                                                                                               |
 | **[reasonableFailure]** | 29.04.2026 | (Link 1)[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/e5ed40369da41349fd27008d1e3bda3d8d70766d]                           | added linking and storing fuctionality for user and backroomer assignment with authorization                                                | enables guarding against unauthorized access                                                                                         |
 | **[reasonableFailure]** | 29.04.2026 | (Link 2)[https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/e5ed40369da41349fd27008d1e3bda3d8d70766d]                           | added logic for simultaenous creation and user assignment when creating backroomer and removed failing mapping                              | failing mapping prevented User->Character assignment, backroomer was previously unassigned in DB                                     |
-
+| **[zeyuwang-uzh]** | [23.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/5a5771f58aa3b55f97bc2251129156729ee5889e]|Refine player dashboard and wire directive submition with fixes|More informative UI for players and implementation of a core function |
+| **[zeyuwang-uzh]** | [23.04.2026] | [https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/055b8406d55673685f93cc54871e05e4a81aa9ba]|Add directive detail pages and communication form for backroom|Allows to view submitted directive logs and implement backroom core function |
 ---
 
 ## Contributions Week 6 - 30-Apr-2026 to 06-May-2026
@@ -124,7 +125,8 @@ reason).
 | **[HalaiRhea]**         | 03.05.2026 | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/c56199c3fd6dd0e12a2629b43b575b35ef95d118                                     | Added ability to create categories in directive form, filtering on backrooms side                                                                                                                        | Allows backroomers better understanding of what directives do                                                                                         |
 | **[ReasonableFailure]** | 04.05.2026 | https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/457124cfc01b9f0706793620b08b380972864dd9                                     | Adjusted Scenario and Director creation logic, user->character assignment backend integration, user->backroomer backend integration, token formatting works                                              | Allows authorization                                                                                                                                  |
 | **[ReasonableFailure]** | 04.05.2026 | https://github.com/ReasonableFailure/sopra-fs26-group43-server/commit/1973cb3115c7bbc492478d396053ce0329fe71b2                                     | Requisite changes in backend to support frontend changes                                                                                                                                                 | Support frontend changes                                                                                                                              |
-
+| **[zeyuwang-uzh]** |was sick|will catch up progress and update next week |||
+| **[zeyuwang-uzh]** |was sick|will catch up progress and update next week |||
 ---
 
 ## Contributions Week 7 - [Begin Date] to [End Date]
