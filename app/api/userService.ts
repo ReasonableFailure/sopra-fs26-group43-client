@@ -29,8 +29,12 @@ export class UserService {
     return this.api.postWithToken<void>(`/logout/${id}`, {}, `Bearer ${token}`);
   }
 
+  deleteUser(id: number, token: string): Promise<void> {
+    return this.api.delete<void>(`/users/${id}`, `Bearer ${token}`);
+  }
+
   getEngagements(userId: number, token: string): Promise<Engagement[]> {
-    return this.api.getWithToken<Engagement[]>(
+    return this.api.get<Engagement[]>(
       `/users/${userId}/engagements`,
       `Bearer ${token}`,
     );

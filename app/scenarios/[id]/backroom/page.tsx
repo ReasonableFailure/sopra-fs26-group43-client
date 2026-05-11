@@ -72,14 +72,14 @@ export default function BackroomDashboardPage() {
     () =>
       directiveService.getDirectivesByScenario(
         scenarioId,
-        `Backroomer ${token}`,
+        `Bearer ${token}`,
       ),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, `Backroomer ${token}`),
+    () => newsService.getNewsByScenario(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );
@@ -92,7 +92,7 @@ export default function BackroomDashboardPage() {
 
     let cancelled = false;
 
-    scenarioService.getScenarioById(scenarioId, `Backroomer ${token}`)
+    scenarioService.getScenarioById(scenarioId, `Bearer ${token}`)
       .then((data) => {
         if (!cancelled) setScenario(data);
       })
@@ -112,14 +112,14 @@ export default function BackroomDashboardPage() {
       try {
         const pairs = await messageService.getMessagePairsByScenario(
           scenarioId,
-          `Backroomer ${token}`,
+          `Bearer ${token}`,
         );
         const arrays = await Promise.all(
           pairs.map((p) =>
             messageService.getMessagesBetween(
               p.roleAId,
               p.roleBId,
-              `Backroomer ${token}`,
+              `Bearer ${token}`,
             )
           ),
         );
@@ -150,7 +150,7 @@ export default function BackroomDashboardPage() {
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    characterService.getCharactersByScenario(scenarioId, `Backroomer ${token}`)
+    characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`)
       .then((chars) => {
         if (!cancelled) setCharacters(chars);
       })
@@ -181,7 +181,7 @@ export default function BackroomDashboardPage() {
       await messageService.updateMessage(
         messageId,
         { status },
-        `Backroomer ${token}`,
+        `Bearer ${token}`,
       );
     } catch {
       // silently ignore — message stays in list

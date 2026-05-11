@@ -32,7 +32,7 @@ export default function PlayerStatisticsPage() {
     () =>
       characterService.getCharactersByScenario(
         scenarioId,
-        token,
+        `Bearer ${token}`,
       ),
     5000,
     enabled,

@@ -70,11 +70,11 @@ export default function BackroomCommunicatePage() {
     Promise.all([
       directiveService.getDirectivesByScenario(
         scenarioId,
-        `Backroomer ${token}`,
+        `Bearer ${token}`,
       ),
       characterService.getCharactersByScenario(
         scenarioId,
-        `Backroomer ${token}`,
+        `Bearer ${token}`,
       ),
     ])
       .then(([dirs, chars]) => {
@@ -136,7 +136,7 @@ export default function BackroomCommunicatePage() {
             : CommsStatus.REJECTED,
           response: content,
         },
-        `Backroomer ${token}`,
+        `Bearer ${token}`,
       );
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
@@ -169,7 +169,7 @@ export default function BackroomCommunicatePage() {
         title,
         body: content,
         scenarioId,
-      }, `Backroomer ${token}`);
+      }, `Bearer ${token}`);
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
       messageApi.error(

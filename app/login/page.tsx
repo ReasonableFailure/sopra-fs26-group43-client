@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useApi } from "@/hooks/useApi";
-import  {useAuth} from "@/hooks/useAuth";
-import useLocalStorage from "@/hooks/useLocalStorage";
-import { User } from "@/types/user";
+import {useAuth} from "@/hooks/useAuth";
 import { Button, Form, Input } from "antd";
 
 interface LoginFields {
@@ -21,19 +18,16 @@ interface RegisterFields {
 
 const Login: React.FC = () => {
   const router = useRouter();
-  const apiService = useApi();
   const [loginForm] = Form.useForm<LoginFields>();
   const [registerForm] = Form.useForm<RegisterFields>();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
-  const { setToken, setUserId, authReady, register, login} = useAuth();
+  const { register, login } = useAuth();
 
   const handleLogin = async (values: LoginFields) => {
     setLoading(true);
     try {
-      const response = await apiService.post<User>("/login", values);
-      if (response.token) setToken(response.token);
-      if (response.id) setUserId(response.id);
+      await login(values);
       router.push("/scenarios");
     } catch (error) {
       if (error instanceof Error) {
@@ -47,16 +41,12 @@ const Login: React.FC = () => {
   const handleRegister = async (values: RegisterFields) => {
     setLoading(true);
     try {
-      const response = await useAuth.register("/users", {
+      await register({
         username: values.username,
         password: values.password,
         ...(values.bio?.trim() ? { bio: values.bio.trim() } : {}),
       });
-      if (response.token) setToken(response.token);
-      if (response.id) setUserId(response.id);
-      if(authReady){
-        router.push("/scenarios");
-      }
+      router.push("/scenarios");
     } catch (error) {
       if (error instanceof Error) {
         alert(`Registration failed:\n${error.message}`);

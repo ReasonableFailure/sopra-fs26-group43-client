@@ -28,29 +28,15 @@ export const useEngagedScenarios = (userId: number | null, token: string) => {
   }, [userService, userId, token]);
 
   useEffect(() => {
-    let cancelled = false;
-    if (!token || userId == null) {
+    if (!token || !userId) {
+      // Drop the previous user's data so the next user doesn't see it.
+      setEngagements(null);
+      setError(null);
       setLoading(false);
       return;
     }
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await userService.getEngagements(userId, token);
-        if (!cancelled) setEngagements(data);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to fetch engagements");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [userService, userId, token]);
+    fetchEngagements();
+  }, [fetchEngagements, token, userId]);
 
   return { engagements, loading, error, refetch: fetchEngagements };
 };

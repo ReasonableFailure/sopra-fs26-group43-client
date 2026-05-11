@@ -69,11 +69,11 @@ function FeedCard({ item, authorName }: FeedCardProps) {
 }
 
 export default function NewsPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { playerRole } = usePlayerRole();
+  const { playerRole } = usePlayerRole(userId);
 
   const api = useApi();
   const newsService = useMemo(() => new NewsService(api), [api]);
@@ -96,12 +96,12 @@ export default function NewsPage() {
     setLoading(true);
 
     Promise.all([
-      newsService.getNewsByScenario(scenarioId, `${playerRole} ${token}`),
+      newsService.getNewsByScenario(scenarioId, `Bearer ${token}`),
       characterService.getCharactersByScenario(
         scenarioId,
-        `${playerRole} ${token}`,
+        `Bearer ${token}`,
       ),
-      scenarioService.getScenarioById(scenarioId, `${playerRole} ${token}`),
+      scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     ])
       .then(([news, chars, scenario]) => {
         if (cancelled) return;

@@ -82,7 +82,7 @@ export default function DirectorDashboardPage() {
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: scenario, loading, error } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, token),
+    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );
@@ -105,7 +105,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { status: ScenarioStatus.UNFROZEN, dayNumber: 1 },
-        `Director ${token}`,
+        `Bearer ${token}`,
       );
       messageApi.success("Game started");
     } catch {
@@ -120,7 +120,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { dayNumber: scenario.dayNumber + 1 },
-        `Director ${token}`,
+        `Bearer ${token}`,
       );
       messageApi.success("Advanced to next day");
     } catch {
@@ -137,7 +137,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { status: isFrozen ? ScenarioStatus.UNFROZEN : ScenarioStatus.FROZEN },
-        `Director ${token}`,
+        `Bearer ${token}`,
       );
       messageApi.success(isFrozen ? "Game resumed" : "Game frozen");
     } catch {
@@ -150,7 +150,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { status: ScenarioStatus.COMPLETED },
-        `Director ${token}`,
+        `Bearer ${token}`,
       );
       messageApi.success("Game ended");
     } catch {
@@ -165,7 +165,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateMastodonConfig(
         scenarioId,
         values,
-        `Director ${token}`,
+        `Bearer ${token}`,
       );
 
       messageApi.success("Mastodon configuration saved");

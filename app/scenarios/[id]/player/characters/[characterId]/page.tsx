@@ -37,7 +37,7 @@ function formatDate(iso: string | null): string {
 }
 
 export default function CharacterProfilePage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -48,7 +48,7 @@ export default function CharacterProfilePage() {
   const messageService = useMemo(() => new MessageService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId: myCharacterId } = useSelectedCharacter(scenarioId);
+  const { characterId: myCharacterId } = useSelectedCharacter(scenarioId, userId);
 
   const [targetCharacter, setTargetCharacter] = useState<Character | null>(
     null,
@@ -59,7 +59,7 @@ export default function CharacterProfilePage() {
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
+    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );
@@ -80,7 +80,7 @@ export default function CharacterProfilePage() {
       try {
         const chars = await characterService.getCharactersByScenario(
           scenarioId,
-          `Role ${token}`,
+          `Bearer ${token}`,
         );
         if (cancelled) return;
         setTargetCharacter(chars.find((c) => c.id === targetCharId) ?? null);
@@ -89,7 +89,7 @@ export default function CharacterProfilePage() {
           ? await messageService.getMessagesBetween(
             myCharacterId,
             targetCharId,
-            `Role ${token}`,
+            `Bearer ${token}`,
           )
           : [];
         if (cancelled) return;

@@ -33,4 +33,8 @@ export class DirectiveService {
   ): Promise<void> {
     return this.api.put<void>(`/directives/${directiveId}`, dto, token);
   }
+
+  deleteDirective(directiveId: number, token: string): Promise<void> {
+    return this.api.delete<void>(`/directives/${directiveId}`, token);
+  }
 }

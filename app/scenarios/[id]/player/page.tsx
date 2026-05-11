@@ -61,7 +61,7 @@ function statusLabel(
 }
 
 export default function PlayerDashboardPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -72,7 +72,7 @@ export default function PlayerDashboardPage() {
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
 
-  const { characterId } = useSelectedCharacter(scenarioId);
+  const { characterId } = useSelectedCharacter(scenarioId, userId);
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [scenario, setScenario] = useState<Scenario | null>(null);
@@ -87,13 +87,13 @@ export default function PlayerDashboardPage() {
   const { data: directives, loading: directivesLoading } = usePolling<
     Directive[]
   >(
-    () => directiveService.getDirectivesByScenario(scenarioId, `Role ${token}`),
+    () => directiveService.getDirectivesByScenario(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, `Role ${token}`),
+    () => newsService.getNewsByScenario(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );
@@ -104,7 +104,7 @@ export default function PlayerDashboardPage() {
         ? characterService.getCharacterPoints(
           scenarioId,
           characterId,
-          `Role ${token}`,
+          `Bearer ${token}`,
         )
         : Promise.reject(),
     15000,
@@ -112,7 +112,7 @@ export default function PlayerDashboardPage() {
   );
 
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
+    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );
@@ -151,8 +151,8 @@ export default function PlayerDashboardPage() {
       setStaticLoading(true);
       try {
         const [chars, scen] = await Promise.all([
-          characterService.getCharactersByScenario(scenarioId, `Role ${token}`),
-          scenarioService.getScenarioById(scenarioId, `Role ${token}`),
+          characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`),
+          scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
         ]);
         if (!cancelled) {
           setCharacters(chars);
@@ -218,7 +218,7 @@ export default function PlayerDashboardPage() {
       const updated = await characterService.buyMessage(
         scenarioId,
         characterId,
-        `Role ${token}`,
+        `Bearer ${token}`,
       );
 
       setLikes(updated.pointsBalance ?? 0);

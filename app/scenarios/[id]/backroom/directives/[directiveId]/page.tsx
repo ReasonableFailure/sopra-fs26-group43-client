@@ -63,10 +63,10 @@ export default function BackroomDirectiveDetailPage() {
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      directiveService.getDirectiveById(directiveId, `Backroomer ${token}`),
+      directiveService.getDirectiveById(directiveId, `Bearer ${token}`),
       characterService.getCharactersByScenario(
         scenarioId,
-        `Backroomer ${token}`,
+        `Bearer ${token}`,
       ),
     ])
       .then(([dir, chars]) => {
