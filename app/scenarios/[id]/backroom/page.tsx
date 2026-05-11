@@ -192,6 +192,9 @@ export default function BackroomDashboardPage() {
           <div className={styles.navLeft}>
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Backroom Dashboard</span>
+            <Button onClick={() => router.push("/scenarios")}>
+              All Scenarios
+            </Button>
           </div>
           <Avatar
             icon={<UserOutlined />}

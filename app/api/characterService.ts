@@ -19,4 +19,20 @@ export class CharacterService {
     return this.api.postWithToken<Character>(`/characters/${scenarioId}/${characterId}/buy-message`,{},token
     );
   }
+
+  claimCharacter(scenarioId: number, characterId: number, token: string): Promise<Character> {
+    return this.api.postWithToken<Character>(
+      `/scenarios/${scenarioId}/claim-character/${characterId}`,
+      {},
+      `Bearer ${token}`,
+    );
+  }
+
+  becomeBackroomer(scenarioId: number, token: string): Promise<{ id: number; authToken: string }> {
+    return this.api.postWithToken<{ id: number; authToken: string }>(
+      `/scenarios/${scenarioId}/become-backroomer`,
+      {},
+      `Bearer ${token}`,
+    );
+  }
 }

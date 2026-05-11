@@ -1,4 +1,5 @@
 import { ApiService } from "@/api/apiService";
+import { Engagement } from "@/types/engagement";
 import { User, UserLoginDTO, UserPostDTO, UserPutDTO } from "@/types/user";
 
 export class UserService {
@@ -26,5 +27,12 @@ export class UserService {
 
   logout(id: number, token: string): Promise<void> {
     return this.api.postWithToken<void>(`/logout/${id}`, {}, `Bearer ${token}`);
+  }
+
+  getEngagements(userId: number, token: string): Promise<Engagement[]> {
+    return this.api.getWithToken<Engagement[]>(
+      `/users/${userId}/engagements`,
+      `Bearer ${token}`,
+    );
   }
 }
