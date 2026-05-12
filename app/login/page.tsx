@@ -23,43 +23,40 @@ const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [loginForm] = Form.useForm<LoginFields>();
-  const [registerForm] = Form.useForm<RegisterFields>();
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
   const { set: setToken } = useLocalStorage<string>("token", "");
   const { set: setUserId } = useLocalStorage<string>("userId", "");
 
-  const handleLogin = async (values: LoginFields) => {
+  const handleSubmit = async (values: any) => {
     setLoading(true);
-    try {
-      const response = await apiService.post<User>("/login", values);
-      if (response.token) setToken(response.token);
-      if (response.id) setUserId(String(response.id));
-      router.push("/scenarios");
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(`Login failed:\n${error.message}`);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleRegister = async (values: RegisterFields) => {
-    setLoading(true);
     try {
-      const response = await apiService.post<User>("/users", {
-        username: values.username,
-        password: values.password,
-        ...(values.bio?.trim() ? { bio: values.bio.trim() } : {}),
-      });
-      if (response.token) setToken(response.token);
-      if (response.id) setUserId(String(response.id));
+      if (mode === "login") {
+        const response = await apiService.post<User>("/login", values);
+
+        if (response.token) setToken(response.token);
+        if (response.id) setUserId(String(response.id));
+      } else {
+        const response = await apiService.post<User>("/users", {
+          username: values.username,
+          password: values.password,
+          ...(values.bio?.trim() ? { bio: values.bio.trim() } : {}),
+        });
+
+        if (response.token) setToken(response.token);
+        if (response.id) setUserId(String(response.id));
+      }
+
       router.push("/scenarios");
     } catch (error) {
       if (error instanceof Error) {
-        alert(`Registration failed:\n${error.message}`);
+        alert(
+          mode === "login"
+            ? `Login failed:\n${error.message}`
+            : `Registration failed:\n${error.message}`
+        );
       }
     } finally {
       setLoading(false);
@@ -67,10 +64,9 @@ const Login: React.FC = () => {
   };
 
   const switchMode = (next: "login" | "register") => {
-  loginForm.resetFields();
-  registerForm.resetFields();
-  setMode(next);
-};
+    form.resetFields();
+    setMode(next);
+  };
 
   return (
     <ConfigProvider
@@ -112,11 +108,11 @@ const Login: React.FC = () => {
             {mode === "login"
               ? (
                 <Form
-                  form={loginForm}
-                  name="login"
+                  form={form}
+                  name="auth"
                   size="large"
                   variant="outlined"
-                  onFinish={handleLogin}
+                  onFinish={handleSubmit}
                   layout="vertical"
                 >
                   <Form.Item
@@ -165,11 +161,11 @@ const Login: React.FC = () => {
               )
               : (
                 <Form
-                  form={registerForm}
-                  name="register"
+                  form={form}
+                  name="auth"
                   size="large"
                   variant="outlined"
-                  onFinish={handleRegister}
+                  onFinish={handleSubmit}
                   layout="vertical"
                 >
                   <Form.Item
