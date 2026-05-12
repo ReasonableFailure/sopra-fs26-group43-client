@@ -29,7 +29,7 @@ const Login: React.FC = () => {
   const { set: setToken } = useLocalStorage<string>("token", "");
   const { set: setUserId } = useLocalStorage<string>("userId", "");
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: LoginFields & Partial<RegisterFields>) => {
     setLoading(true);
 
     try {
@@ -55,7 +55,7 @@ const Login: React.FC = () => {
         alert(
           mode === "login"
             ? `Login failed:\n${error.message}`
-            : `Registration failed:\n${error.message}`
+            : `Registration failed:\n${error.message}`,
         );
       }
     } finally {
