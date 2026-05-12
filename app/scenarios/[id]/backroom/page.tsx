@@ -3,9 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
-import { FileTextOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  FileTextOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
-import { useBackroomer } from "@/hooks/useBackroomer";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import { NewsService } from "@/api/newsService";
@@ -28,33 +31,34 @@ function initials(name: string | null): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+function timeAgo(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const diff = Date.now() - new Date(iso).getTime();
+  if (Number.isNaN(diff)) return "";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min${mins === 1 ? "" : "s"} ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hr${hrs === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
 function DirectiveBadge({ status }: { status: CommsStatus | null }) {
   if (status === CommsStatus.ACCEPTED) {
-    return (
-      <span className={`${styles.badge} ${styles.badgeResponded}`}>
-        Approved
-      </span>
-    );
+    return <span className={`${styles.badge} ${styles.badgeResponded}`}>Approved</span>;
   }
   if (status === CommsStatus.REJECTED) {
-    return (
-      <span className={`${styles.badge} ${styles.badgeRejected}`}>
-        Rejected
-      </span>
-    );
+    return <span className={`${styles.badge} ${styles.badgeRejected}`}>Rejected</span>;
   }
-  return (
-    <span className={`${styles.badge} ${styles.badgePending}`}>Pending</span>
-  );
+  return <span className={`${styles.badge} ${styles.badgePending}`}>Pending</span>;
 }
 
 export default function BackroomDashboardPage() {
-  const { token, isAuthenticated, authReady, userId } = useAuth();
+  const { token, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { backroomerToken } = useBackroomer(scenarioId, userId ?? 0);
-  const backroomerAuth = backroomerToken ?? `Bearer ${token}`;
   const api = useApi();
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
@@ -69,20 +73,14 @@ export default function BackroomDashboardPage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
-  const { data: directives, loading: directivesLoading } = usePolling<
-    Directive[]
-  >(
-    () =>
-      directiveService.getDirectivesByScenario(
-        scenarioId,
-        backroomerAuth,
-      ),
+  const { data: directives, loading: directivesLoading } = usePolling<Directive[]>(
+    () => directiveService.getDirectivesByScenario(scenarioId, token),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, backroomerAuth),
+    () => newsService.getNewsByScenario(scenarioId, token),
     5000,
     enabled,
   );
@@ -95,7 +93,7 @@ export default function BackroomDashboardPage() {
 
     let cancelled = false;
 
-    scenarioService.getScenarioById(scenarioId, `Bearer ${token}`)
+    scenarioService.getScenarioById(scenarioId, token)
       .then((data) => {
         if (!cancelled) setScenario(data);
       })
@@ -113,18 +111,9 @@ export default function BackroomDashboardPage() {
     const fetchMessages = async () => {
       setMessagesLoading(true);
       try {
-        const pairs = await messageService.getMessagePairsByScenario(
-          scenarioId,
-          backroomerAuth,
-        );
+        const pairs = await messageService.getMessagePairsByScenario(scenarioId, token);
         const arrays = await Promise.all(
-          pairs.map((p) =>
-            messageService.getMessagesBetween(
-              p.roleAId,
-              p.roleBId,
-              backroomerAuth,
-            )
-          ),
+          pairs.map((p) => messageService.getMessagesBetween(p.roleAId, p.roleBId, token)),
         );
         if (!cancelled) setMessages(arrays.flat());
       } catch {
@@ -148,45 +137,31 @@ export default function BackroomDashboardPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router, authReady]);
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
-    characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`)
-      .then((chars) => {
-        if (!cancelled) setCharacters(chars);
-      })
+    characterService.getCharactersByScenario(scenarioId, token)
+      .then((chars) => { if (!cancelled) setCharacters(chars); })
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [enabled, scenarioId, token, characterService]);
 
   if (!authReady || !isAuthenticated) return null;
 
-  const pendingMessages = (messages ?? []).filter((m) =>
-    m.status === CommsStatus.PENDING || m.status === null
-  );
+  const pendingMessages = (messages ?? []).filter((m) => m.status === CommsStatus.PENDING || m.status === null);
 
   const characterName = (id: number | null): string => {
     if (id === null) return "Unknown";
     return characters.find((c) => c.id === id)?.name ?? "Unknown";
   };
 
-  const handleMessageAction = async (
-    messageId: number | null,
-    status: CommsStatus,
-  ) => {
+  const handleMessageAction = async (messageId: number | null, status: CommsStatus) => {
     if (messageId === null) return;
     setActionLoading(messageId);
     try {
-      await messageService.updateMessage(
-        messageId,
-        { status },
-        backroomerAuth,
-      );
+      await messageService.updateMessage(messageId, { status }, token);
     } catch {
       // silently ignore — message stays in list
     } finally {
@@ -196,14 +171,6 @@ export default function BackroomDashboardPage() {
 
   function isPronouncement(item: NewsGetDTO) {
     return item.authorId !== null && item.authorId !== undefined;
-  }
-
-  function renderNewsText(item: NewsGetDTO) {
-    const base = `${item.title}: ${item.body}`;
-
-    if (!isPronouncement(item)) return base;
-
-    return `${base}\n- ${characterName(item.authorId)}`;
   }
 
   const latestNews = [...(newsItems ?? [])]
@@ -369,7 +336,7 @@ export default function BackroomDashboardPage() {
                       <Button
                         type="primary"
                         onClick={() =>
-                          globalThis.open(
+                          window.open(
                             scenario.mastodonProfileUrl!,
                             "_blank",
                             "noopener,noreferrer",
@@ -382,39 +349,55 @@ export default function BackroomDashboardPage() {
                 </div>
               </div>
               <div className={styles.newsFeedBody}>
-                {latestNews.length === 0
-                  ? (
-                    <>
-                      <div className={styles.newsFeedIcon}>
-                        <FileTextOutlined />
-                      </div>
-                      <p className={styles.newsFeedTitle}>No news yet</p>
-                      <p className={styles.newsFeedSub}>
-                        Published stories will appear here.
-                      </p>
-                    </>
-                  )
-                  : (
-                    <div style={{ width: "100%" }}>
-                      {latestNews.map((item, index) => (
-                        <div
-                          key={item.id}
-                          style={{
-                            padding: "14px 0",
-                            textAlign: "center",
-                            color: "#000000",
-                            whiteSpace: "pre-line",
-                            lineHeight: 1.5,
-                            borderBottom: index < latestNews.length - 1
-                              ? "1px solid #e5e7eb"
-                              : "none",
-                          }}
-                        >
-                          {renderNewsText(item)}
-                        </div>
-                      ))}
+                {latestNews.length === 0 ? (
+                  <div className={styles.newsFeedEmpty}>
+                    <div className={styles.newsFeedIcon}>
+                      <FileTextOutlined />
                     </div>
-                  )}
+                    <p className={styles.newsFeedTitle}>No news yet</p>
+                    <p className={styles.newsFeedSub}>
+                      Published stories will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className={styles.newsList}>
+                    {latestNews.map((item) => {
+                      const pronouncement = isPronouncement(item);
+                      const authorName = pronouncement
+                        ? characterName(item.authorId)
+                        : null;
+                      return (
+                        <article key={item.id} className={styles.newsItem}>
+                          <div className={styles.newsItemTop}>
+                            <div className={styles.newsItemTopLeft}>
+                              <span
+                                className={
+                                  pronouncement
+                                    ? styles.badgePronouncement
+                                    : styles.badgeNews
+                                }
+                              >
+                                {pronouncement ? "Pronouncement" : "New Story"}
+                              </span>
+                              {pronouncement && authorName && (
+                                <span className={styles.newsAuthorRow}>
+                                  <UserOutlined className={styles.newsAuthorIcon} />
+                                  {authorName}
+                                </span>
+                              )}
+                            </div>
+                            <span className={styles.newsTimestamp}>
+                              <ClockCircleOutlined />
+                              {timeAgo(item.createdAt)}
+                            </span>
+                          </div>
+                          <h3 className={styles.newsItemTitle}>{item.title}</h3>
+                          <p className={styles.newsItemBody}>{item.body}</p>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
               <div className={styles.newStoryFooter}>
                 <Button
