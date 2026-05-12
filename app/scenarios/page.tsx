@@ -180,7 +180,7 @@ export default function ScenariosPage() {
           setLocalScenarios((prev) =>
             (prev ?? []).filter((s) => s.id !== scenario.id)
           );
-          refetchEngagements();
+          await refetchEngagements();
           messageApi.success("Scenario deleted");
         } catch (err) {
           messageApi.error(
