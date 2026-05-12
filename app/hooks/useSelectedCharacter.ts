@@ -5,7 +5,10 @@ import useLocalStorage from "@/hooks/useLocalStorage";
  * keyed per (user, scenario) so different users in the same browser
  * — and the same user across scenarios — track independently.
  */
-export function useSelectedCharacter(scenarioId: number, userId: number | null) {
+export function useSelectedCharacter(
+  scenarioId: number,
+  userId: number | null,
+) {
   const suffix = userId ? `${userId}_${scenarioId}` : `guest_${scenarioId}`;
   const { value: characterId, set: setCharacterId } = useLocalStorage<
     number | null
