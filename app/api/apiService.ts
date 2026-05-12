@@ -1,6 +1,7 @@
 import { getApiDomain } from "@/utils/domain";
 import { ApplicationError } from "@/types/error";
 
+// noinspection GrazieInspectionRunner
 export class ApiService {
   private baseURL: string;
   private defaultHeaders: HeadersInit;
@@ -50,7 +51,7 @@ export class ApiService {
       throw error;
     }
     return res.headers.get("Content-Type")?.includes("application/json")
-      ? (res.json() as Promise<T>)
+      ? (await res.json() as Promise<T>)
       : Promise.resolve(res as T);
   }
 
