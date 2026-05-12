@@ -51,10 +51,10 @@ export class CharacterService {
 
   public async assignCharacter(
     dto: CharacterAssignDTO,
-    userToken: string,
+    directorToken: string,
     characterId: number,
   ): Promise<Character> {
-    return await this.api.put<Character>(`/player/${characterId}`, dto, userToken);
+    return await this.api.put<Character>(`/player/${characterId}`, dto, directorToken);
   }
 
   public async modifyCharacter(
@@ -63,7 +63,7 @@ export class CharacterService {
     characterId: number,
   ): Promise<void> {
     return await this.api.put<void>(
-      `/player/${characterId}`,
+      `/characters/${characterId}`,
       dto,
       directorToken,
     );

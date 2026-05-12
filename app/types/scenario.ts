@@ -23,7 +23,6 @@ export interface ScenarioPostDTO {
   description: string | null;
   exchangeRate: number;
   startingMessageCount: number;
-  director?: number;
 }
 
 /** PUT /scenarios/{id} */

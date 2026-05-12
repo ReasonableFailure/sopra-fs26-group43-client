@@ -72,7 +72,8 @@ export default function PlayerDashboardPage() {
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
 
-  const { characterId } = useSelectedCharacter(scenarioId, userId);
+  const { characterId, characterToken } = useSelectedCharacter(scenarioId, userId);
+  const playerAuth = characterToken ?? `Bearer ${token}`;
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [scenario, setScenario] = useState<Scenario | null>(null);
@@ -87,13 +88,13 @@ export default function PlayerDashboardPage() {
   const { data: directives, loading: directivesLoading } = usePolling<
     Directive[]
   >(
-    () => directiveService.getDirectivesByScenario(scenarioId, `Bearer ${token}`),
+    () => directiveService.getDirectivesByScenario(scenarioId, playerAuth),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, `Bearer ${token}`),
+    () => newsService.getNewsByScenario(scenarioId, playerAuth),
     5000,
     enabled,
   );
@@ -104,13 +105,14 @@ export default function PlayerDashboardPage() {
         ? characterService.getCharacterPoints(
           scenarioId,
           characterId,
-          `Bearer ${token}`,
+          playerAuth,
         )
         : Promise.reject(),
     15000,
     enabled && !!characterId,
   );
 
+  // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     5000,
@@ -150,6 +152,7 @@ export default function PlayerDashboardPage() {
     const fetchStatic = async () => {
       setStaticLoading(true);
       try {
+        // Both endpoints require Bearer (see PlayerService.validate).
         const [chars, scen] = await Promise.all([
           characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`),
           scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
@@ -218,7 +221,7 @@ export default function PlayerDashboardPage() {
       const updated = await characterService.buyMessage(
         scenarioId,
         characterId,
-        `Bearer ${token}`,
+        playerAuth,
       );
 
       setLikes(updated.pointsBalance ?? 0);

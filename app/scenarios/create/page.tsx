@@ -100,7 +100,6 @@ export default function CreateScenarioPage() {
         description: values.description ?? null,
         exchangeRate: values.exchangeRate,
         startingMessageCount: values.startingMessageCount,
-        director: userId,
       };
 
       const createdScenario = await scenarioService.createScenario(
@@ -109,7 +108,10 @@ export default function CreateScenarioPage() {
       );
       const directorAuthHeader = createdScenario.directorToken;
       if (directorAuthHeader) {
-        setDirectorToken(directorAuthHeader);
+        // Backend returns the raw token; PlayerService.validate expects
+        // "Director <token>". Persist it pre-typed so every later director
+        // call can use it verbatim as the Authorization header.
+        setDirectorToken(`Director ${directorAuthHeader}`);
       }
       setPlayerRole("director");
 

@@ -41,6 +41,8 @@ export default function CharacterProfilePage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { characterToken } = useSelectedCharacter(scenarioId, userId);
+  const playerAuth = characterToken ?? `Bearer ${token}`;
   const targetCharId = Number(params.characterId);
 
   const api = useApi();
@@ -58,6 +60,7 @@ export default function CharacterProfilePage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
+  // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     5000,
@@ -78,6 +81,7 @@ export default function CharacterProfilePage() {
 
     const fetchData = async () => {
       try {
+        // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
         const chars = await characterService.getCharactersByScenario(
           scenarioId,
           `Bearer ${token}`,
@@ -89,7 +93,7 @@ export default function CharacterProfilePage() {
           ? await messageService.getMessagesBetween(
             myCharacterId,
             targetCharId,
-            `Bearer ${token}`,
+            playerAuth,
           )
           : [];
         if (cancelled) return;

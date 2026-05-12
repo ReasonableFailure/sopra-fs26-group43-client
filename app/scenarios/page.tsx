@@ -17,6 +17,7 @@ import {
 import type { MenuProps } from "antd";
 import { MoreOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useDirector } from "@/hooks/useDirector";
 import { useApi } from "@/hooks/useApi";
 import { useScenarios } from "@/hooks/useScenarios";
 import { useEngagedScenarios } from "@/hooks/useEngagedScenarios";
@@ -129,13 +130,14 @@ function EngagementCard({ engagement }: { engagement: Engagement }) {
 
 export default function ScenariosPage() {
   const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { directorToken } = useDirector(userId ?? 0);
   const router = useRouter();
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const [messageApi, contextHolder] = message.useMessage();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const { scenarios, loading, error } = useScenarios("Bearer");
+  const { scenarios, loading, error } = useScenarios();
   const {
     engagements,
     loading: engagementsLoading,
@@ -172,7 +174,10 @@ export default function ScenariosPage() {
         if (!token) return;
         setDeletingId(scenario.id);
         try {
-          await scenarioService.deleteScenario(scenario.id, `Bearer ${token}`);
+          await scenarioService.deleteScenario(
+            scenario.id,
+            directorToken ?? `Bearer ${token}`,
+          );
           setLocalScenarios((prev) =>
             (prev ?? []).filter((s) => s.id !== scenario.id),
           );

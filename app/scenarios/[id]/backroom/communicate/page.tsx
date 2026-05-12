@@ -12,6 +12,7 @@ import {
   theme,
 } from "antd";
 import { useAuth } from "@/hooks/useAuth";
+import { useBackroomer } from "@/hooks/useBackroomer";
 import { useApi } from "@/hooks/useApi";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
@@ -25,11 +26,13 @@ type CommType = "response" | "news_story";
 type Outcome = "approve" | "reject";
 
 export default function BackroomCommunicatePage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, isAuthenticated, authReady, userId } = useAuth();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const scenarioId = Number(params.id);
+  const { backroomerToken } = useBackroomer(scenarioId, userId ?? 0);
+  const backroomerAuth = backroomerToken ?? `Bearer ${token}`;
 
   const preselectedType = searchParams.get("type") === "news_story"
     ? "news_story"
@@ -70,8 +73,9 @@ export default function BackroomCommunicatePage() {
     Promise.all([
       directiveService.getDirectivesByScenario(
         scenarioId,
-        `Bearer ${token}`,
+        backroomerAuth,
       ),
+      // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
       characterService.getCharactersByScenario(
         scenarioId,
         `Bearer ${token}`,
@@ -136,7 +140,7 @@ export default function BackroomCommunicatePage() {
             : CommsStatus.REJECTED,
           response: content,
         },
-        `Bearer ${token}`,
+        backroomerAuth,
       );
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
@@ -169,7 +173,7 @@ export default function BackroomCommunicatePage() {
         title,
         body: content,
         scenarioId,
-      }, `Bearer ${token}`);
+      }, backroomerAuth);
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
       messageApi.error(

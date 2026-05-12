@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
 import { FileTextOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useBackroomer } from "@/hooks/useBackroomer";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import { NewsService } from "@/api/newsService";
@@ -48,10 +49,12 @@ function DirectiveBadge({ status }: { status: CommsStatus | null }) {
 }
 
 export default function BackroomDashboardPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, isAuthenticated, authReady, userId } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { backroomerToken } = useBackroomer(scenarioId, userId ?? 0);
+  const backroomerAuth = backroomerToken ?? `Bearer ${token}`;
   const api = useApi();
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
@@ -72,14 +75,14 @@ export default function BackroomDashboardPage() {
     () =>
       directiveService.getDirectivesByScenario(
         scenarioId,
-        `Bearer ${token}`,
+        backroomerAuth,
       ),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, `Bearer ${token}`),
+    () => newsService.getNewsByScenario(scenarioId, backroomerAuth),
     5000,
     enabled,
   );
@@ -112,14 +115,14 @@ export default function BackroomDashboardPage() {
       try {
         const pairs = await messageService.getMessagePairsByScenario(
           scenarioId,
-          `Bearer ${token}`,
+          backroomerAuth,
         );
         const arrays = await Promise.all(
           pairs.map((p) =>
             messageService.getMessagesBetween(
               p.roleAId,
               p.roleBId,
-              `Bearer ${token}`,
+              backroomerAuth,
             )
           ),
         );
@@ -150,6 +153,7 @@ export default function BackroomDashboardPage() {
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
+    // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
     characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`)
       .then((chars) => {
         if (!cancelled) setCharacters(chars);
@@ -181,7 +185,7 @@ export default function BackroomDashboardPage() {
       await messageService.updateMessage(
         messageId,
         { status },
-        `Bearer ${token}`,
+        backroomerAuth,
       );
     } catch {
       // silently ignore — message stays in list

@@ -66,6 +66,8 @@ export default function DirectiveDetailPage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { characterToken } = useSelectedCharacter(scenarioId, userId);
+  const playerAuth = characterToken ?? `Bearer ${token}`;
   const directiveId = Number(params.directiveId);
 
   const api = useApi();
@@ -88,8 +90,10 @@ export default function DirectiveDetailPage() {
 
     const fetchData = async () => {
       try {
+        // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate);
+        // getDirectiveById accepts "any" so the role token works.
         const [dir, chars] = await Promise.all([
-          directiveService.getDirectiveById(directiveId, `Bearer ${token}`),
+          directiveService.getDirectiveById(directiveId, playerAuth),
           characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`),
         ]);
         if (cancelled) return;

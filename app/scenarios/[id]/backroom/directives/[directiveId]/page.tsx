@@ -11,6 +11,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useBackroomer } from "@/hooks/useBackroomer";
 import { useApi } from "@/hooks/useApi";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
@@ -40,10 +41,12 @@ function StatusBadge({ status }: { status: CommsStatus | null }) {
 }
 
 export default function BackroomDirectiveDetailPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, isAuthenticated, authReady, userId } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { backroomerToken } = useBackroomer(scenarioId, userId ?? 0);
+  const backroomerAuth = backroomerToken ?? `Bearer ${token}`;
   const directiveId = Number(params.directiveId);
 
   const api = useApi();
@@ -63,7 +66,8 @@ export default function BackroomDirectiveDetailPage() {
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      directiveService.getDirectiveById(directiveId, `Bearer ${token}`),
+      directiveService.getDirectiveById(directiveId, backroomerAuth),
+      // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
       characterService.getCharactersByScenario(
         scenarioId,
         `Bearer ${token}`,

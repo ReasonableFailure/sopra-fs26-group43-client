@@ -52,7 +52,8 @@ export default function CommunicationFormPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId } = useSelectedCharacter(scenarioId, userId);
+  const { characterId, characterToken } = useSelectedCharacter(scenarioId, userId);
+  const playerAuth = characterToken ?? `Bearer ${token}`;
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,6 +71,7 @@ export default function CommunicationFormPage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
+  // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     5000,
@@ -86,6 +88,7 @@ export default function CommunicationFormPage() {
     if (!isAuthenticated || !scenarioId) return;
     let cancelled = false;
     setLoading(true);
+    // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
     characterService
       .getCharactersByScenario(scenarioId, `Bearer ${token}`)
       .then((chars) => {
@@ -160,7 +163,7 @@ export default function CommunicationFormPage() {
             recipientId: recipientId!,
             scenarioId,
           },
-          `Bearer ${token}`,
+          playerAuth,
         );
         router.push(
           `/scenarios/${scenarioId}/player/characters/${recipientId}`,
@@ -168,7 +171,7 @@ export default function CommunicationFormPage() {
       } else if (commType === "directive") {
         await directiveService.createDirective(
           { title, body: content, creatorId: characterId, scenarioId },
-          `Bearer ${token}`,
+          playerAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
@@ -183,7 +186,7 @@ export default function CommunicationFormPage() {
             scenarioId,
             authorId: characterId,
           },
-          `Bearer ${token}`,
+          playerAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       }

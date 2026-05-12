@@ -22,6 +22,7 @@ import {
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
+import { useDirector } from "@/hooks/useDirector";
 import { usePolling } from "@/hooks/usePolling";
 import { ScenarioService } from "@/api/scenarioService";
 import { Scenario, ScenarioStatus } from "@/types/scenario";
@@ -70,13 +71,15 @@ const STATUS_CLASS: Record<ScenarioStatus, string> = {
 };
 
 export default function DirectorDashboardPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
+  const { directorToken } = useDirector(userId ?? 0);
+  const directorAuth = directorToken ?? `Bearer ${token}`;
   const [messageApi, contextHolder] = message.useMessage();
 
   const enabled = isAuthenticated && !!scenarioId;
@@ -105,7 +108,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { status: ScenarioStatus.UNFROZEN, dayNumber: 1 },
-        `Bearer ${token}`,
+        directorAuth,
       );
       messageApi.success("Game started");
     } catch {
@@ -120,7 +123,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { dayNumber: scenario.dayNumber + 1 },
-        `Bearer ${token}`,
+        directorAuth,
       );
       messageApi.success("Advanced to next day");
     } catch {
@@ -137,7 +140,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { status: isFrozen ? ScenarioStatus.UNFROZEN : ScenarioStatus.FROZEN },
-        `Bearer ${token}`,
+        directorAuth,
       );
       messageApi.success(isFrozen ? "Game resumed" : "Game frozen");
     } catch {
@@ -150,7 +153,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateScenario(
         scenarioId,
         { status: ScenarioStatus.COMPLETED },
-        `Bearer ${token}`,
+        directorAuth,
       );
       messageApi.success("Game ended");
     } catch {
@@ -165,7 +168,7 @@ export default function DirectorDashboardPage() {
       await scenarioService.updateMastodonConfig(
         scenarioId,
         values,
-        `Bearer ${token}`,
+        directorAuth,
       );
 
       messageApi.success("Mastodon configuration saved");
