@@ -54,6 +54,7 @@ const Login: React.FC = () => {
       const res = await register(data);
       if (res.id) setUserId(res.id);
       if (res.token) setToken(res.token);
+      router.push("/scenarios");
     } catch (error) {
       if (error instanceof Error) {
         alert(`Registration failed:\n${error.message}`);
