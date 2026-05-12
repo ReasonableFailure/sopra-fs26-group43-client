@@ -69,5 +69,17 @@ export const useAuth = () => {
     clearUserId();
   }, [userService, token, userId, clearToken, clearUserId]);
 
-  return { token, userId, isAuthenticated, authReady, register, login, logout, setToken, setUserId, clearToken, clearUserId };
+  return {
+    token,
+    userId,
+    isAuthenticated,
+    authReady,
+    register,
+    login,
+    logout,
+    setToken,
+    setUserId,
+    clearToken,
+    clearUserId,
+  };
 };

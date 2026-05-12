@@ -52,7 +52,10 @@ export default function CommunicationFormPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId, characterToken } = useSelectedCharacter(scenarioId, userId);
+  const { characterId, characterToken } = useSelectedCharacter(
+    scenarioId,
+    userId,
+  );
   const playerAuth = characterToken ?? `Bearer ${token}`;
 
   const [characters, setCharacters] = useState<Character[]>([]);

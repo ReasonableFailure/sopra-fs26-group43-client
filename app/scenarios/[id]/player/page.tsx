@@ -72,7 +72,10 @@ export default function PlayerDashboardPage() {
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
 
-  const { characterId, characterToken } = useSelectedCharacter(scenarioId, userId);
+  const { characterId, characterToken } = useSelectedCharacter(
+    scenarioId,
+    userId,
+  );
   const playerAuth = characterToken ?? `Bearer ${token}`;
 
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -154,7 +157,10 @@ export default function PlayerDashboardPage() {
       try {
         // Both endpoints require Bearer (see PlayerService.validate).
         const [chars, scen] = await Promise.all([
-          characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`),
+          characterService.getCharactersByScenario(
+            scenarioId,
+            `Bearer ${token}`,
+          ),
           scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
         ]);
         if (!cancelled) {

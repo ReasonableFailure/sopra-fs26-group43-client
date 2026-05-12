@@ -63,8 +63,7 @@ function ScenarioCard({
     ],
   };
 
-  const handleView = () =>
-    routeForEngagement(engagement, scenario.id, router);
+  const handleView = () => routeForEngagement(engagement, scenario.id, router);
 
   return (
     <div className={styles.card}>
@@ -179,7 +178,7 @@ export default function ScenariosPage() {
             directorToken ?? `Bearer ${token}`,
           );
           setLocalScenarios((prev) =>
-            (prev ?? []).filter((s) => s.id !== scenario.id),
+            (prev ?? []).filter((s) => s.id !== scenario.id)
           );
           refetchEngagements();
           messageApi.success("Scenario deleted");

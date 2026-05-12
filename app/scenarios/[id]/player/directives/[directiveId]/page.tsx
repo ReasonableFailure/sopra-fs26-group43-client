@@ -94,7 +94,10 @@ export default function DirectiveDetailPage() {
         // getDirectiveById accepts "any" so the role token works.
         const [dir, chars] = await Promise.all([
           directiveService.getDirectiveById(directiveId, playerAuth),
-          characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`),
+          characterService.getCharactersByScenario(
+            scenarioId,
+            `Bearer ${token}`,
+          ),
         ]);
         if (cancelled) return;
         setDirective(dir);

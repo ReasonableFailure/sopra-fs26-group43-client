@@ -8,7 +8,10 @@ export const useMyEngagement = (
   userId: number | null,
   token: string,
 ) => {
-  const { engagements, loading, error, refetch } = useEngagedScenarios(userId, token);
+  const { engagements, loading, error, refetch } = useEngagedScenarios(
+    userId,
+    token,
+  );
   const engagement = useMemo(
     () => engagements?.find((e) => e.scenarioId === scenarioId) ?? null,
     [engagements, scenarioId],

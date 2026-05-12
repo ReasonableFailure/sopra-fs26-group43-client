@@ -21,7 +21,9 @@ export const useEngagedScenarios = (userId: number | null, token: string) => {
       const data = await userService.getEngagements(userId, token);
       setEngagements(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch engagements");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch engagements",
+      );
     } finally {
       setLoading(false);
     }

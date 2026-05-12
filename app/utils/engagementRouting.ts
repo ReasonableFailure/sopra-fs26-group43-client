@@ -27,9 +27,14 @@ export function routeForEngagement(
   }
 }
 
-function pathForEngagement(engagement: Engagement | null, scenarioId: number): string {
+function pathForEngagement(
+  engagement: Engagement | null,
+  scenarioId: number,
+): string {
   if (!engagement) return `/scenarios/${scenarioId}/lobby`;
   if (engagement.roleType === "DIRECTOR") return `/scenarios/${scenarioId}`;
-  if (engagement.roleType === "BACKROOMER") return `/scenarios/${scenarioId}/backroom`;
+  if (engagement.roleType === "BACKROOMER") {
+    return `/scenarios/${scenarioId}/backroom`;
+  }
   return `/scenarios/${scenarioId}/player`;
 }

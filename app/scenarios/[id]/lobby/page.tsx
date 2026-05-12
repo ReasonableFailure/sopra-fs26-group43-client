@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Spin, message, theme } from "antd";
+import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
 import { InfoCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -51,8 +51,14 @@ export default function GameLobbyPage() {
   const { setPlayerRole } = usePlayerRole(userId);
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
-  const { setCharacterId, setCharacterToken } = useSelectedCharacter(scenarioId, userId);
-  const { setBackroomerId, setBackroomerToken } = useBackroomer(scenarioId, userId);
+  const { setCharacterId, setCharacterToken } = useSelectedCharacter(
+    scenarioId,
+    userId,
+  );
+  const { setBackroomerId, setBackroomerToken } = useBackroomer(
+    scenarioId,
+    userId,
+  );
   const { engagement, loading: engagementLoading } = useMyEngagement(
     scenarioId,
     userId,

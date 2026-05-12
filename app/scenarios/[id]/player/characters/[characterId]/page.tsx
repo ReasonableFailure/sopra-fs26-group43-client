@@ -50,7 +50,10 @@ export default function CharacterProfilePage() {
   const messageService = useMemo(() => new MessageService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId: myCharacterId } = useSelectedCharacter(scenarioId, userId);
+  const { characterId: myCharacterId } = useSelectedCharacter(
+    scenarioId,
+    userId,
+  );
 
   const [targetCharacter, setTargetCharacter] = useState<Character | null>(
     null,

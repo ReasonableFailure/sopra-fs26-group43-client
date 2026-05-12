@@ -54,7 +54,11 @@ export class CharacterService {
     directorToken: string,
     characterId: number,
   ): Promise<Character> {
-    return await this.api.put<Character>(`/player/${characterId}`, dto, directorToken);
+    return await this.api.put<Character>(
+      `/player/${characterId}`,
+      dto,
+      directorToken,
+    );
   }
 
   public async modifyCharacter(
@@ -69,7 +73,11 @@ export class CharacterService {
     );
   }
 
-  claimCharacter(scenarioId: number, characterId: number, token: string): Promise<Character> {
+  claimCharacter(
+    scenarioId: number,
+    characterId: number,
+    token: string,
+  ): Promise<Character> {
     return this.api.postWithToken<Character>(
       `/scenarios/${scenarioId}/claim-character/${characterId}`,
       {},
@@ -77,7 +85,10 @@ export class CharacterService {
     );
   }
 
-  becomeBackroomer(scenarioId: number, token: string): Promise<{ id: number; authToken: string }> {
+  becomeBackroomer(
+    scenarioId: number,
+    token: string,
+  ): Promise<{ id: number; authToken: string }> {
     return this.api.postWithToken<{ id: number; authToken: string }>(
       `/scenarios/${scenarioId}/become-backroomer`,
       {},
