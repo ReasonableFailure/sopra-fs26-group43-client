@@ -1,45 +1,70 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Dropdown, Spin, theme } from "antd";
+import {
+  Avatar,
+  Button,
+  ConfigProvider,
+  Dropdown,
+  message,
+  Modal,
+  Spin,
+  Tabs,
+  Tag,
+  theme,
+} from "antd";
 import type { MenuProps } from "antd";
 import { MoreOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useDirector } from "@/hooks/useDirector";
+import { useApi } from "@/hooks/useApi";
 import { useScenarios } from "@/hooks/useScenarios";
-import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
+import { useEngagedScenarios } from "@/hooks/useEngagedScenarios";
+import { ScenarioService } from "@/api/scenarioService";
 import type { Scenario } from "@/types/scenario";
+import { ScenarioStatus } from "@/types/scenario";
+import type { Engagement, RoleType } from "@/types/engagement";
+import { routeForEngagement } from "@/utils/engagementRouting";
 import styles from "@/styles/scenarios.module.css";
 
-function ScenarioCard(
-  { scenario, isDirector }: { scenario: Scenario; isDirector: boolean },
-) {
+const ROLE_COLORS: Record<RoleType, string> = {
+  DIRECTOR: "purple",
+  BACKROOMER: "geekblue",
+  CHARACTER: "green",
+};
+
+const STATUS_COLORS: Record<ScenarioStatus, string> = {
+  [ScenarioStatus.UNSTARTED]: "default",
+  [ScenarioStatus.UNFROZEN]: "processing",
+  [ScenarioStatus.FROZEN]: "warning",
+  [ScenarioStatus.COMPLETED]: "default",
+};
+
+function ScenarioCard({
+  scenario,
+  engagement,
+  onDelete,
+}: {
+  scenario: Scenario;
+  engagement: Engagement | null;
+  onDelete: (scenario: Scenario) => void;
+}) {
   const router = useRouter();
 
   const moreMenu: MenuProps = {
     items: [
       {
-        key: "edit",
-        label: "Edit",
-        onClick: () => router.push(`/scenarios/${scenario.id}/edit`),
-      },
-      {
         key: "delete",
         label: "Delete",
         danger: true,
-        onClick: () =>
-          alert(`Delete scenario "${scenario.title}"? (not yet implemented)`),
+        onClick: () => onDelete(scenario),
       },
     ],
   };
 
-  const handleView = () => {
-    if (isDirector) {
-      router.push(`/scenarios/${scenario.id}`);
-    } else {
-      router.push(`/scenarios/${scenario.id}/lobby`);
-    }
-  };
+  const handleView = () =>
+    routeForEngagement(engagement, scenario.id, router);
 
   return (
     <div className={styles.card}>
@@ -58,7 +83,45 @@ function ScenarioCard(
       </p>
       <div className={styles.cardFooter}>
         <Button type="link" onClick={handleView}>
-          View
+          {engagement ? "Resume" : "View"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function EngagementCard({ engagement }: { engagement: Engagement }) {
+  const router = useRouter();
+
+  const handleOpen = () =>
+    routeForEngagement(engagement, engagement.scenarioId, router);
+
+  const roleLabel =
+    engagement.roleType === "CHARACTER" && engagement.characterName
+      ? `Character · ${engagement.characterName}`
+      : engagement.roleType === "DIRECTOR"
+      ? "Director"
+      : "Backroomer";
+
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardHeader}>
+        <h2 className={styles.cardTitle}>{engagement.scenarioTitle}</h2>
+      </div>
+      <div className={styles.cardMeta}>
+        <Tag color={ROLE_COLORS[engagement.roleType]}>{roleLabel}</Tag>
+        <Tag color={STATUS_COLORS[engagement.scenarioStatus]}>
+          {engagement.scenarioStatus}
+        </Tag>
+        {engagement.finishTime && (
+          <span className={styles.metaSecondary}>
+            Ended {new Date(engagement.finishTime).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+      <div className={styles.cardFooter}>
+        <Button type="link" onClick={handleOpen}>
+          Open
         </Button>
       </div>
     </div>
@@ -67,9 +130,31 @@ function ScenarioCard(
 
 export default function ScenariosPage() {
   const { token, userId, isAuthenticated, authReady } = useAuth();
-  const { isDirector } = useDirectedScenarios(userId);
+  const { directorToken } = useDirector(userId ?? 0);
   const router = useRouter();
-  const { scenarios, loading, error } = useScenarios(`Bearer`);
+  const api = useApi();
+  const scenarioService = useMemo(() => new ScenarioService(api), [api]);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const { scenarios, loading, error } = useScenarios();
+  const {
+    engagements,
+    loading: engagementsLoading,
+    error: engagementsError,
+    refetch: refetchEngagements,
+  } = useEngagedScenarios(userId, token);
+
+  const [localScenarios, setLocalScenarios] = useState<Scenario[] | null>(null);
+  useEffect(() => {
+    setLocalScenarios(scenarios);
+  }, [scenarios]);
+
+  const engagementByScenario = useMemo(() => {
+    const map = new Map<number, Engagement>();
+    (engagements ?? []).forEach((e) => map.set(e.scenarioId, e));
+    return map;
+  }, [engagements]);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
@@ -78,6 +163,83 @@ export default function ScenariosPage() {
   }, [isAuthenticated, router, authReady]);
 
   if (!authReady || !isAuthenticated) return null;
+
+  const handleDelete = (scenario: Scenario) => {
+    Modal.confirm({
+      title: `Delete scenario "${scenario.title}"?`,
+      content: "This cannot be undone.",
+      okText: "Delete",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        if (!token) return;
+        setDeletingId(scenario.id);
+        try {
+          await scenarioService.deleteScenario(
+            scenario.id,
+            directorToken ?? `Bearer ${token}`,
+          );
+          setLocalScenarios((prev) =>
+            (prev ?? []).filter((s) => s.id !== scenario.id),
+          );
+          refetchEngagements();
+          messageApi.success("Scenario deleted");
+        } catch (err) {
+          messageApi.error(
+            err instanceof Error ? err.message : "Failed to delete scenario",
+          );
+        } finally {
+          setDeletingId(null);
+        }
+      },
+    });
+  };
+
+  const allTab = (
+    <>
+      {error && <p className={styles.errorText}>{error}</p>}
+      <Spin spinning={loading || deletingId !== null}>
+        <div className={styles.cardList}>
+          {!loading && (localScenarios?.length ?? 0) === 0 && (
+            <p className={styles.emptyText}>
+              No scenarios yet. Create your first one above.
+            </p>
+          )}
+          {(localScenarios ?? []).map((scenario) => (
+            <ScenarioCard
+              key={scenario.id}
+              scenario={scenario}
+              engagement={engagementByScenario.get(scenario.id) ?? null}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      </Spin>
+    </>
+  );
+
+  const myCrisesTab = (
+    <>
+      {engagementsError && (
+        <p className={styles.errorText}>{engagementsError}</p>
+      )}
+      <Spin spinning={engagementsLoading}>
+        <div className={styles.cardList}>
+          {!engagementsLoading && (engagements?.length ?? 0) === 0 && (
+            <p className={styles.emptyText}>
+              You haven&apos;t joined any scenarios yet. Pick one from All
+              Scenarios to get started.
+            </p>
+          )}
+          {(engagements ?? []).map((engagement) => (
+            <EngagementCard
+              key={`${engagement.scenarioId}-${engagement.playerId}`}
+              engagement={engagement}
+            />
+          ))}
+        </div>
+      </Spin>
+    </>
+  );
 
   return (
     <ConfigProvider
@@ -93,13 +255,11 @@ export default function ScenariosPage() {
           fontSize: 14,
         },
         components: {
-          Button: {
-            colorPrimary: "#4f46e5",
-            algorithm: true,
-          },
+          Button: { colorPrimary: "#4f46e5", algorithm: true },
         },
       }}
     >
+      {contextHolder}
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
@@ -120,30 +280,20 @@ export default function ScenariosPage() {
         <main className={styles.pageBody}>
           <div className={styles.contentWrapper}>
             <div className={styles.pageHeader}>
-              <h1 className={styles.heading}>Created Scenarios</h1>
+              <h1 className={styles.heading}>Scenarios</h1>
               <p className={styles.subheading}>
-                Review previously created scenarios
+                Browse all scenarios or jump back into the ones you&apos;re
+                playing.
               </p>
             </div>
 
-            {error && <p className={styles.errorText}>{error}</p>}
-
-            <Spin spinning={loading}>
-              <div className={styles.cardList}>
-                {!loading && scenarios?.length === 0 && (
-                  <p className={styles.emptyText}>
-                    No scenarios yet. Create your first one above.
-                  </p>
-                )}
-                {scenarios?.map((scenario) => (
-                  <ScenarioCard
-                    key={scenario.id}
-                    scenario={scenario}
-                    isDirector={isDirector(scenario.id)}
-                  />
-                ))}
-              </div>
-            </Spin>
+            <Tabs
+              defaultActiveKey="all"
+              items={[
+                { key: "all", label: "All Scenarios", children: allTab },
+                { key: "mine", label: "My Engagements", children: myCrisesTab },
+              ]}
+            />
           </div>
         </main>
       </div>

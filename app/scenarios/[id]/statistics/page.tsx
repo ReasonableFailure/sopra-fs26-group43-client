@@ -28,12 +28,10 @@ export default function PlayerStatisticsPage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
+  // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
   const { data: characters, loading } = usePolling<Character[]>(
     () =>
-      characterService.getCharactersByScenario(
-        scenarioId,
-        token,
-      ),
+      characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );

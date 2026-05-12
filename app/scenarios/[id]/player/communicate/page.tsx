@@ -35,7 +35,7 @@ function initials(name: string | null): string {
 }
 
 export default function CommunicationFormPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -52,7 +52,8 @@ export default function CommunicationFormPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId } = useSelectedCharacter(scenarioId);
+  const { characterId, characterToken } = useSelectedCharacter(scenarioId, userId);
+  const playerAuth = characterToken ?? `Bearer ${token}`;
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,8 +71,9 @@ export default function CommunicationFormPage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
+  // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
+    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );
@@ -86,8 +88,9 @@ export default function CommunicationFormPage() {
     if (!isAuthenticated || !scenarioId) return;
     let cancelled = false;
     setLoading(true);
+    // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
     characterService
-      .getCharactersByScenario(scenarioId, `Role ${token}`)
+      .getCharactersByScenario(scenarioId, `Bearer ${token}`)
       .then((chars) => {
         if (!cancelled) setCharacters(chars);
       })
@@ -160,7 +163,7 @@ export default function CommunicationFormPage() {
             recipientId: recipientId!,
             scenarioId,
           },
-          `Role ${token}`,
+          playerAuth,
         );
         router.push(
           `/scenarios/${scenarioId}/player/characters/${recipientId}`,
@@ -168,7 +171,7 @@ export default function CommunicationFormPage() {
       } else if (commType === "directive") {
         await directiveService.createDirective(
           { title, body: content, creatorId: characterId, scenarioId },
-          `Role ${token}`,
+          playerAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
@@ -183,7 +186,7 @@ export default function CommunicationFormPage() {
             scenarioId,
             authorId: characterId,
           },
-          `Role ${token}`,
+          playerAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       }

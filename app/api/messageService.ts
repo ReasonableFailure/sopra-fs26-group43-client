@@ -41,4 +41,8 @@ export class MessageService {
   ): Promise<void> {
     return this.api.put<void>(`/messages/${messageId}`, dto, token);
   }
+
+  deleteMessage(messageId: number, token: string): Promise<void> {
+    return this.api.delete<void>(`/messages/${messageId}`, token);
+  }
 }

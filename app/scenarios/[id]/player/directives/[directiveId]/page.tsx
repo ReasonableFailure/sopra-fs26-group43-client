@@ -62,17 +62,19 @@ function approvalStatusText(status: CommsStatus | null): string {
 }
 
 export default function DirectiveDetailPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { characterToken } = useSelectedCharacter(scenarioId, userId);
+  const playerAuth = characterToken ?? `Bearer ${token}`;
   const directiveId = Number(params.directiveId);
 
   const api = useApi();
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
 
-  const { characterId } = useSelectedCharacter(scenarioId);
+  const { characterId } = useSelectedCharacter(scenarioId, userId);
   const [myCharacter, setMyCharacter] = useState<Character | null>(null);
   const [directive, setDirective] = useState<Directive | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,9 +90,11 @@ export default function DirectiveDetailPage() {
 
     const fetchData = async () => {
       try {
+        // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate);
+        // getDirectiveById accepts "any" so the role token works.
         const [dir, chars] = await Promise.all([
-          directiveService.getDirectiveById(directiveId, `Role ${token}`),
-          characterService.getCharactersByScenario(scenarioId, `Role ${token}`),
+          directiveService.getDirectiveById(directiveId, playerAuth),
+          characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`),
         ]);
         if (cancelled) return;
         setDirective(dir);

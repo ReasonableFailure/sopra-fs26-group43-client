@@ -18,12 +18,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
 import { CharacterService } from "@/api/characterService";
-import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import type { ScenarioPostDTO } from "@/types/scenario";
 import styles from "@/styles/createScenario.module.css";
-import { DirectorService } from "@/api/directorService";
 import { useDirector } from "@/hooks/useDirector";
-import { DirectorPostDTO } from "@/types/director";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { CharacterPostDTO } from "@/types/character";
 
@@ -55,10 +52,8 @@ export default function CreateScenarioPage() {
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
-  const directorService = useMemo(() => new DirectorService(api), [api]);
-  const { setDirectorId, setDirectorToken } = useDirector(userId);
-  const { addDirectedScenario } = useDirectedScenarios(userId);
-  const { setPlayerRole } = usePlayerRole();
+  const { setDirectorToken } = useDirector(userId);
+  const { setPlayerRole } = usePlayerRole(userId);
 
   const [form] = Form.useForm<ScenarioFormValues>();
   const [characterForm] = Form.useForm<CharacterFormValues>();
@@ -98,41 +93,29 @@ export default function CreateScenarioPage() {
   };
 
   const handleSubmit = async (values: ScenarioFormValues) => {
-    const directorData: DirectorPostDTO = {
-      id: userId,
-    };
     setSubmitting(true);
     try {
-      const createdDirector = await directorService.becomeDirector(
-        directorData,
-        `Bearer ${token}`,
-      );
-
-      if (createdDirector.directorId) {
-        setDirectorId(createdDirector.directorId);
-      }
-      if (createdDirector.directorToken) {
-        setDirectorToken(createdDirector.directorToken);
-      }
       const scenarioData: ScenarioPostDTO = {
         title: values.title,
         description: values.description ?? null,
         exchangeRate: values.exchangeRate,
         startingMessageCount: values.startingMessageCount,
-        director: createdDirector.directorId,
       };
 
       const createdScenario = await scenarioService.createScenario(
         scenarioData,
-        `Director ${createdDirector.directorToken}`,
+        `Bearer ${token}`,
       );
-      if (createdScenario) {
-        addDirectedScenario(createdScenario.id);
+      const directorAuthHeader = createdScenario.directorToken;
+      if (directorAuthHeader) {
+        // Backend returns the raw token; PlayerService.validate expects
+        // "Director <token>". Persist it pre-typed so every later director
+        // call can use it verbatim as the Authorization header.
+        setDirectorToken(`Director ${directorAuthHeader}`);
       }
       setPlayerRole("director");
 
-      if (createdScenario && characters.length > 0) {
-        // Loop through drafted characters and create them in the backend
+      if (createdScenario && characters.length > 0 && directorAuthHeader) {
         for (const char of characters) {
           const characterData: CharacterPostDTO = {
             name: char.name,
@@ -142,9 +125,9 @@ export default function CreateScenarioPage() {
             secret: char.secret,
             scenarioId: createdScenario.id,
           };
-          const res = await characterService.createCharacter(
+          await characterService.createCharacter(
             characterData,
-            `Director ${createdDirector.directorToken}`,
+            `Director ${directorAuthHeader}`,
           );
         }
       }

@@ -14,6 +14,7 @@ export interface Scenario {
   exchangeRate: number;
   startingMessageCount: number;
   mastodonProfileUrl?: string | null;
+  directorToken?: string | null;
 }
 
 /** POST /scenarios */
@@ -22,7 +23,6 @@ export interface ScenarioPostDTO {
   description: string | null;
   exchangeRate: number;
   startingMessageCount: number;
-  director: number;
 }
 
 /** PUT /scenarios/{id} */

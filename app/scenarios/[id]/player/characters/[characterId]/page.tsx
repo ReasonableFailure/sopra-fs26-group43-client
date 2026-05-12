@@ -37,10 +37,12 @@ function formatDate(iso: string | null): string {
 }
 
 export default function CharacterProfilePage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { characterToken } = useSelectedCharacter(scenarioId, userId);
+  const playerAuth = characterToken ?? `Bearer ${token}`;
   const targetCharId = Number(params.characterId);
 
   const api = useApi();
@@ -48,7 +50,7 @@ export default function CharacterProfilePage() {
   const messageService = useMemo(() => new MessageService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId: myCharacterId } = useSelectedCharacter(scenarioId);
+  const { characterId: myCharacterId } = useSelectedCharacter(scenarioId, userId);
 
   const [targetCharacter, setTargetCharacter] = useState<Character | null>(
     null,
@@ -58,8 +60,9 @@ export default function CharacterProfilePage() {
 
   const enabled = isAuthenticated && !!scenarioId;
 
+  // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, `Role ${token}`),
+    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
     5000,
     enabled,
   );
@@ -78,9 +81,10 @@ export default function CharacterProfilePage() {
 
     const fetchData = async () => {
       try {
+        // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
         const chars = await characterService.getCharactersByScenario(
           scenarioId,
-          `Role ${token}`,
+          `Bearer ${token}`,
         );
         if (cancelled) return;
         setTargetCharacter(chars.find((c) => c.id === targetCharId) ?? null);
@@ -89,7 +93,7 @@ export default function CharacterProfilePage() {
           ? await messageService.getMessagesBetween(
             myCharacterId,
             targetCharId,
-            `Role ${token}`,
+            playerAuth,
           )
           : [];
         if (cancelled) return;
@@ -122,6 +126,12 @@ export default function CharacterProfilePage() {
   ]);
 
   if (!authReady || !isAuthenticated) return null;
+
+  // Recipient must not see a message until the backroomer approves it.
+  // Outgoing messages stay visible (with their existing status badges).
+  const visibleMessages = messages.filter(
+    (m) => m.creatorId === myCharacterId || m.status === CommsStatus.ACCEPTED,
+  );
 
   return (
     <ConfigProvider
@@ -224,10 +234,10 @@ export default function CharacterProfilePage() {
               </div>
 
               <div className={styles.messageList}>
-                {messages.length === 0
+                {visibleMessages.length === 0
                   ? <p className={styles.emptyLog}>No messages yet.</p>
                   : (
-                    messages.map((msg) => {
+                    visibleMessages.map((msg) => {
                       const isMine = msg.creatorId === myCharacterId;
                       const senderName = isMine
                         ? "You"

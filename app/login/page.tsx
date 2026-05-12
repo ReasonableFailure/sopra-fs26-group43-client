@@ -31,9 +31,7 @@ const Login: React.FC = () => {
   const handleLogin = async (values: LoginFields) => {
     setLoading(true);
     try {
-      const response = await apiService.post<User>("/login", values);
-      if (response.token) setToken(response.token);
-      if (response.id) setUserId(response.id);
+      await login(values);
       router.push("/scenarios");
     } catch (error) {
       if (error instanceof Error) {

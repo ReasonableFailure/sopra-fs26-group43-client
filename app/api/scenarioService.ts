@@ -36,4 +36,8 @@ export class ScenarioService {
   ): Promise<void> {
     return this.api.put<void>(`/scenarios/${scenarioId}`, data, token);
   }
+
+  deleteScenario(scenarioId: number, token: string): Promise<void> {
+    return this.api.delete<void>(`/scenarios/${scenarioId}`, token);
+  }
 }

@@ -2,15 +2,16 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 
 /**
  * Persists the character ID a player selected in the lobby,
- * keyed per scenario so different scenarios track independently.
+ * keyed per (user, scenario) so different users in the same browser
+ * — and the same user across scenarios — track independently.
  */
-export function useSelectedCharacter(scenarioId: number) {
-  const key = `selectedCharacter_${scenarioId}`;
+export function useSelectedCharacter(scenarioId: number, userId: number | null) {
+  const suffix = userId ? `${userId}_${scenarioId}` : `guest_${scenarioId}`;
   const { value: characterId, set: setCharacterId } = useLocalStorage<
     number | null
-  >(key, null);
+  >(`selectedCharacter_${suffix}_id`, null);
   const { value: characterToken, set: setCharacterToken } = useLocalStorage<
     string | null
-  >(key, null);
+  >(`selectedCharacter_${suffix}_token`, null);
   return { characterToken, setCharacterToken, characterId, setCharacterId };
 }

@@ -51,10 +51,10 @@ export class CharacterService {
 
   public async assignCharacter(
     dto: CharacterAssignDTO,
-    userToken: string,
+    directorToken: string,
     characterId: number,
   ): Promise<Character> {
-    return await this.api.put<Character>(`/player/${characterId}`, dto, userToken);
+    return await this.api.put<Character>(`/player/${characterId}`, dto, directorToken);
   }
 
   public async modifyCharacter(
@@ -63,9 +63,25 @@ export class CharacterService {
     characterId: number,
   ): Promise<void> {
     return await this.api.put<void>(
-      `/player/${characterId}`,
+      `/characters/${characterId}`,
       dto,
       directorToken,
+    );
+  }
+
+  claimCharacter(scenarioId: number, characterId: number, token: string): Promise<Character> {
+    return this.api.postWithToken<Character>(
+      `/scenarios/${scenarioId}/claim-character/${characterId}`,
+      {},
+      `Bearer ${token}`,
+    );
+  }
+
+  becomeBackroomer(scenarioId: number, token: string): Promise<{ id: number; authToken: string }> {
+    return this.api.postWithToken<{ id: number; authToken: string }>(
+      `/scenarios/${scenarioId}/become-backroomer`,
+      {},
+      `Bearer ${token}`,
     );
   }
 }
