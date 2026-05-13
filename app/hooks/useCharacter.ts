@@ -5,7 +5,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
  * keyed per (user, scenario) so different users in the same browser
  * — and the same user across scenarios — track independently.
  */
-export function useSelectedCharacter(
+export function useCharacter(
   scenarioId: number,
   userId: number | null,
 ) {
