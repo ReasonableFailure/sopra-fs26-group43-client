@@ -13,7 +13,10 @@ export class CharacterService {
     scenarioId: number,
     token: string,
   ): Promise<Character[]> {
-    return await this.api.get<Character[]>(`/characters/${scenarioId}`, token);
+    return this.api.getWithToken<Character[]>(
+      `/characters/scenario/${scenarioId}`,
+      token, //TODO funny business
+    );
   }
 
   public async createCharacter(
@@ -23,7 +26,7 @@ export class CharacterService {
     return await this.api.postWithToken<Character>(
       "/characters",
       dto,
-      directorToken,
+      `Director ${directorToken}`, //TODO funny business
     );
   }
   public async getCharacterPoints(
@@ -31,7 +34,7 @@ export class CharacterService {
     characterId: number,
     token: string,
   ): Promise<Character> {
-    return await this.api.get<Character>(
+    return await this.api.getWithToken<Character>(
       `/characters/${scenarioId}/${characterId}/points`,
       token,
     );
@@ -49,15 +52,27 @@ export class CharacterService {
     );
   }
 
+  updateCharacter(
+      characterId: number,
+      dto: CharacterPutDTO,
+      directorToken: string,
+  ): Promise<void> {
+    return this.api.putWithToken<void>(
+        `/characters/${characterId}`,
+        dto,
+        `Director ${directorToken}`, //TODO funny business
+    );
+  }
+
   public async assignCharacter(
     dto: CharacterAssignDTO,
-    directorToken: string,
+    scenarioId: number,
+    token: string,
     characterId: number,
   ): Promise<Character> {
-    return await this.api.put<Character>(
+    return await this.api.putWithToken<Character>(
       `/player/${characterId}`,
-      dto,
-      directorToken,
+      dto, `${token}`,
     );
   }
 
@@ -66,33 +81,18 @@ export class CharacterService {
     directorToken: string,
     characterId: number,
   ): Promise<void> {
-    return await this.api.put<void>(
+    return await this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      directorToken,
+      `Director ${directorToken}`,//TODO funny business
     );
   }
 
-  claimCharacter(
-    scenarioId: number,
-    characterId: number,
-    token: string,
-  ): Promise<Character> {
-    return this.api.postWithToken<Character>(
-      `/scenarios/${scenarioId}/claim-character/${characterId}`,
-      {},
-      `Bearer ${token}`,
-    );
-  }
 
-  becomeBackroomer(
-    scenarioId: number,
-    token: string,
-  ): Promise<{ id: number; authToken: string }> {
-    return this.api.postWithToken<{ id: number; authToken: string }>(
-      `/scenarios/${scenarioId}/become-backroomer`,
-      {},
-      `Bearer ${token}`,
+  getCharacterById(characterId: number, token: string): Promise<Character> {
+    return this.api.getWithToken<Character>(
+        `/characters/${characterId}`,
+        token,
     );
   }
 }

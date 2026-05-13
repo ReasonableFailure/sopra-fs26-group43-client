@@ -8,7 +8,6 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
-  InfoCircleOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,14 +18,8 @@ import { DirectiveService } from "@/api/directiveService";
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/directiveDetail.module.css";
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -51,7 +44,7 @@ function StatusBadge({ status }: { status: CommsStatus | null }) {
 function approvalStatusText(status: CommsStatus | null): string {
   switch (status) {
     case CommsStatus.ACCEPTED:
-      return "Your directive has been approved by the backroom team and will start to affect the scenario from next round.";
+      return "Your directive has been approved by the backroom team and will start to affect the scenario from the next day.";
     case CommsStatus.REJECTED:
       return "Your directive has been rejected by the backroom team.";
     case CommsStatus.FAILED:
@@ -81,7 +74,7 @@ export default function DirectiveDetailPage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router, authReady]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId || !directiveId) return;
@@ -167,8 +160,12 @@ export default function DirectiveDetailPage() {
             >
               Back to Dashboard
             </Button>
-            <Avatar className={styles.navAvatar}>
-              {initials(myCharacter?.name ?? null)}
+            <Avatar
+              className={styles.navAvatar}
+              src={myCharacter?.portrait ?? undefined}
+            >
+              {!myCharacter?.portrait &&
+                initials(myCharacter?.name ?? null)}
             </Avatar>
           </div>
         </nav>

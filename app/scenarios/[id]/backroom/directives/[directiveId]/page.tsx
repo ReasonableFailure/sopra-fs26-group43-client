@@ -59,7 +59,7 @@ export default function BackroomDirectiveDetailPage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router, authReady]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId || !directiveId) return;

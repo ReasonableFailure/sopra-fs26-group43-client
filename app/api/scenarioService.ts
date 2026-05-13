@@ -10,11 +10,11 @@ export class ScenarioService {
   constructor(private api: ApiService) {}
 
   getScenarios(token: string): Promise<Scenario[]> {
-    return this.api.get<Scenario[]>("/scenarios", token);
+    return this.api.getWithToken<Scenario[]>("/scenarios", token);
   }
 
   getScenarioById(id: number, token: string): Promise<Scenario> {
-    return this.api.get<Scenario>(`/scenarios/${id}`, token);
+    return this.api.getWithToken<Scenario>(`/scenarios/${id}`, token);
   }
 
   createScenario(data: ScenarioPostDTO, token: string): Promise<Scenario> {
@@ -26,7 +26,11 @@ export class ScenarioService {
     data: ScenarioMastodonDTO,
     token: string,
   ): Promise<void> {
-    return this.api.put<void>(`/scenarios/${scenarioId}/mastodon`, data, token);
+    return this.api.putWithToken<void>(
+      `/scenarios/${scenarioId}/mastodon`,
+      data,
+      token,
+    );
   }
 
   updateScenario(
@@ -34,10 +38,10 @@ export class ScenarioService {
     data: Partial<ScenarioPutDTO>,
     token: string,
   ): Promise<void> {
-    return this.api.put<void>(`/scenarios/${scenarioId}`, data, token);
+    return this.api.putWithToken<void>(`/scenarios/${scenarioId}`, data, token);
   }
 
   deleteScenario(scenarioId: number, token: string): Promise<void> {
-    return this.api.delete<void>(`/scenarios/${scenarioId}`, token);
+    return this.api.deleteWithToken<void>(`/scenarios/${scenarioId}`, token);
   }
 }

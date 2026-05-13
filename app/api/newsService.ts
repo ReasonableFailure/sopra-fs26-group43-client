@@ -16,10 +16,13 @@ export class NewsService {
   }
 
   getNewsByScenario(scenarioId: number, token: string): Promise<NewsGetDTO[]> {
-    return this.api.get<NewsGetDTO[]>(`/news/scenario/${scenarioId}`, token);
+    return this.api.getWithToken<NewsGetDTO[]>(
+      `/news/scenario/${scenarioId}`,
+      token,
+    );
+  }
+  deleteNews(newsId: number, token: string): Promise<void> {
+    return this.api.deleteWithToken<void>(`/news/${newsId}`, token);
   }
 
-  deleteNews(newsId: number, token: string): Promise<void> {
-    return this.api.delete<void>(`/news/${newsId}`, token);
-  }
 }

@@ -2,10 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
+import {
+  Avatar,
+  Button,
+  ConfigProvider,
+  message,
+  Modal,
+  Spin,
+  theme,
+} from "antd";
+import { InputNumber } from "antd";
 import {
   BellOutlined,
   ClockCircleOutlined,
+  QuestionCircleOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 
@@ -13,6 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { initials } from "@/helpers/helperFunctions";
 
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
@@ -39,13 +50,6 @@ const AVATAR_GRADIENTS = [
 
 function avatarGradient(index: number) {
   return AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length];
-}
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function timeAgo(iso: string | null | undefined): string {
@@ -102,6 +106,8 @@ export default function PlayerDashboardPage() {
   const [messageCount, setMessageCount] = useState(0);
   const [messageApi, contextHolder] = message.useMessage();
   const [buying, setBuying] = useState(false);
+  const [buyAmount, setBuyAmount] = useState(1);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -140,7 +146,7 @@ export default function PlayerDashboardPage() {
   );
 
   const effectiveScenario = liveScenario ?? scenario;
-  const isGameActive = effectiveScenario?.status === ScenarioStatus.UNFROZEN;
+  const isGameActive = effectiveScenario?.status === "UNFROZEN";
 
   const loading = staticLoading || directivesLoading || newsLoading;
 
@@ -162,7 +168,7 @@ export default function PlayerDashboardPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -199,6 +205,7 @@ export default function PlayerDashboardPage() {
 
   const selectedCharacter = characters.find((c) => c.id === characterId) ??
     null;
+  const isAlive = (liveCharacter?.alive ?? selectedCharacter?.alive) !== false;
 
   useEffect(() => {
     if (liveCharacter) {
@@ -221,9 +228,12 @@ export default function PlayerDashboardPage() {
 
   if (!authReady || !isAuthenticated) return null;
 
-  const myDirectives = (directives ?? []).filter(
-    (d) => d.creatorId === characterId,
-  );
+  const myDirectives = (directives ?? [])
+    .filter((d) => d.creatorId === characterId)
+    .sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   const latestNews = [...(newsItems ?? [])]
     .sort(
@@ -236,21 +246,27 @@ export default function PlayerDashboardPage() {
   const exchangeRate = effectiveScenario?.exchangeRate ?? 10;
 
   const handleBuyMessage = async () => {
-    if (!characterId) return;
+    if (!characterId || buyAmount < 1) return;
 
     setBuying(true);
 
     try {
-      const updated = await characterService.buyMessage(
-        scenarioId,
-        characterId,
-        playerAuth,
-      );
+      let updated: Character | null = null;
 
-      setLikes(updated.pointsBalance ?? 0);
-      setMessageCount(updated.messageCount ?? 0);
+      for (let i = 0; i < buyAmount; i++) {
+        updated = await characterService.buyMessage(
+          scenarioId,
+          characterId,
+          playerAuth,
+        );
+      }
 
-      messageApi.success("Message purchased.");
+      if (updated) {
+        setLikes(updated.pointsBalance ?? 0);
+        setMessageCount(updated.messageCount ?? 0);
+      }
+
+      messageApi.success(`${buyAmount} message(s) purchased.`);
     } catch (err) {
       messageApi.error(
         err instanceof Error ? err.message : "Purchase failed.",
@@ -271,7 +287,6 @@ export default function PlayerDashboardPage() {
     if (!authorId) return "Unknown";
     return characters.find((c) => c.id === authorId)?.name ?? "Unknown";
   }
-
 
   return (
     <ConfigProvider
@@ -298,18 +313,24 @@ export default function PlayerDashboardPage() {
           <div className={styles.navLeft}>
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Character Dashboard</span>
-            <Button onClick={() => router.push("/scenarios")}>
-              All Scenarios
-            </Button>
           </div>
+          {!isAlive && (
+            <div style={{ color: "#ef4444", fontWeight: 600 }}>
+              Your Character has Died.
+            </div>
+          )}
           <div className={styles.navRight}>
             <Button
               icon={<BellOutlined />}
               shape="circle"
               className={styles.bellButton}
             />
-            <Avatar className={styles.navAvatar}>
-              {initials(selectedCharacter?.name ?? null)}
+            <Avatar
+              className={styles.navAvatar}
+              src={selectedCharacter?.portrait ?? undefined}
+            >
+              {!selectedCharacter?.portrait &&
+                initials(selectedCharacter?.name ?? null)}
             </Avatar>
           </div>
         </nav>
@@ -322,8 +343,8 @@ export default function PlayerDashboardPage() {
                 <h2 className={styles.sidebarTitle}>My Directives</h2>
                 <Button
                   type="primary"
-                  disabled={!isGameActive}
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
+                  disabled={!isGameActive || !isAlive}
+                  style={{ opacity: isGameActive && isAlive ? 1 : 0.5 }}
                   onClick={() =>
                     router.push(
                       `/scenarios/${scenarioId}/player/communicate?type=directive`,
@@ -382,8 +403,8 @@ export default function PlayerDashboardPage() {
                 <h1 className={styles.sectionHeading}>News Feed</h1>
                 <Button
                   type="primary"
-                  disabled={!isGameActive}
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
+                  disabled={!isGameActive || !isAlive}
+                  style={{ opacity: isGameActive && isAlive ? 1 : 0.5 }}
                   onClick={() =>
                     router.push(
                       `/scenarios/${scenarioId}/player/communicate?type=pronouncement`,
@@ -397,61 +418,67 @@ export default function PlayerDashboardPage() {
               </p>
 
               <div className={styles.newsFeedCard}>
-                {latestNews.length === 0 ? (
-                  <div className={styles.newsFeedPlaceholder}>
-                    <p className={styles.newsFeedPlaceholderTitle}>
-                      No news yet
-                    </p>
-                    <p>News stories will appear here when published.</p>
-                  </div>
-                ) : (
-                  <div className={styles.newsList}>
-                    {latestNews.map((item) => {
-                      const pronouncement = isPronouncement(item);
-                      const authorName = pronouncement
-                        ? getAuthorName(item.authorId, characters)
-                        : null;
-                      return (
-                        <article key={item.id} className={styles.newsItem}>
-                          <div className={styles.newsItemTop}>
-                            <div className={styles.newsItemTopLeft}>
-                              <span
-                                className={
-                                  pronouncement
+                {latestNews.length === 0
+                  ? (
+                    <div className={styles.newsFeedPlaceholder}>
+                      <p className={styles.newsFeedPlaceholderTitle}>
+                        No news yet
+                      </p>
+                      <p>News stories will appear here when published.</p>
+                    </div>
+                  )
+                  : (
+                    <div className={styles.newsList}>
+                      {latestNews.map((item) => {
+                        const pronouncement = isPronouncement(item);
+                        const authorName = pronouncement
+                          ? getAuthorName(item.authorId, characters)
+                          : null;
+                        return (
+                          <article key={item.id} className={styles.newsItem}>
+                            <div className={styles.newsItemTop}>
+                              <div className={styles.newsItemTopLeft}>
+                                <span
+                                  className={pronouncement
                                     ? styles.badgePronouncement
-                                    : styles.badgeNews
-                                }
-                              >
-                                {pronouncement ? "Pronouncement" : "New Story"}
-                              </span>
-                              {pronouncement && authorName && (
-                                <span className={styles.newsAuthorRow}>
-                                  <UserOutlined className={styles.newsAuthorIcon} />
-                                  {authorName}
+                                    : styles.badgeNews}
+                                >
+                                  {pronouncement
+                                    ? "Pronouncement"
+                                    : "News Story"}
                                 </span>
-                              )}
+                                {pronouncement && authorName && (
+                                  <span className={styles.newsAuthorRow}>
+                                    <UserOutlined
+                                      className={styles.newsAuthorIcon}
+                                    />
+                                    {authorName}
+                                  </span>
+                                )}
+                              </div>
+                              <span className={styles.newsTimestamp}>
+                                <ClockCircleOutlined />
+                                {timeAgo(item.createdAt)}
+                              </span>
                             </div>
-                            <span className={styles.newsTimestamp}>
-                              <ClockCircleOutlined />
-                              {timeAgo(item.createdAt)}
-                            </span>
-                          </div>
-                          <h3 className={styles.newsItemTitle}>{item.title}</h3>
-                          <p className={styles.newsItemBody}>{item.body}</p>
-                        </article>
-                      );
-                    })}
-                  </div>
-                )}
+                            <h3 className={styles.newsItemTitle}>
+                              {item.title}
+                            </h3>
+                            <p className={styles.newsItemBody}>{item.body}</p>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
               </div>
               <div className={styles.newsActions}>
                 <div>
                   {scenario?.mastodonProfileUrl && (
                     <Button
                       type="primary"
-                      onClick={() =>
-                        window.open(scenario.mastodonProfileUrl!, "_blank", "noopener,noreferrer")
-                      }
+                      href={scenario.mastodonProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       Go to Mastodon
                     </Button>
@@ -470,15 +497,40 @@ export default function PlayerDashboardPage() {
                 <div className={styles.metricCard}>
                   <p className={styles.metricLabel}>Current Like Balance</p>
                   <p className={styles.metricValue}>{likes}</p>
-                  <Button
-                    type="primary"
-                    className={styles.buyButton}
-                    disabled={likes < exchangeRate}
-                    onClick={handleBuyMessage}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
-                    Buy a message with {exchangeRate}{" "}
-                    Like{exchangeRate !== 1 ? "s" : ""}
-                  </Button>
+                    <InputNumber
+                      className={styles.buyInput}
+                      min={1}
+                      max={Math.floor(likes / exchangeRate)}
+                      value={buyAmount}
+                      onChange={(v) => setBuyAmount(v ?? 1)}
+                      style={{
+                        width: 80,
+                      }}
+                    />
+                    <Button
+                      type="primary"
+                      className={styles.buyButton}
+                      disabled={buying ||
+                        buyAmount < 1 ||
+                        likes < exchangeRate * buyAmount}
+                      onClick={handleBuyMessage}
+                      style={{
+                        height: 48,
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      Buy {buyAmount} message{buyAmount !== 1 ? "s" : ""}
+                    </Button>
+                  </div>
                 </div>
 
                 <div className={styles.metricCard}>
@@ -486,6 +538,18 @@ export default function PlayerDashboardPage() {
                     Current Available Messages
                   </p>
                   <p className={styles.metricValue}>{messageCount}</p>
+                  <Button
+                    className={styles.tutorialButton}
+                    type="default"
+                    size="large"
+                    icon={<QuestionCircleOutlined />}
+                    onClick={() => setIsTutorialOpen(true)}
+                    style={{
+                      height: 48,
+                      paddingInline: 24,
+                      fontWeight: 600,
+                    }}
+                  />
                 </div>
               </div>
               <div className={styles.metricCard}>
@@ -545,10 +609,22 @@ export default function PlayerDashboardPage() {
                           >
                             <div
                               className={styles.characterAvatar}
-                              style={{ background: avatarGradient(index) }}
+                              style={{
+                                background: char.portrait
+                                  ? "transparent"
+                                  : avatarGradient(index),
+                              }}
                               aria-label={char.name ?? "Character"}
                             >
-                              {initials(char.name)}
+                              {char.portrait
+                                ? (
+                                  <img
+                                    src={char.portrait}
+                                    alt={char.name ?? "Character portrait"}
+                                    className={styles.characterPortrait}
+                                  />
+                                )
+                                : initials(char.name)}
                             </div>
                             <div className={styles.characterInfo}>
                               <p className={styles.characterName}>
@@ -581,6 +657,42 @@ export default function PlayerDashboardPage() {
             </aside>
           </div>
         </Spin>
+        <Modal
+          title="Likes & Messages"
+          open={isTutorialOpen}
+          onCancel={() =>
+            setIsTutorialOpen(false)}
+          footer={[
+            <Button
+              key="close"
+              onClick={() => setIsTutorialOpen(false)}
+            >
+              Close
+            </Button>,
+          ]}
+        >
+          <ol
+            style={{
+              paddingLeft: 20,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              lineHeight: 1.6,
+            }}
+          >
+            <li>
+              Others can like your prounouncements on mastodon, to show support.
+            </li>
+            <li>
+              The number of private message are limited by the number of likes
+              you have received.
+            </li>
+            <li>
+              After the initial free messages are used up, you can purchase one
+              additional message for {buyAmount} Likes.
+            </li>
+          </ol>
+        </Modal>
       </div>
     </ConfigProvider>
   );

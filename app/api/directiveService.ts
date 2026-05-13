@@ -12,14 +12,17 @@ export class DirectiveService {
     scenarioId: number,
     token: string,
   ): Promise<Directive[]> {
-    return this.api.get<Directive[]>(
+    return this.api.getWithToken<Directive[]>(
       `/directives/scenario/${scenarioId}`,
       token,
     );
   }
 
   getDirectiveById(directiveId: number, token: string): Promise<Directive> {
-    return this.api.get<Directive>(`/directives/${directiveId}`, token);
+    return this.api.getWithToken<Directive>(
+      `/directives/${directiveId}`,
+      token,
+    );
   }
 
   createDirective(dto: DirectivePostDTO, token: string): Promise<Directive> {
@@ -31,10 +34,10 @@ export class DirectiveService {
     dto: DirectivePutDTO,
     token: string,
   ): Promise<void> {
-    return this.api.put<void>(`/directives/${directiveId}`, dto, token);
-  }
-
-  deleteDirective(directiveId: number, token: string): Promise<void> {
-    return this.api.delete<void>(`/directives/${directiveId}`, token);
+    return this.api.putWithToken<void>(
+      `/directives/${directiveId}`,
+      dto,
+      token,
+    );
   }
 }

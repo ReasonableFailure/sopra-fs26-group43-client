@@ -14,15 +14,15 @@ export class UserService {
   }
 
   getUser(id: number, token: string): Promise<User> {
-    return this.api.get<User>(`/users/${id}`, `Bearer ${token}`);
+    return this.api.getWithToken<User>(`/users/${id}`, `Bearer ${token}`);
   }
 
   getAllUsers(token: string): Promise<User[]> {
-    return this.api.get<User[]>("/users", `Bearer ${token}`);
+    return this.api.getWithToken<User[]>("/users", `Bearer ${token}`);
   }
 
   updateUser(id: number, data: UserPutDTO, token: string): Promise<void> {
-    return this.api.put<void>(`/users/${id}`, data, `Bearer ${token}`);
+    return this.api.putWithToken<void>(`/users/${id}`, data, `Bearer ${token}`);
   }
 
   logout(id: number, token: string): Promise<void> {
@@ -30,11 +30,11 @@ export class UserService {
   }
 
   deleteUser(id: number, token: string): Promise<void> {
-    return this.api.delete<void>(`/users/${id}`, `Bearer ${token}`);
+    return this.api.deleteWithToken<void>(`/users/${id}`, `Bearer ${token}`);
   }
 
   getEngagements(userId: number, token: string): Promise<Engagement[]> {
-    return this.api.get<Engagement[]>(
+    return this.api.getWithToken<Engagement[]>(
       `/users/${userId}/engagements`,
       `Bearer ${token}`,
     );

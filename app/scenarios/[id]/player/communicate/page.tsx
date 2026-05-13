@@ -19,20 +19,15 @@ import type { Scenario } from "@/types/scenario";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
+import { DirectiveCategory } from "@/types/directive";
 import { MessageService } from "@/api/messageService";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/communicationForm.module.css";
 
 type CommType = "direct_message" | "directive" | "pronouncement";
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 export default function CommunicationFormPage() {
   const { token, userId, isAuthenticated, authReady } = useAuth();
@@ -70,6 +65,7 @@ export default function CommunicationFormPage() {
   );
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState<DirectiveCategory | null>(null);
   const MAX_POST_LENGTH = 500;
 
   const enabled = isAuthenticated && !!scenarioId;
@@ -81,11 +77,18 @@ export default function CommunicationFormPage() {
     enabled,
   );
 
-  const isGameActive = liveScenario?.status === "UNFROZEN";
+  const { data: liveCharacter } = usePolling<Character>(
+    () =>
+      characterId
+        ? characterService.getCharacterById(characterId, token)//TODO: funny business
+        : Promise.reject(),
+    5000,
+    enabled && !!characterId,
+  );
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router, authReady]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
@@ -112,6 +115,8 @@ export default function CommunicationFormPage() {
 
   const selectedCharacter = characters.find((c) => c.id === characterId) ??
     null;
+  const isGameActive = liveScenario?.status === "UNFROZEN";
+  const isAlive = (liveCharacter?.alive ?? selectedCharacter?.alive) !== false;
 
   const authorName = selectedCharacter?.name ?? "Unknown";
 
@@ -155,6 +160,11 @@ export default function CommunicationFormPage() {
       return;
     }
 
+    if (commType === "directive" && !category) {
+      messageApi.error("Please select a directive category.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (commType === "direct_message") {
@@ -173,8 +183,14 @@ export default function CommunicationFormPage() {
         );
       } else if (commType === "directive") {
         await directiveService.createDirective(
-          { title, body: content, creatorId: characterId, scenarioId },
-          playerAuth,
+          {
+            title,
+            body: content,
+            creatorId: characterId,
+            scenarioId,
+            category: category!,
+          },
+            playerAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
@@ -229,8 +245,19 @@ export default function CommunicationFormPage() {
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Scenario Manager</span>
           </div>
-          <Avatar className={styles.navAvatar}>
-            {initials(selectedCharacter?.name ?? null)}
+          {!isAlive && (
+            <div
+              style={{ color: "#ef4444", fontWeight: 600, marginBottom: 12 }}
+            >
+              Your Character has Died.
+            </div>
+          )}
+          <Avatar
+            className={styles.navAvatar}
+            src={selectedCharacter?.portrait ?? undefined}
+          >
+            {!selectedCharacter?.portrait &&
+              initials(selectedCharacter?.name ?? null)}
           </Avatar>
         </nav>
 
@@ -262,6 +289,7 @@ export default function CommunicationFormPage() {
                     onChange={(v) => {
                       setCommType(v as CommType);
                       setRecipientId(null);
+                      setCategory(null);
                     }}
                     style={{ width: "100%" }}
                   />
@@ -293,6 +321,34 @@ export default function CommunicationFormPage() {
                     )}
                 </div>
 
+                {commType === "directive" && (
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Directive Category</label>
+                    <Select
+                      value={category ?? undefined}
+                      onChange={(v) => setCategory(v)}
+                      placeholder="Select category"
+                      style={{ width: "100%" }}
+                      options={[
+                        {
+                          value: DirectiveCategory.MILITARY,
+                          label: "Military",
+                        },
+                        {
+                          value: DirectiveCategory.POLITICAL,
+                          label: "Political",
+                        },
+                        { value: DirectiveCategory.PUBLIC, label: "Public" },
+                        {
+                          value: DirectiveCategory.INTELLIGENCE,
+                          label: "Intelligence",
+                        },
+                        { value: DirectiveCategory.OTHER, label: "Other" },
+                      ]}
+                    />
+                  </div>
+                )}
+
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Title</label>
                   <Input
@@ -311,21 +367,54 @@ export default function CommunicationFormPage() {
                     rows={10}
                     style={{ resize: "none" }}
                   />
+                  {commType === "direct_message" &&
+                    (selectedCharacter?.messageCount ?? 0) <= 0 && (
+                    <p
+                      style={{
+                        marginTop: 6,
+                        color: "#dc2626",
+                        fontSize: 12,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Warning: You have no messages available. Return to the
+                      dashboard and buy more with likes.
+                    </p>
+                  )}
+                  {commType === "direct_message" &&
+                    (selectedCharacter?.messageCount ?? 0) > 0 &&
+                    (selectedCharacter?.messageCount ?? 0) <= 2 && (
+                    <p
+                      style={{
+                        marginTop: 6,
+                        color: "#f59e0b",
+                        fontSize: 12,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Warning: Only {selectedCharacter?.messageCount}{" "}
+                      message{(selectedCharacter?.messageCount ?? 0) === 1
+                        ? ""
+                        : "s"} remaining.
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Footer */}
               <div className={styles.cardFooter}>
-                <div
-                  style={{
-                    marginTop: 6,
-                    textAlign: "right",
-                    fontSize: 12,
-                    color: overLimit ? "#dc2626" : "#6b7280",
-                  }}
-                >
-                  {totalLength} / {MAX_POST_LENGTH}
-                </div>
+                {commType === "pronouncement" && (
+                  <div
+                    style={{
+                      marginTop: 6,
+                      textAlign: "right",
+                      fontSize: 12,
+                      color: overLimit ? "#dc2626" : "#6b7280",
+                    }}
+                  >
+                    {totalLength} / {MAX_POST_LENGTH}
+                  </div>
+                )}
                 <Button
                   onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
                 >
@@ -337,6 +426,7 @@ export default function CommunicationFormPage() {
                   onClick={handleSubmit}
                   disabled={submitting ||
                     !isGameActive ||
+                    !isAlive ||
                     (commType === "direct_message" &&
                       (selectedCharacter?.messageCount ?? 0) <= 0) ||
                     (commType === "pronouncement" && overLimit)}

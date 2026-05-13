@@ -8,9 +8,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useMyEngagement } from "@/hooks/useMyEngagement";
 import { CharacterService } from "@/api/characterService";
+import { BackroomerService} from "@/api/backroomerService";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
 import { useBackroomer } from "@/hooks/useBackroomer";
-import type { Character } from "@/types/character";
+import type {Character, CharacterAssignDTO} from "@/types/character";
+import type {BackroomerPostDTO} from "@/types/backroomer";
 import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 
@@ -28,10 +30,34 @@ function CharacterCard({ character, onSelect, disabled }: CharacterCardProps) {
       role="button"
       tabIndex={0}
     >
-      <h3 className={styles.characterName}>{character.name}</h3>
-      <p className={styles.characterDesc}>
-        {character.description ?? "No description provided."}
-      </p>
+      <div className={styles.cardHeader}>
+        <div className={styles.cardText}>
+          <h3 className={styles.characterName}>
+            {character.name}
+          </h3>
+
+          <p className={styles.characterTitle}>
+            {character.title ?? "No title provided."}
+          </p>
+        </div>
+
+        <div className={styles.characterPortraitWrapper}>
+          {character.portrait
+            ? (
+              <img
+                src={character.portrait}
+                alt={character.name ?? "Character portrait"}
+                className={styles.characterPortrait}
+              />
+            )
+            : (
+              <div className={styles.characterPortraitFallback}>
+                {(character.name ?? "?").slice(0, 2).toUpperCase()}
+              </div>
+            )}
+        </div>
+      </div>
+
       <div className={styles.selectHint}>
         <InfoCircleOutlined className={styles.hintIcon} />
         <span className={styles.hintText}>
@@ -51,6 +77,7 @@ export default function GameLobbyPage() {
   const { setPlayerRole } = usePlayerRole(userId);
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
+  const backroomerService = useMemo(() => new BackroomerService(api), [api]);
   const { setCharacterId, setCharacterToken } = useSelectedCharacter(
     scenarioId,
     userId,
@@ -128,10 +155,11 @@ export default function GameLobbyPage() {
     if (!userId || userId === 0 || !character.id || !token) return;
     setSubmitting(true);
     try {
-      const claimed = await characterService.claimCharacter(
-        scenarioId,
-        character.id,
-        token,
+      const dto: CharacterAssignDTO = {
+        toAssignId:userId,
+      }
+      const claimed = await characterService.assignCharacter(
+          dto,scenarioId,`Bearer ${token}`,character.id
       );
       if (claimed.id) setCharacterId(claimed.id);
       if (claimed.roleToken) setCharacterToken(claimed.roleToken);
@@ -150,9 +178,12 @@ export default function GameLobbyPage() {
     if (!userId || userId === 0 || !token) return;
     setSubmitting(true);
     try {
-      const res = await characterService.becomeBackroomer(scenarioId, token);
+      const dto: BackroomerPostDTO = {
+        userId: userId,
+      }
+      const res = await backroomerService.createBackroomer(dto, scenarioId, token);
       if (res?.id) setBackroomerId(res.id);
-      if (res?.authToken) setBackroomerToken(res.authToken);
+      if (res?.backroomerToken) setBackroomerToken(res.backroomerToken);
       setPlayerRole("backroomer");
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {

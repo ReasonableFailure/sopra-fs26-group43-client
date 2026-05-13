@@ -91,6 +91,13 @@
   margin: 0;
 }
 
+.characterPortrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .directiveList {
   display: flex;
   flex-direction: column;
@@ -356,8 +363,32 @@
 }
 
 .buyButton {
-  margin-top: 20px !important;
+  margin-top: 15px !important;
   border-radius: 20px !important;
+}
+
+.buyInput {
+  margin-top: 15px !important;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.buyInput :global(.ant-input-number-input-wrap) {
+  height: 100%;
+}
+
+.buyInput :global(.ant-input-number-input) {
+  height: 46px;
+  line-height: 46px;
+}
+
+.buyInput :global(.ant-input-number-handler-wrap) {
+  height: 46px;
+}
+
+.tutorialButton {
+  margin-top: 15px !important;
 }
 
 /* ── Right sidebar: Character List ──────────────────── */

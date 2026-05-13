@@ -58,10 +58,12 @@ function FeedCard({ item, authorName }: FeedCardProps) {
             </span>
           )}
         </div>
-        <span className={styles.timestamp}>
-          <ClockCircleOutlined className={styles.clockIcon} />
-          {timeAgo(item.createdAt)}
-        </span>
+        <div className={styles.cardTopRight}>
+          <span className={styles.timestamp}>
+            <ClockCircleOutlined className={styles.clockIcon} />
+            {timeAgo(item.createdAt)}
+          </span>
+        </div>
       </div>
       <h2 className={styles.cardTitle}>{item.title}</h2>
       <p className={styles.cardBody}>{item.body}</p>
@@ -90,7 +92,7 @@ export default function NewsPage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router, authReady]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
@@ -138,11 +140,17 @@ export default function NewsPage() {
     return characters.find((c) => c.id === authorId)?.name ?? null;
   };
 
-  const filtered = newsItems.filter((item) => {
-    if (filter === "news") return item.authorId === null;
-    if (filter === "pronouncement") return item.authorId !== null;
-    return true;
-  });
+  const filtered = [...newsItems]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime(),
+    )
+    .filter((item) => {
+      if (filter === "news") return item.authorId === null;
+      if (filter === "pronouncement") return item.authorId !== null;
+      return true;
+    });
 
   return (
     <ConfigProvider
@@ -194,8 +202,8 @@ export default function NewsPage() {
                 style={{ width: 140 }}
                 options={[
                   { value: "all", label: "All" },
-                  { value: "news", label: "News Story" },
-                  { value: "pronouncement", label: "Pronouncement" },
+                  { value: "news", label: "News Stories" },
+                  { value: "pronouncement", label: "Pronouncements" },
                 ]}
               />
             </div>

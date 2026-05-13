@@ -20,14 +20,8 @@ import { MessageService } from "@/api/messageService";
 import type { Character } from "@/types/character";
 import type { Message } from "@/types/message";
 import { CommsStatus } from "@/types/directive";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/characterProfile.module.css";
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -70,12 +64,23 @@ export default function CharacterProfilePage() {
     enabled,
   );
 
+  const { data: liveCharacter } = usePolling<Character>(
+    () =>
+      myCharacterId
+        ? characterService.getCharacterById(myCharacterId, token) //TODO token funny business
+        : Promise.reject(),
+    5000,
+    enabled && !!myCharacterId,
+  );
+
   const effectiveScenario = liveScenario ?? null;
-  const isGameActive = effectiveScenario?.status === ScenarioStatus.UNFROZEN;
+  const isGameActive = effectiveScenario?.status === "UNFROZEN";
+  const isAlive = liveCharacter?.alive ?? true;
+  const isOwnProfile = targetCharId === myCharacterId;
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router, authReady]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId || !targetCharId) return;
@@ -163,6 +168,13 @@ export default function CharacterProfilePage() {
               Character Profile &amp; Communication Log
             </span>
           </div>
+          {!isAlive && (
+            <div
+              style={{ color: "#ef4444", fontWeight: 600, marginBottom: 12 }}
+            >
+              Your Character has Died.
+            </div>
+          )}
           <Button
             onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
           >
@@ -171,9 +183,17 @@ export default function CharacterProfilePage() {
         </nav>
 
         <Spin spinning={loading} style={{ flex: 1 }}>
-          <div className={styles.body}>
+          <div
+            className={`${styles.body} ${
+              isOwnProfile ? styles.bodySinglePanel : ""
+            }`}
+          >
             {/* ── Left panel: Character Profile ── */}
-            <aside className={styles.leftPanel}>
+            <aside
+              className={`${styles.leftPanel} ${
+                isOwnProfile ? styles.leftPanelExpanded : ""
+              }`}
+            >
               <div className={styles.profileCard}>
                 {targetCharacter?.portrait
                   ? (
@@ -203,7 +223,7 @@ export default function CharacterProfilePage() {
                   </p>
                 </div>
 
-                {targetCharId === myCharacterId && (
+                {isOwnProfile && (
                   <div className={styles.fieldGroup}>
                     <p className={styles.fieldLabel}>Secret</p>
                     <p className={styles.fieldValue}>
@@ -215,93 +235,96 @@ export default function CharacterProfilePage() {
                 <div className={styles.fieldGroup}>
                   <p className={styles.fieldLabel}>Status</p>
                   <span
-                    className={targetCharacter?.isAlive !== false
+                    className={targetCharacter?.alive !== false
                       ? styles.statusAlive
                       : styles.statusDead}
                   >
-                    {targetCharacter?.isAlive !== false
-                      ? "Active"
-                      : "Eliminated"}
+                    {targetCharacter?.alive !== false ? "Alive" : "Dead"}
                   </span>
                 </div>
               </div>
             </aside>
 
             {/* ── Right panel: Communication Log ── */}
-            <main className={styles.rightPanel}>
-              <div className={styles.logHeader}>
-                <h1 className={styles.logTitle}>Communication Log</h1>
-                <p className={styles.logSubtitle}>
-                  All messages and transmissions
-                </p>
-              </div>
+            {!isOwnProfile && (
+              <main className={styles.rightPanel}>
+                <div className={styles.logHeader}>
+                  <h1 className={styles.logTitle}>Communication Log</h1>
+                  <p className={styles.logSubtitle}>
+                    All messages and transmissions
+                  </p>
+                </div>
 
-              <div className={styles.messageList}>
-                {visibleMessages.length === 0
-                  ? <p className={styles.emptyLog}>No messages yet.</p>
-                  : (
-                    visibleMessages.map((msg) => {
-                      const isMine = msg.creatorId === myCharacterId;
-                      const senderName = isMine
-                        ? "You"
-                        : (targetCharacter?.name ?? "Unknown");
+                <div className={styles.messageList}>
+                  {messages.length === 0
+                    ? <p className={styles.emptyLog}>No messages yet.</p>
+                    : (
+                      messages.map((msg) => {
+                        const isMine = msg.creatorId === myCharacterId;
+                        const senderName = isMine
+                          ? "You"
+                          : (targetCharacter?.name ?? "Unknown");
 
-                      return (
-                        <div key={msg.id} className={styles.messageCard}>
-                          <div className={styles.messageHeader}>
-                            <span className={styles.messageSender}>
-                              {senderName}
-                            </span>
-                            {isMine && msg.status === CommsStatus.ACCEPTED && (
-                              <span className={styles.badgeSent}>
-                                <CheckCircleOutlined /> Sent
+                        return (
+                          <div key={msg.id} className={styles.messageCard}>
+                            <div className={styles.messageHeader}>
+                              <span className={styles.messageSender}>
+                                {senderName}
                               </span>
-                            )}
-                            {isMine && msg.status === CommsStatus.FAILED && (
-                              <span className={styles.badgeFailed}>
-                                <CloseCircleOutlined /> Failed
-                              </span>
-                            )}
-                            {isMine && msg.status === CommsStatus.REJECTED && (
-                              <span className={styles.badgeFailed}>
-                                <CloseCircleOutlined /> Rejected
-                              </span>
-                            )}
-                            {isMine && msg.status === CommsStatus.PENDING && (
-                              <span className={styles.badgePending}>
-                                Pending
-                              </span>
-                            )}
+                              {isMine && msg.status === CommsStatus.ACCEPTED &&
+                                (
+                                  <span className={styles.badgeSent}>
+                                    <CheckCircleOutlined /> Sent
+                                  </span>
+                                )}
+                              {isMine && msg.status === CommsStatus.FAILED && (
+                                <span className={styles.badgeFailed}>
+                                  <CloseCircleOutlined /> Failed
+                                </span>
+                              )}
+                              {isMine && msg.status === CommsStatus.REJECTED &&
+                                (
+                                  <span className={styles.badgeFailed}>
+                                    <CloseCircleOutlined /> Rejected
+                                  </span>
+                                )}
+                              {isMine && msg.status === CommsStatus.PENDING && (
+                                <span className={styles.badgePending}>
+                                  Pending
+                                </span>
+                              )}
+                            </div>
+
+                            <div className={styles.messageTimestamp}>
+                              <CalendarOutlined className={styles.calIcon} />
+                              <span>{formatDate(msg.createdAt)}</span>
+                            </div>
+
+                            <p className={styles.messageBody}>{msg.body}</p>
                           </div>
+                        );
+                      })
+                    )}
+                </div>
 
-                          <div className={styles.messageTimestamp}>
-                            <CalendarOutlined className={styles.calIcon} />
-                            <span>{formatDate(msg.createdAt)}</span>
-                          </div>
-
-                          <p className={styles.messageBody}>{msg.body}</p>
-                        </div>
-                      );
-                    })
-                  )}
-              </div>
-
-              {/* Sticky footer: New Message */}
-              <div className={styles.footer}>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  className={styles.newMessageBtn}
-                  disabled={!isGameActive}
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
-                  onClick={() => router.push(
-                    `/scenarios/${scenarioId}/player/communicate?type=direct_message&recipient=${targetCharId}`,
-                  )}
-                >
-                  New Message
-                </Button>
-              </div>
-            </main>
+                {/* Sticky footer: New Message */}
+                <div className={styles.footer}>
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    className={styles.newMessageBtn}
+                    disabled={!isGameActive || !isAlive}
+                    style={{ opacity: isGameActive && isAlive ? 1 : 0.5 }}
+                    onClick={() =>
+                      router.push(
+                        `/scenarios/${scenarioId}/player/communicate?type=direct_message&recipient=${targetCharId}`,
+                      )}
+                  >
+                    New Message
+                  </Button>
+                </div>
+              </main>
+            )}
           </div>
         </Spin>
       </div>

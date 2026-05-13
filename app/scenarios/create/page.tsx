@@ -9,20 +9,31 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Space,
   theme,
+  Upload,
 } from "antd";
-import { DeleteOutlined, UserOutlined } from "@ant-design/icons";
+import type { UploadFile } from "antd/es/upload/interface";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  UploadOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
 import { CharacterService } from "@/api/characterService";
+import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import type { ScenarioPostDTO } from "@/types/scenario";
 import styles from "@/styles/createScenario.module.css";
+import { DirectorService } from "@/api/directorService";
 import { useDirector } from "@/hooks/useDirector";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { CharacterPostDTO } from "@/types/character";
+import {DirectorPostDTO} from "@/types/director";
 
 interface ScenarioFormValues {
   title: string;
@@ -36,6 +47,7 @@ interface CharacterFormValues {
   title: string;
   description: string;
   secret: string;
+  portrait: string | null;
 }
 
 interface DraftCharacter {
@@ -44,6 +56,23 @@ interface DraftCharacter {
   title: string;
   description: string;
   secret: string;
+  portrait: string | null;
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+
+    reader.onload = () => {
+      resolve(reader.result as string);
+    };
+
+    reader.onerror = (error) => {
+      reject(error);
+    };
+  });
 }
 
 export default function CreateScenarioPage() {
@@ -52,40 +81,78 @@ export default function CreateScenarioPage() {
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
-  const { setDirectorToken } = useDirector(userId);
+  const directorService = useMemo(() => new DirectorService(api), [api]);
+  const { setDirectorId, setDirectorToken } = useDirector(userId);
+  const { addDirectedScenario } = useDirectedScenarios(userId);
   const { setPlayerRole } = usePlayerRole(userId);
 
   const [form] = Form.useForm<ScenarioFormValues>();
   const [characterForm] = Form.useForm<CharacterFormValues>();
+  const watchedPortrait = Form.useWatch("portrait", characterForm);
   const [submitting, setSubmitting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [characters, setCharacters] = useState<DraftCharacter[]>([]);
+  const [editingCharacter, setEditingCharacter] = useState<
+    DraftCharacter | null
+  >(null);
   const [nextKey, setNextKey] = useState(0);
+  const [uploadFileList, setUploadFileList] = useState<UploadFile[]>([]);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router, authReady]);
+  }, [authReady, isAuthenticated, router]);
 
-  const openModal = () => {
-    characterForm.resetFields();
+  const openModal = (character?: DraftCharacter) => {
+    if (character) {
+      setEditingCharacter(character);
+      characterForm.setFieldsValue(character);
+
+      if (character.portrait) {
+        setUploadFileList([
+          {
+            uid: "-1",
+            name: "portrait",
+            status: "done",
+            url: character.portrait,
+          },
+        ]);
+      } else {
+        setUploadFileList([]);
+      }
+    } else {
+      setEditingCharacter(null);
+      characterForm.resetFields();
+      setUploadFileList([]);
+    }
+
     setModalOpen(true);
   };
 
   const handleAddCharacter = (values: CharacterFormValues) => {
-    setCharacters((prev) => [
-      ...prev,
-      {
-        key: nextKey,
-        name: values.name,
-        title: values.title ?? "",
-        description: values.description ?? "",
-        secret: values.secret ?? "",
-      },
-    ]);
-    setNextKey((k) => k + 1);
+    if (editingCharacter) {
+      setCharacters((prev) =>
+        prev.map((c) =>
+          c.key === editingCharacter.key
+            ? { ...c, ...values, portrait: values.portrait ?? null }
+            : c
+        )
+      );
+    } else {
+      setCharacters((prev) => [
+        ...prev,
+        {
+          key: nextKey,
+          ...values,
+          portrait: values.portrait ?? null,
+        },
+      ]);
+      setNextKey((k) => k + 1);
+    }
+    characterForm.resetFields();
     setModalOpen(false);
+    setEditingCharacter(null);
   };
 
   const handleRemoveCharacter = (key: number) => {
@@ -94,28 +161,40 @@ export default function CreateScenarioPage() {
 
   const handleSubmit = async (values: ScenarioFormValues) => {
     setSubmitting(true);
-    try {
+    try{
+        const directorData: DirectorPostDTO = {
+          id: userId,
+        };
+      const createdDirector = await directorService.becomeDirector(
+          directorData,
+          `Bearer ${token}`,
+      );
+
+      if (createdDirector.directorId) {
+        setDirectorId(createdDirector.directorId);
+      }
+      if (createdDirector.directorToken) {
+        setDirectorToken(createdDirector.directorToken);
+      }
       const scenarioData: ScenarioPostDTO = {
         title: values.title,
         description: values.description ?? null,
         exchangeRate: values.exchangeRate,
         startingMessageCount: values.startingMessageCount,
+        director: createdDirector.directorId,
       };
 
       const createdScenario = await scenarioService.createScenario(
-        scenarioData,
-        `Bearer ${token}`,
+          scenarioData,
+          `Bearer ${token}`,
       );
-      const directorAuthHeader = createdScenario.directorToken;
-      if (directorAuthHeader) {
-        // Backend returns the raw token; PlayerService.validate expects
-        // "Director <token>". Persist it pre-typed so every later director
-        // call can use it verbatim as the Authorization header.
-        setDirectorToken(`Director ${directorAuthHeader}`);
+      if (createdScenario) {
+        addDirectedScenario(createdScenario.id);
       }
       setPlayerRole("director");
 
-      if (createdScenario && characters.length > 0 && directorAuthHeader) {
+      if (createdScenario && characters.length > 0) {
+        // Loop through drafted characters and create them in the backend
         for (const char of characters) {
           const characterData: CharacterPostDTO = {
             name: char.name,
@@ -125,9 +204,9 @@ export default function CreateScenarioPage() {
             secret: char.secret,
             scenarioId: createdScenario.id,
           };
-          await characterService.createCharacter(
-            characterData,
-            `Director ${directorAuthHeader}`,
+          const res = await characterService.createCharacter(
+              characterData,
+              `Director ${createdDirector.directorToken}`,
           );
         }
       }
@@ -210,7 +289,7 @@ export default function CreateScenarioPage() {
                         </span>
                       )}
                     </h3>
-                    <Button type="primary" onClick={openModal}>
+                    <Button type="primary" onClick={() => openModal()}>
                       Add Character
                     </Button>
                   </div>
@@ -226,7 +305,22 @@ export default function CreateScenarioPage() {
                         {characters.map((c) => (
                           <div key={c.key} className={styles.characterRow}>
                             <div className={styles.characterAvatar}>
-                              {c.name.slice(0, 2).toUpperCase()}
+                              {c.portrait
+                                ? (
+                                  <img
+                                    src={c.portrait}
+                                    alt={c.name}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                      borderRadius: "50%",
+                                    }}
+                                  />
+                                )
+                                : (
+                                  c.name.slice(0, 2).toUpperCase()
+                                )}
                             </div>
                             <div className={styles.characterInfo}>
                               <span className={styles.characterName}>
@@ -238,6 +332,14 @@ export default function CreateScenarioPage() {
                                 </span>
                               )}
                             </div>
+                            <Button
+                              type="text"
+                              icon={<EditOutlined />}
+                              onClick={() =>
+                                openModal(c)}
+                              aria-label={`Edit ${c.name}`}
+                            />
+
                             <Button
                               type="text"
                               danger
@@ -266,7 +368,8 @@ export default function CreateScenarioPage() {
                   </Space.Compact>
                 </Form.Item>
                 <p className={styles.fieldHint}>
-                  Likes required to buy a message
+                  This is the number of likes a player must receive on their
+                  mastodon pronouncements to send one message.
                 </p>
 
                 <Form.Item
@@ -284,7 +387,7 @@ export default function CreateScenarioPage() {
                   />
                 </Form.Item>
                 <p className={styles.fieldHint}>
-                  Number of messages each player starts with
+                  This is the number of messages each player starts with
                 </p>
 
                 <div className={styles.formFooter}>
@@ -303,7 +406,7 @@ export default function CreateScenarioPage() {
 
       {/* Add Character Modal */}
       <Modal
-        title="Add Character"
+        title={editingCharacter ? "Edit Character" : "Add Character"}
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
@@ -315,6 +418,61 @@ export default function CreateScenarioPage() {
           onFinish={handleAddCharacter}
           style={{ marginTop: 16 }}
         >
+          {watchedPortrait && (
+            <img
+              src={watchedPortrait}
+              alt="Portrait preview"
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: "50%",
+                objectFit: "cover",
+                marginTop: 8,
+              }}
+            />
+          )}
+          <Form.Item name="portrait" hidden>
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="Portrait">
+            <Upload
+              fileList={uploadFileList}
+              maxCount={1}
+              accept="image/*"
+              beforeUpload={async (file) => {
+                if (file.size > 2 * 1024 * 1024) {
+                  message.error("Image must be smaller than 2MB");
+                  return Upload.LIST_IGNORE;
+                }
+
+                const base64 = await fileToBase64(file as File);
+
+                characterForm.setFieldValue("portrait", base64);
+
+                setUploadFileList([
+                  {
+                    uid: file.uid,
+                    name: file.name,
+                    status: "done",
+                    url: base64,
+                  },
+                ]);
+
+                return false;
+              }}
+              onRemove={() => {
+                characterForm.setFieldValue("portrait", null);
+                setUploadFileList([]);
+              }}
+              showUploadList
+            >
+              <Button icon={<UploadOutlined />}>
+                Upload Portrait
+              </Button>
+            </Upload>
+          </Form.Item>
+
           <Form.Item
             name="name"
             label="Name"
@@ -374,7 +532,9 @@ export default function CreateScenarioPage() {
             }}
           >
             <Button onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button type="primary" htmlType="submit">Add</Button>
+            <Button type="primary" htmlType="submit">
+              {editingCharacter ? "Save" : "Add"}
+            </Button>
           </div>
         </Form>
       </Modal>

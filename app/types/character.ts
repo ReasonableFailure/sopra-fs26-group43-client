@@ -3,9 +3,9 @@ export interface Character {
   name: string | null;
   title: string | null;
   description: string | null;
-  portrait: string | null; // base64 (raw, no `data:` prefix) returned by BE; prepend `data:image/png;base64,` before assigning to <img src>.
+  portrait: string | null; // base64 data URI or URL
   secret: string | null; // only visible to the owning player and backroomers
-  isAlive: boolean;
+  alive: boolean;
   totalPoints: number;
   pointsBalance: number;
   messageCount: number;
@@ -33,6 +33,7 @@ export interface CharacterPutDTO {
   description?: string;
   portrait?: string; // base64 string; backend stores as byte[]
   secret?: string;
+  alive?: boolean;
 }
 export interface CharacterAssignDTO {
   toAssignId: number | null;

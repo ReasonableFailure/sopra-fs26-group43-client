@@ -7,8 +7,9 @@ export class BackroomerService {
 
   createBackroomer(
     dto: BackroomerPostDTO,
+    scenarioId:number,
     userToken: string,
   ): Promise<Backroomer> {
-    return this.api.postWithToken<Backroomer>(`/backroomers`, dto, userToken);
+    return this.api.postWithToken<Backroomer>(`/scenario/${scenarioId}/backroomers`, dto, userToken);
   }
 }

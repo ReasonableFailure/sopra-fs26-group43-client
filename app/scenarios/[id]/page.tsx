@@ -17,6 +17,7 @@ import {
   CaretRightFilled,
   CloseCircleOutlined,
   PauseCircleOutlined,
+  QuestionCircleOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 
@@ -25,7 +26,8 @@ import { useApi } from "@/hooks/useApi";
 import { useDirector } from "@/hooks/useDirector";
 import { usePolling } from "@/hooks/usePolling";
 import { ScenarioService } from "@/api/scenarioService";
-import { Scenario, ScenarioStatus } from "@/types/scenario";
+import type { Scenario } from "@/types/scenario";
+import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/directorDashboard.module.css";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
@@ -91,6 +93,7 @@ export default function DirectorDashboardPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -134,7 +137,7 @@ export default function DirectorDashboardPage() {
   const handleFreezeToggle = async () => {
     if (!scenario) return;
 
-    const isFrozen = scenario.status === ScenarioStatus.FROZEN;
+    const isFrozen = scenario.status === "FROZEN";
 
     try {
       await scenarioService.updateScenario(
@@ -210,7 +213,7 @@ export default function DirectorDashboardPage() {
             <Button
               onClick={() => router.push(`/scenarios/${scenarioId}/statistics`)}
             >
-              Player Statistics
+              Player Overview
             </Button>
             <Avatar icon={<UserOutlined />} />
           </div>
@@ -233,7 +236,7 @@ export default function DirectorDashboardPage() {
                   </p>
                 </div>
 
-                <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   {scenario?.mastodonProfileUrl && (
                     <Button
                       type="default"
@@ -262,6 +265,18 @@ export default function DirectorDashboardPage() {
                     {scenario?.mastodonProfileUrl
                       ? "Change Mastodon Account"
                       : "Add Mastodon Account"}
+                  </Button>
+                  <Button
+                    type="default"
+                    size="large"
+                    icon={<QuestionCircleOutlined />}
+                    onClick={() => setIsTutorialOpen(true)}
+                    style={{
+                      height: 48,
+                      paddingInline: 24,
+                      fontWeight: 600,
+                    }}
+                  >
                   </Button>
                 </div>
               </div>
@@ -420,6 +435,55 @@ export default function DirectorDashboardPage() {
               <Input placeholder="Your access token" />
             </Form.Item>
           </Form>
+        </Modal>
+        <Modal
+          title="How to Connect a Mastodon Account"
+          open={isTutorialOpen}
+          footer={[
+            <Button key="close" onClick={() => setIsTutorialOpen(false)}>
+              Close
+            </Button>,
+          ]}
+          onCancel={() => setIsTutorialOpen(false)}
+        >
+          <div style={{ paddingTop: 8 }}>
+            <ol
+              style={{
+                paddingLeft: 20,
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                color: "#374151",
+                lineHeight: 1.6,
+              }}
+            >
+              <li>
+                Create or log into your Mastodon account.
+              </li>
+              <li>
+                Under Settings, navigate to &quot;Development&quot;
+              </li>
+              <li>
+                Select &quot;New Application&quot;
+              </li>
+              <li>
+                Give your application a name, and select
+                &quot;read:statuses&quot; and &quot;write:statuses&quot;
+                permissions.
+              </li>
+              <li>
+                Generate an access token for the application.
+              </li>
+              <li>
+                Copy the access token, along with the Mastodon server URL (e.g.
+                https://mastodon.social), into the &quot;Add Mastodon
+                Account&quot; form.
+              </li>
+              <li>
+                Save the configuration.
+              </li>
+            </ol>
+          </div>
         </Modal>
       </div>
     </ConfigProvider>

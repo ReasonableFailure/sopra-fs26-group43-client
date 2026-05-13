@@ -159,7 +159,7 @@ export default function ScenariosPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router, authReady]);
+  }, [authReady, isAuthenticated, router]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -175,7 +175,7 @@ export default function ScenariosPage() {
         try {
           await scenarioService.deleteScenario(
             scenario.id,
-            directorToken ?? `Bearer ${token}`,
+            directorToken ?? `Director ${token}`,
           );
           setLocalScenarios((prev) =>
             (prev ?? []).filter((s) => s.id !== scenario.id)
@@ -254,7 +254,10 @@ export default function ScenariosPage() {
           fontSize: 14,
         },
         components: {
-          Button: { colorPrimary: "#4f46e5", algorithm: true },
+          Button: {
+            colorPrimary: "#4f46e5",
+            algorithm: true,
+          },
         },
       }}
     >

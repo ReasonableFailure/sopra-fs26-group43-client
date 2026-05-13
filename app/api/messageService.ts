@@ -9,15 +9,15 @@ import type {
 export class MessageService {
   constructor(private api: ApiService) {}
 
-  createMessage(dto: MessagePostDTO, token: string): Promise<Message> {
-    return this.api.postWithToken<Message>("/messages", dto, token);
+  async createMessage(dto: MessagePostDTO, token: string): Promise<Message> {
+    return await this.api.postWithToken<Message>("/messages", dto, token);
   }
 
-  getMessagePairsByScenario(
+  async getMessagePairsByScenario(
     scenarioId: number,
     token: string,
   ): Promise<MessagePairDTO[]> {
-    return this.api.get<MessagePairDTO[]>(
+    return await this.api.getWithToken<MessagePairDTO[]>(
       `/messages/scenario/${scenarioId}/pairs`,
       token,
     );
@@ -28,7 +28,7 @@ export class MessageService {
     charBId: number,
     token: string,
   ): Promise<Message[]> {
-    return this.api.get<Message[]>(
+    return this.api.getWithToken<Message[]>(
       `/messages/between/${charAId}/${charBId}`,
       token,
     );
@@ -39,10 +39,10 @@ export class MessageService {
     dto: MessagePutDTO,
     token: string,
   ): Promise<void> {
-    return this.api.put<void>(`/messages/${messageId}`, dto, token);
+    return this.api.putWithToken<void>(`/messages/${messageId}`, dto, token);
   }
 
   deleteMessage(messageId: number, token: string): Promise<void> {
-    return this.api.delete<void>(`/messages/${messageId}`, token);
+    return this.api.deleteWithToken<void>(`/messages/${messageId}`, token);
   }
 }

@@ -23,41 +23,38 @@ interface RegisterFields {
 const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
-  const [loginForm] = Form.useForm<LoginFields>();
-  const [registerForm] = Form.useForm<RegisterFields>();
   const [mode, setMode] = useState<"login" | "register">("login");
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { setToken, setUserId, authReady, register, login } = useAuth();
 
-  const handleLogin = async (values: LoginFields) => {
+  const handleSubmit = async (values: LoginFields & Partial<RegisterFields>) => {
     setLoading(true);
     try {
-      await login(values);
-      router.push("/scenarios");
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(`Login failed:\n${error.message}`);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (mode === "login") {
+        const res = await login(values);
+        if (res.token) setToken(res.token);
+        if (res.id) setUserId(res.id);
+        router.push("/scenarios");
+      } else {
 
-  const handleRegister = async (values: RegisterFields) => {
-    setLoading(true);
-    try {
-      const data: UserPostDTO = {
-        username: values.username,
-        password: values.password,
-        bio: values.bio,
-      };
-      const res = await register(data);
-      if (res.id) setUserId(res.id);
-      if (res.token) setToken(res.token);
-      router.push("/scenarios");
+        const data: UserPostDTO = {
+          username: values.username,
+          password: values.password,
+          bio: values.bio,
+        };
+        const res = await register(data);
+        if (res.id) setUserId(res.id);
+        if (res.token) setToken(res.token);
+        router.push("/scenarios");
+      }
     } catch (error) {
       if (error instanceof Error) {
-        alert(`Registration failed:\n${error.message}`);
+        alert(
+            mode === "login"
+                ? `Login failed:\n${error.message}`
+                : `Registration failed:\n${error.message}`,
+        );
       }
     } finally {
       setLoading(false);
@@ -65,8 +62,7 @@ const Login: React.FC = () => {
   };
 
   const switchMode = (next: "login" | "register") => {
-    loginForm.resetFields();
-    registerForm.resetFields();
+    form.resetFields();
     setMode(next);
   };
 
@@ -107,106 +103,120 @@ const Login: React.FC = () => {
               </p>
             </div>
 
-            {mode === "login" ? (
-              <Form
-                form={loginForm}
-                name="login"
-                size="large"
-                variant="outlined"
-                onFinish={handleLogin}
-                layout="vertical"
-              >
-                <Form.Item
-                  name="username"
-                  label="Username"
-                  rules={[{ required: true, message: "Please input your username!" }]}
+            {mode === "login"
+              ? (
+                <Form
+                  form={form}
+                  name="auth"
+                  size="large"
+                  variant="outlined"
+                  onFinish={handleSubmit}
+                  layout="vertical"
                 >
-                  <Input placeholder="Enter username" />
-                </Form.Item>
-                <Form.Item
-                  name="password"
-                  label="Password"
-                  rules={[{ required: true, message: "Please input your password!" }]}
+                  <Form.Item
+                    name="username"
+                    label="Username"
+                    rules={[{
+                      required: true,
+                      message: "Please input your username!",
+                    }]}
+                  >
+                    <Input placeholder="Enter username" />
+                  </Form.Item>
+                  <Form.Item
+                    name="password"
+                    label="Password"
+                    rules={[{
+                      required: true,
+                      message: "Please input your password!",
+                    }]}
+                  >
+                    <Input.Password placeholder="Enter password" />
+                  </Form.Item>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      className={styles.submitButton}
+                      loading={loading}
+                    >
+                      Login
+                    </Button>
+                  </Form.Item>
+                  <Form.Item className={styles.footerRow}>
+                    <span className={styles.footerHint}>
+                      Don&apos;t have an account?&nbsp;
+                    </span>
+                    <Button
+                      type="link"
+                      style={{ padding: 0 }}
+                      onClick={() => switchMode("register")}
+                    >
+                      Sign up
+                    </Button>
+                  </Form.Item>
+                </Form>
+              )
+              : (
+                <Form
+                  form={form}
+                  name="auth"
+                  size="large"
+                  variant="outlined"
+                  onFinish={handleSubmit}
+                  layout="vertical"
                 >
-                  <Input.Password placeholder="Enter password" />
-                </Form.Item>
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    className={styles.submitButton}
-                    loading={loading}
+                  <Form.Item
+                    name="username"
+                    label="Username"
+                    rules={[{
+                      required: true,
+                      message: "Please input a username!",
+                    }]}
                   >
-                    Login
-                  </Button>
-                </Form.Item>
-                <Form.Item className={styles.footerRow}>
-                  <span className={styles.footerHint}>
-                    Don&apos;t have an account?&nbsp;
-                  </span>
-                  <Button
-                    type="link"
-                    style={{ padding: 0 }}
-                    onClick={() => switchMode("register")}
+                    <Input placeholder="Choose a username" />
+                  </Form.Item>
+                  <Form.Item
+                    name="password"
+                    label="Password"
+                    rules={[{
+                      required: true,
+                      message: "Please input a password!",
+                    }]}
                   >
-                    Sign up
-                  </Button>
-                </Form.Item>
-              </Form>
-            ) : (
-              <Form
-                form={registerForm}
-                name="register"
-                size="large"
-                variant="outlined"
-                onFinish={handleRegister}
-                layout="vertical"
-              >
-                <Form.Item
-                  name="username"
-                  label="Username"
-                  rules={[{ required: true, message: "Please input a username!" }]}
-                >
-                  <Input placeholder="Choose a username" />
-                </Form.Item>
-                <Form.Item
-                  name="password"
-                  label="Password"
-                  rules={[{ required: true, message: "Please input a password!" }]}
-                >
-                  <Input.Password placeholder="Choose a password" />
-                </Form.Item>
-                <Form.Item name="bio" label="Bio (optional)">
-                  <Input.TextArea
-                    placeholder="Tell us a little about yourself"
-                    rows={3}
-                    style={{ resize: "none" }}
-                  />
-                </Form.Item>
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    className={styles.submitButton}
-                    loading={loading}
-                  >
-                    Sign up
-                  </Button>
-                </Form.Item>
-                <Form.Item className={styles.footerRow}>
-                  <span className={styles.footerHint}>
-                    Already have an account?&nbsp;
-                  </span>
-                  <Button
-                    type="link"
-                    style={{ padding: 0 }}
-                    onClick={() => switchMode("login")}
-                  >
-                    Log in
-                  </Button>
-                </Form.Item>
-              </Form>
-            )}
+                    <Input.Password placeholder="Choose a password" />
+                  </Form.Item>
+                  <Form.Item name="bio" label="Bio (optional)">
+                    <Input.TextArea
+                      placeholder="Tell us a little about yourself"
+                      rows={3}
+                      style={{ resize: "none" }}
+                    />
+                  </Form.Item>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      className={styles.submitButton}
+                      loading={loading}
+                    >
+                      Sign up
+                    </Button>
+                  </Form.Item>
+                  <Form.Item className={styles.footerRow}>
+                    <span className={styles.footerHint}>
+                      Already have an account?&nbsp;
+                    </span>
+                    <Button
+                      type="link"
+                      style={{ padding: 0 }}
+                      onClick={() => switchMode("login")}
+                    >
+                      Log in
+                    </Button>
+                  </Form.Item>
+                </Form>
+              )}
           </div>
         </div>
       </div>
