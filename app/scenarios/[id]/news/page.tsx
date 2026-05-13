@@ -101,7 +101,8 @@ export default function NewsPage() {
     Promise.all([
       newsService.getNewsByScenario(scenarioId, token),
       characterService.getCharactersByScenario(
-        scenarioId, token,
+        scenarioId,
+        token,
       ),
       scenarioService.getScenarioById(scenarioId, token),
     ])

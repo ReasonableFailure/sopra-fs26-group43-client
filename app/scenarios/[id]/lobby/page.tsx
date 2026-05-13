@@ -15,7 +15,7 @@ import type { Character } from "@/types/character";
 import type { BackroomerPostDTO } from "@/types/backroomer";
 import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
-import {UserAssignDTO} from "@/types/user";
+import { UserAssignDTO } from "@/types/user";
 
 interface CharacterCardProps {
   character: Character;
@@ -127,7 +127,8 @@ export default function GameLobbyPage() {
       setError(null);
       try {
         const chars = await characterService.getCharactersByScenario(
-          scenarioId,token,
+          scenarioId,
+          token,
         );
         if (!cancelled) {
           setCharacters(chars);
@@ -159,7 +160,8 @@ export default function GameLobbyPage() {
         id: userId,
       };
       const claimed = await characterService.assignCharacter(
-        dto,token,
+        dto,
+        token,
         character.id,
       );
       if (claimed.id) setCharacterId(claimed.id);
