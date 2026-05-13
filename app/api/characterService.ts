@@ -16,7 +16,7 @@ export class CharacterService {
   ): Promise<Character[]> {
     return await this.api.getWithToken<Character[]>(
       `/characters/scenario/${scenarioId}`,
-      token, //TODO funny business
+      token,
     );
   }
 
@@ -27,7 +27,7 @@ export class CharacterService {
     return await this.api.postWithToken<Character>(
       "/characters",
       dto,
-      `Director ${token}`, //TODO funny business
+      token,
     );
   }
   public async getCharacterPoints(
@@ -61,7 +61,7 @@ export class CharacterService {
     return this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      `Director ${token}`, //TODO funny business
+      token, 
     );
   }
 
@@ -73,7 +73,7 @@ export class CharacterService {
     return await this.api.putWithToken<Character>(
       `/characters/${characterId}/assignment`,
       dto,
-      `${token}`,
+      token,
     );
   }
 
@@ -85,7 +85,7 @@ export class CharacterService {
     return await this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      `Director ${token}`, //TODO funny business
+      token,
     );
   }
 
