@@ -6,15 +6,9 @@ import useLocalStorage from "@/hooks/useLocalStorage";
  * — and the same user across scenarios — track independently.
  */
 export function useCharacter(
-  scenarioId: number,
-  userId: number | null,
+  scenarioId: number
 ) {
-  const suffix = userId ? `${userId}_${scenarioId}` : `guest_${scenarioId}`;
-  const { value: characterId, set: setCharacterId } = useLocalStorage<
-    number | null
-  >(`selectedCharacter_${suffix}_id`, null);
-  const { value: characterToken, set: setCharacterToken } = useLocalStorage<
-    string | null
-  >(`selectedCharacter_${suffix}_token`, null);
+  const { value: characterId, set: setCharacterId } = useLocalStorage<number | null>(`scenario_${scenarioId}_characterId`, null);
+  const { value: characterToken, set: setCharacterToken } = useLocalStorage<string | null>(`scenario_${scenarioId}_characterToken`, null);
   return { characterToken, setCharacterToken, characterId, setCharacterId };
 }
