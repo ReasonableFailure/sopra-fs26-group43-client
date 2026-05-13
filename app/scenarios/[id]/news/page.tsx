@@ -10,7 +10,6 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
-import { useScenarioAuthHeader } from "@/hooks/useScenarioAuth";
 import { NewsService } from "@/api/newsService";
 import { CharacterService } from "@/api/characterService";
 import { ScenarioService } from "@/api/scenarioService";
@@ -72,12 +71,10 @@ function FeedCard({ item, authorName }: FeedCardProps) {
 }
 
 export default function NewsPage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth(); //token: Prefix "Bearer" for auth already added
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { playerRole } = usePlayerRole(userId);
-  const auth = useScenarioAuthHeader(scenarioId);
 
   const api = useApi();
   const newsService = useMemo(() => new NewsService(api), [api]);
@@ -102,12 +99,11 @@ export default function NewsPage() {
     // GET /news/scenario/{id} requires a player-typed token ("any");
     // GET /characters/{scenarioId} and GET /scenarios/{id} require Bearer.
     Promise.all([
-      newsService.getNewsByScenario(scenarioId, auth ?? ""),
+      newsService.getNewsByScenario(scenarioId, token),
       characterService.getCharactersByScenario(
-        scenarioId,
-        `Bearer ${token}`,
+        scenarioId, token,
       ),
-      scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
+      scenarioService.getScenarioById(scenarioId, token),
     ])
       .then(([news, chars, scenario]) => {
         if (cancelled) return;
@@ -124,14 +120,11 @@ export default function NewsPage() {
       cancelled = true;
     };
   }, [
-    authReady,
-    isAuthenticated,
     scenarioId,
-    auth,
+    token,
     newsService,
     characterService,
     scenarioService,
-    playerRole,
   ]);
 
   if (!authReady || !isAuthenticated) return null;
