@@ -175,7 +175,7 @@ export default function ScenariosPage() {
         try {
           await scenarioService.deleteScenario(
             scenario.id,
-            directorToken ?? `Director ${token}`,
+            token ?? `Director ${token}`,
           );
           setLocalScenarios((prev) =>
             (prev ?? []).filter((s) => s.id !== scenario.id)

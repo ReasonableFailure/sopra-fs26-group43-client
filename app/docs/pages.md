@@ -62,7 +62,7 @@ PlayerDashboardPage
 | Hook / Service                             | Purpose                                                                       |
 | ------------------------------------------ | ----------------------------------------------------------------------------- |
 | `useAuth()`                                | Auth guard + `token`                                                          |
-| `useCharacter(scenarioId)`         | Reads selected character ID from localStorage                                 |
+| `useCharacter(scenarioId)`                 | Reads selected character ID from localStorage                                 |
 | `CharacterService.getCharactersByScenario` | `GET /scenarios/{id}/characters` — all characters (right sidebar)             |
 | `DirectiveService.getDirectivesByScenario` | `GET /scenarios/{id}/directives` — filtered client-side to selected character |
 | `ScenarioService.getScenarioById`          | `GET /scenarios/{id}` — for exchange rate                                     |

@@ -5,9 +5,7 @@ import {
   CharacterPutDTO,
 } from "@/types/character";
 
-import {
-  UserAssignDTO
-} from "@/types/user";
+import { UserAssignDTO } from "@/types/user";
 
 export class CharacterService {
   constructor(private api: ApiService) {}
@@ -24,12 +22,12 @@ export class CharacterService {
 
   public async createCharacter(
     dto: CharacterPostDTO,
-    directorToken: string,
+    token: string,
   ): Promise<Character> {
     return await this.api.postWithToken<Character>(
       "/characters",
       dto,
-      `Director ${directorToken}`, //TODO funny business
+      `Director ${token}`, //TODO funny business
     );
   }
   public async getCharacterPoints(
@@ -58,12 +56,12 @@ export class CharacterService {
   updateCharacter(
     characterId: number,
     dto: CharacterPutDTO,
-    directorToken: string,
+    token: string,
   ): Promise<void> {
     return this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      `Director ${directorToken}`, //TODO funny business
+      `Director ${token}`, //TODO funny business
     );
   }
 
@@ -81,13 +79,13 @@ export class CharacterService {
 
   public async modifyCharacter(
     dto: CharacterPutDTO,
-    directorToken: string,
+    token: string,
     characterId: number,
   ): Promise<void> {
     return await this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      `Director ${directorToken}`, //TODO funny business
+      `Director ${token}`, //TODO funny business
     );
   }
 
