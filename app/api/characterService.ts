@@ -46,7 +46,7 @@ export class CharacterService {
     token: string,
   ): Promise<Character> {
     return await this.api.postWithToken<Character>(
-      `/characters/${scenarioId}/${characterId}/buy-message`,
+      `/scenarios/${scenarioId}/characters/${characterId}/messages`,
       {},
       token,
     );
@@ -66,12 +66,11 @@ export class CharacterService {
 
   public async assignCharacter(
     dto: CharacterAssignDTO,
-    scenarioId: number,
     token: string,
     characterId: number,
   ): Promise<Character> {
     return await this.api.putWithToken<Character>(
-      `/scenarios/${scenarioId}/characters/${characterId}/assignment`,
+      `/characters/${characterId}/assignment`,
       dto,
       `${token}`,
     );
