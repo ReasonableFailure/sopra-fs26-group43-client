@@ -80,8 +80,8 @@ export default function DirectorDashboardPage() {
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
-  const { directorToken } = useDirector(userId ?? 0);
-  const directorAuth = directorToken ?? `Bearer ${token}`;
+  const { token } = useDirector(id ?? 0);
+  const directorAuth = token ?? `Bearer ${token}`;
   const [messageApi, contextHolder] = message.useMessage();
 
   const enabled = isAuthenticated && !!scenarioId;
