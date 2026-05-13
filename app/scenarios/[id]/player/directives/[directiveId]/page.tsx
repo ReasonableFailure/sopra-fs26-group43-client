@@ -12,7 +12,7 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { useCharacter } from "../../../../../hooks/useCharacter";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import type { Character } from "@/types/character";
@@ -59,7 +59,7 @@ export default function DirectiveDetailPage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { characterToken } = useSelectedCharacter(scenarioId, userId);
+  const { characterToken } = useCharacter(scenarioId, userId);
   const playerAuth = characterToken ?? `Bearer ${token}`;
   const directiveId = Number(params.directiveId);
 
@@ -67,7 +67,7 @@ export default function DirectiveDetailPage() {
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
 
-  const { characterId } = useSelectedCharacter(scenarioId, userId);
+  const { characterId } = useCharacter(scenarioId, userId);
   const [myCharacter, setMyCharacter] = useState<Character | null>(null);
   const [directive, setDirective] = useState<Directive | null>(null);
   const [loading, setLoading] = useState(true);

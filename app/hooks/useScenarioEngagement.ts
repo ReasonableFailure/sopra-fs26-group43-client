@@ -3,10 +3,11 @@
 import { useMemo } from "react";
 import { useEngagedScenarios } from "@/hooks/useEngagedScenarios";
 
-export const useMyEngagement = (
+//Give me my engagement for scenario scenarioId
+export const useScenarioEngagement = (
   scenarioId: number,
-  userId: number | null,
-  token: string,
+  userId: number,
+  token: string, //needs to belong to user
 ) => {
   const { engagements, loading, error, refetch } = useEngagedScenarios(
     userId,

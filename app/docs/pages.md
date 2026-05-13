@@ -20,7 +20,7 @@ messages.
 
 Navigated to from the Lobby (`/scenarios/[id]/lobby`) after the player clicks a
 character card. The selected character ID is persisted in `localStorage` via
-`useSelectedCharacter(scenarioId)`, keyed as `selectedCharacter_{scenarioId}`.
+`useCharacter(scenarioId)`, keyed as `selectedCharacter_{scenarioId}`.
 
 ---
 
@@ -62,7 +62,7 @@ PlayerDashboardPage
 | Hook / Service                             | Purpose                                                                       |
 | ------------------------------------------ | ----------------------------------------------------------------------------- |
 | `useAuth()`                                | Auth guard + `token`                                                          |
-| `useSelectedCharacter(scenarioId)`         | Reads selected character ID from localStorage                                 |
+| `useCharacter(scenarioId)`         | Reads selected character ID from localStorage                                 |
 | `CharacterService.getCharactersByScenario` | `GET /scenarios/{id}/characters` — all characters (right sidebar)             |
 | `DirectiveService.getDirectivesByScenario` | `GET /scenarios/{id}/directives` — filtered client-side to selected character |
 | `ScenarioService.getScenarioById`          | `GET /scenarios/{id}` — for exchange rate                                     |
@@ -73,7 +73,7 @@ PlayerDashboardPage
 
 ### Data Flow
 
-1. `scenarioId` read from URL; `characterId` read from `useSelectedCharacter`.
+1. `scenarioId` read from URL; `characterId` read from `useCharacter`.
 2. `Promise.all` fires `GET /scenarios/{id}/characters` + `GET /scenarios/{id}`
    in parallel.
 3. `GET /scenarios/{id}/directives` fires separately; errors are swallowed

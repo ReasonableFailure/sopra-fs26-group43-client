@@ -6,6 +6,7 @@ export interface Character {
   portrait: string | null; // base64 data URI or URL
   secret: string | null; // only visible to the owning player and backroomers
   alive: boolean;
+  token: string;
   totalPoints: number;
   pointsBalance: number;
   messageCount: number;
@@ -13,7 +14,6 @@ export interface Character {
   numberMessages: number;
   numberPronouncements: number;
   totalTextLength: number;
-  roleToken: string;
 }
 
 /** POST /characters */
@@ -34,7 +34,4 @@ export interface CharacterPutDTO {
   portrait?: string; // base64 string; backend stores as byte[]
   secret?: string;
   alive?: boolean;
-}
-export interface CharacterAssignDTO {
-  toAssignId: number | null;
 }

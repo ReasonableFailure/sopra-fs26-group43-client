@@ -1,10 +1,13 @@
 import { ApiService } from "@/api/apiService";
 import {
   Character,
-  CharacterAssignDTO,
   CharacterPostDTO,
   CharacterPutDTO,
 } from "@/types/character";
+
+import {
+  UserAssignDTO
+} from "@/types/user";
 
 export class CharacterService {
   constructor(private api: ApiService) {}
@@ -65,7 +68,7 @@ export class CharacterService {
   }
 
   public async assignCharacter(
-    dto: CharacterAssignDTO,
+    dto: UserAssignDTO,
     token: string,
     characterId: number,
   ): Promise<Character> {

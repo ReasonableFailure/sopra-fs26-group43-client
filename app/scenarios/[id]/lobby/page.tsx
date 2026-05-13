@@ -6,15 +6,16 @@ import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
 import { InfoCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
-import { useMyEngagement } from "@/hooks/useMyEngagement";
+import { useScenarioEngagement } from "../../../hooks/useScenarioEngagement";
 import { CharacterService } from "@/api/characterService";
 import { BackroomerService } from "@/api/backroomerService";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { useCharacter } from "../../../hooks/useCharacter";
 import { useBackroomer } from "@/hooks/useBackroomer";
-import type { Character, CharacterAssignDTO } from "@/types/character";
+import type { Character } from "@/types/character";
 import type { BackroomerPostDTO } from "@/types/backroomer";
 import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
+import {UserAssignDTO} from "@/types/user";
 
 interface CharacterCardProps {
   character: Character;
@@ -69,7 +70,7 @@ function CharacterCard({ character, onSelect, disabled }: CharacterCardProps) {
 }
 
 export default function GameLobbyPage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth(); //contains prefix already
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -78,7 +79,7 @@ export default function GameLobbyPage() {
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const backroomerService = useMemo(() => new BackroomerService(api), [api]);
-  const { setCharacterId, setCharacterToken } = useSelectedCharacter(
+  const { setCharacterId, setCharacterToken } = useCharacter(
     scenarioId,
     userId,
   );
@@ -86,7 +87,7 @@ export default function GameLobbyPage() {
     scenarioId,
     userId,
   );
-  const { engagement, loading: engagementLoading } = useMyEngagement(
+  const { engagement, loading: engagementLoading } = useScenarioEngagement(
     scenarioId,
     userId,
     token,
@@ -126,8 +127,7 @@ export default function GameLobbyPage() {
       setError(null);
       try {
         const chars = await characterService.getCharactersByScenario(
-          scenarioId,
-          `Bearer ${token}`,
+          scenarioId,token,
         );
         if (!cancelled) {
           setCharacters(chars);
@@ -155,17 +155,15 @@ export default function GameLobbyPage() {
     if (!userId || userId === 0 || !character.id || !token) return;
     setSubmitting(true);
     try {
-      const dto: CharacterAssignDTO = {
-        toAssignId: userId,
+      const dto: UserAssignDTO = {
+        id: userId,
       };
       const claimed = await characterService.assignCharacter(
-        dto,
-        scenarioId,
-        `Bearer ${token}`,
+        dto,token,
         character.id,
       );
       if (claimed.id) setCharacterId(claimed.id);
-      if (claimed.roleToken) setCharacterToken(claimed.roleToken);
+      if (claimed.token) setCharacterToken(claimed.token);
       setPlayerRole("character");
       router.push(`/scenarios/${scenarioId}/player`);
     } catch (err) {

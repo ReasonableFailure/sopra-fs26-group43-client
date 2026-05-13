@@ -1,6 +1,6 @@
 import { ScenarioStatus } from "@/types/scenario";
 
-export type RoleType = "DIRECTOR" | "BACKROOMER" | "CHARACTER";
+export type RoleType = "DIRECTOR" | "BACKROOMER" | "CHARACTER"; //TODO: import playerRole type instead
 
 export interface Engagement {
   scenarioId: number;

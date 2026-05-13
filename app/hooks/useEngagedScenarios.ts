@@ -5,6 +5,8 @@ import { useApi } from "@/hooks/useApi";
 import { UserService } from "@/api/userService";
 import { Engagement } from "@/types/engagement";
 
+
+//are there any scenarios I have engaged with prior? If so, return them all
 export const useEngagedScenarios = (userId: number | null, token: string) => {
   const api = useApi();
   const userService = useMemo(() => new UserService(api), [api]);
