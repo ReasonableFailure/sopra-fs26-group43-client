@@ -14,7 +14,7 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { useCharacter } from "../../../../../hooks/useCharacter";
 import { CharacterService } from "@/api/characterService";
 import { MessageService } from "@/api/messageService";
 import type { Character } from "@/types/character";
@@ -35,7 +35,7 @@ export default function CharacterProfilePage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { characterToken } = useSelectedCharacter(scenarioId, userId);
+  const { characterToken } = useCharacter(scenarioId, userId);
   const playerAuth = characterToken ?? `Bearer ${token}`;
   const targetCharId = Number(params.characterId);
 
@@ -44,7 +44,7 @@ export default function CharacterProfilePage() {
   const messageService = useMemo(() => new MessageService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId: myCharacterId } = useSelectedCharacter(
+  const { characterId: myCharacterId } = useCharacter(
     scenarioId,
     userId,
   );

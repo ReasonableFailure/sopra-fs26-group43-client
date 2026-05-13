@@ -32,3 +32,7 @@ export interface UserPutDTO {
   password?: string;
   bio?: string;
 }
+
+export interface UserAssignDTO {
+  id: number;
+}
