@@ -102,7 +102,7 @@ export default function GameLobbyPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router, authReady]);
+  }, [authReady, isAuthenticated, router]);
 
   // If the user already has a role in this scenario, send them to the right dashboard.
   useEffect(() => {

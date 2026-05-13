@@ -430,7 +430,6 @@ export default function CommunicationFormPage() {
                     (commType === "direct_message" &&
                       (selectedCharacter?.messageCount ?? 0) <= 0) ||
                     (commType === "pronouncement" && overLimit)}
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
                 >
                   Submit
                 </Button>

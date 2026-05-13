@@ -233,13 +233,13 @@ GameLobbyPage
 
 ### Character Card: Field Mapping
 
-| `Character` field                                                        | Displayed as                                                  |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| `name`                                                                   | Card heading (18px semibold)                                  |
-| `cabinetId`                                                              | Looked up in `cabinets[]` → `cabinetName` (indigo, star icon) |
-| `description`                                                            | Body text (14px gray)                                         |
-| `id`                                                                     | React `key`                                                   |
-| `title`, `portrait`, `secret`, `isAlive`, `actionPoints`, `messageCount` | Not shown on this page                                        |
+| `Character` field                                                      | Displayed as                                                  |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `name`                                                                 | Card heading (18px semibold)                                  |
+| `cabinetId`                                                            | Looked up in `cabinets[]` → `cabinetName` (indigo, star icon) |
+| `description`                                                          | Body text (14px gray)                                         |
+| `id`                                                                   | React `key`                                                   |
+| `title`, `portrait`, `secret`, `alive`, `actionPoints`, `messageCount` | Not shown on this page                                        |
 
 ---
 

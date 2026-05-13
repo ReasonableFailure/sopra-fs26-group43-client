@@ -410,7 +410,6 @@ export default function CreateScenarioPage() {
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
-        destroyOnHidden
       >
         <Form
           form={characterForm}

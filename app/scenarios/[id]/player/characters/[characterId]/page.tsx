@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { usePolling } from "@/hooks/usePolling";
 import { ScenarioService } from "@/api/scenarioService";
-import { Scenario, ScenarioStatus } from "@/types/scenario";
+import { Scenario } from "@/types/scenario";
 import { Button, ConfigProvider, Spin, theme } from "antd";
 import {
   CalendarOutlined,

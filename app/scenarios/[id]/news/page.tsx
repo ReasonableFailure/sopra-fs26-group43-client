@@ -124,6 +124,7 @@ export default function NewsPage() {
       cancelled = true;
     };
   }, [
+    authReady,
     isAuthenticated,
     scenarioId,
     auth,

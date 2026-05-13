@@ -30,6 +30,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (values: LoginFields & Partial<RegisterFields>) => {
     setLoading(true);
+
     try {
       if (mode === "login") {
         const res = await login(values);
