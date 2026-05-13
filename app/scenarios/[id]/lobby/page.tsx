@@ -8,11 +8,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useMyEngagement } from "@/hooks/useMyEngagement";
 import { CharacterService } from "@/api/characterService";
-import { BackroomerService} from "@/api/backroomerService";
+import { BackroomerService } from "@/api/backroomerService";
 import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
 import { useBackroomer } from "@/hooks/useBackroomer";
-import type {Character, CharacterAssignDTO} from "@/types/character";
-import type {BackroomerPostDTO} from "@/types/backroomer";
+import type { Character, CharacterAssignDTO } from "@/types/character";
+import type { BackroomerPostDTO } from "@/types/backroomer";
 import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 
@@ -156,10 +156,13 @@ export default function GameLobbyPage() {
     setSubmitting(true);
     try {
       const dto: CharacterAssignDTO = {
-        toAssignId:userId,
-      }
+        toAssignId: userId,
+      };
       const claimed = await characterService.assignCharacter(
-          dto,scenarioId,`Bearer ${token}`,character.id
+        dto,
+        scenarioId,
+        `Bearer ${token}`,
+        character.id,
       );
       if (claimed.id) setCharacterId(claimed.id);
       if (claimed.roleToken) setCharacterToken(claimed.roleToken);
@@ -180,8 +183,12 @@ export default function GameLobbyPage() {
     try {
       const dto: BackroomerPostDTO = {
         userId: userId,
-      }
-      const res = await backroomerService.createBackroomer(dto, scenarioId, token);
+      };
+      const res = await backroomerService.createBackroomer(
+        dto,
+        scenarioId,
+        token,
+      );
       if (res?.id) setBackroomerId(res.id);
       if (res?.backroomerToken) setBackroomerToken(res.backroomerToken);
       setPlayerRole("backroomer");

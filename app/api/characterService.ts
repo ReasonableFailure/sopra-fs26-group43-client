@@ -13,7 +13,7 @@ export class CharacterService {
     scenarioId: number,
     token: string,
   ): Promise<Character[]> {
-    return this.api.getWithToken<Character[]>(
+    return await this.api.getWithToken<Character[]>(
       `/characters/scenario/${scenarioId}`,
       token, //TODO funny business
     );
@@ -53,14 +53,14 @@ export class CharacterService {
   }
 
   updateCharacter(
-      characterId: number,
-      dto: CharacterPutDTO,
-      directorToken: string,
+    characterId: number,
+    dto: CharacterPutDTO,
+    directorToken: string,
   ): Promise<void> {
     return this.api.putWithToken<void>(
-        `/characters/${characterId}`,
-        dto,
-        `Director ${directorToken}`, //TODO funny business
+      `/characters/${characterId}`,
+      dto,
+      `Director ${directorToken}`, //TODO funny business
     );
   }
 
@@ -71,8 +71,9 @@ export class CharacterService {
     characterId: number,
   ): Promise<Character> {
     return await this.api.putWithToken<Character>(
-      `/player/${characterId}`,
-      dto, `${token}`,
+      `/scenarios/${scenarioId}/characters/${characterId}/assignment`,
+      dto,
+      `${token}`,
     );
   }
 
@@ -84,15 +85,14 @@ export class CharacterService {
     return await this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      `Director ${directorToken}`,//TODO funny business
+      `Director ${directorToken}`, //TODO funny business
     );
   }
 
-
   getCharacterById(characterId: number, token: string): Promise<Character> {
     return this.api.getWithToken<Character>(
-        `/characters/${characterId}`,
-        token,
+      `/characters/${characterId}`,
+      token,
     );
   }
 }

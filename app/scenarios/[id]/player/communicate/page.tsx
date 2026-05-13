@@ -80,7 +80,7 @@ export default function CommunicationFormPage() {
   const { data: liveCharacter } = usePolling<Character>(
     () =>
       characterId
-        ? characterService.getCharacterById(characterId, token)//TODO: funny business
+        ? characterService.getCharacterById(characterId, token) //TODO: funny business
         : Promise.reject(),
     5000,
     enabled && !!characterId,
@@ -190,7 +190,7 @@ export default function CommunicationFormPage() {
             scenarioId,
             category: category!,
           },
-            playerAuth,
+          playerAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {

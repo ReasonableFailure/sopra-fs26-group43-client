@@ -24,5 +24,4 @@ export class NewsService {
   deleteNews(newsId: number, token: string): Promise<void> {
     return this.api.deleteWithToken<void>(`/news/${newsId}`, token);
   }
-
 }

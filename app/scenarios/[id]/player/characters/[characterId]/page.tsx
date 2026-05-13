@@ -137,9 +137,9 @@ export default function CharacterProfilePage() {
 
   // Recipient must not see a message until the backroomer approves it.
   // Outgoing messages stay visible (with their existing status badges).
-  const visibleMessages = messages.filter(
+  /*const visibleMessages = messages.filter(
     (m) => m.creatorId === myCharacterId || m.status === CommsStatus.ACCEPTED,
-  );
+  );*/
 
   return (
     <ConfigProvider

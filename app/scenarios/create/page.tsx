@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Avatar,
@@ -33,7 +33,7 @@ import { DirectorService } from "@/api/directorService";
 import { useDirector } from "@/hooks/useDirector";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { CharacterPostDTO } from "@/types/character";
-import {DirectorPostDTO} from "@/types/director";
+import { DirectorPostDTO } from "@/types/director";
 
 interface ScenarioFormValues {
   title: string;
@@ -161,13 +161,13 @@ export default function CreateScenarioPage() {
 
   const handleSubmit = async (values: ScenarioFormValues) => {
     setSubmitting(true);
-    try{
-        const directorData: DirectorPostDTO = {
-          id: userId,
-        };
+    try {
+      const directorData: DirectorPostDTO = {
+        id: userId,
+      };
       const createdDirector = await directorService.becomeDirector(
-          directorData,
-          `Bearer ${token}`,
+        directorData,
+        `Bearer ${token}`,
       );
 
       if (createdDirector.directorId) {
@@ -185,8 +185,8 @@ export default function CreateScenarioPage() {
       };
 
       const createdScenario = await scenarioService.createScenario(
-          scenarioData,
-          `Bearer ${token}`,
+        scenarioData,
+        `Bearer ${token}`,
       );
       if (createdScenario) {
         addDirectedScenario(createdScenario.id);
@@ -204,12 +204,14 @@ export default function CreateScenarioPage() {
             secret: char.secret,
             scenarioId: createdScenario.id,
           };
-          const res = await characterService.createCharacter(
-              characterData,
-              `Director ${createdDirector.directorToken}`,
+          await characterService.createCharacter(
+            characterData,
+            `Director ${createdDirector.directorToken}`,
           );
         }
       }
+
+
       router.push(`/scenarios/${createdScenario.id}`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to create scenario");

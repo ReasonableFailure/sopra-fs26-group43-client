@@ -33,7 +33,7 @@ import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
-import { Scenario, ScenarioStatus } from "@/types/scenario";
+import { Scenario } from "@/types/scenario";
 import type { NewsGetDTO } from "@/types/news";
 
 import styles from "@/styles/playerDashboard.module.css";

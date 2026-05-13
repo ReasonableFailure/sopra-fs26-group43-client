@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useApi } from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
-import useLocalStorage from "@/hooks/useLocalStorage";
-import { User, UserPostDTO } from "@/types/user";
+import { UserPostDTO } from "@/types/user";
 import { Button, ConfigProvider, Form, Input, theme } from "antd";
 import styles from "@/styles/login.module.css";
 
@@ -22,13 +20,14 @@ interface RegisterFields {
 
 const Login: React.FC = () => {
   const router = useRouter();
-  const apiService = useApi();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const { setToken, setUserId, authReady, register, login } = useAuth();
+  const { setToken, setUserId, register, login } = useAuth();
 
-  const handleSubmit = async (values: LoginFields & Partial<RegisterFields>) => {
+  const handleSubmit = async (
+    values: LoginFields & Partial<RegisterFields>,
+  ) => {
     setLoading(true);
 
     try {
@@ -38,7 +37,6 @@ const Login: React.FC = () => {
         if (res.id) setUserId(res.id);
         router.push("/scenarios");
       } else {
-
         const data: UserPostDTO = {
           username: values.username,
           password: values.password,
@@ -52,9 +50,9 @@ const Login: React.FC = () => {
     } catch (error) {
       if (error instanceof Error) {
         alert(
-            mode === "login"
-                ? `Login failed:\n${error.message}`
-                : `Registration failed:\n${error.message}`,
+          mode === "login"
+            ? `Login failed:\n${error.message}`
+            : `Registration failed:\n${error.message}`,
         );
       }
     } finally {

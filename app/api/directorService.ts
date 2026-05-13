@@ -1,5 +1,5 @@
 import { ApiService } from "@/api/apiService";
-import { Director, DirectorGetDTO, DirectorPostDTO } from "@/types/director";
+import { DirectorGetDTO, DirectorPostDTO } from "@/types/director";
 export class DirectorService {
   constructor(private api: ApiService) {}
 
