@@ -5,9 +5,7 @@ import {
   CharacterPutDTO,
 } from "@/types/character";
 
-import {
-  UserAssignDTO
-} from "@/types/user";
+import { UserAssignDTO } from "@/types/user";
 
 export class CharacterService {
   constructor(private api: ApiService) {}
