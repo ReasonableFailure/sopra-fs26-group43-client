@@ -23,15 +23,17 @@ export const useAuth = () => {
   const authReady = tokenReady && userIdReady;
 
   const register = useCallback(async (data: UserPostDTO): Promise<User> => {
+    //Prefix for auth already added
     const user = await userService.register(data);
-    if (user.token) setToken(user.token);
+    if (user.token) setToken(`Bearer ${user.token}`);
     if (user.id) setUserId(user.id);
     return user;
   }, [userService, setToken, setUserId]);
 
   const login = useCallback(async (data: UserLoginDTO): Promise<User> => {
+    //Prefix for auth already added
     const user = await userService.login(data);
-    if (user.token) setToken(user.token);
+    if (user.token) setToken(`Bearer ${user.token}`);
     if (user.id) setUserId(user.id);
     return user;
   }, [userService, setToken, setUserId]);
