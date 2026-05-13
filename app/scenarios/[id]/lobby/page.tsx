@@ -182,7 +182,7 @@ export default function GameLobbyPage() {
     setSubmitting(true);
     try {
       const dto: BackroomerPostDTO = {
-        userId: userId,
+        id: userId,
       };
       const res = await backroomerService.createBackroomer(
         dto,
@@ -190,7 +190,7 @@ export default function GameLobbyPage() {
         token,
       );
       if (res?.id) setBackroomerId(res.id);
-      if (res?.backroomerToken) setBackroomerToken(res.backroomerToken);
+      if (res?.token) setBackroomerToken(res.token);
       setPlayerRole("backroomer");
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {

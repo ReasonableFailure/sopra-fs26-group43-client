@@ -211,7 +211,6 @@ export default function CreateScenarioPage() {
         }
       }
 
-
       router.push(`/scenarios/${createdScenario.id}`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to create scenario");

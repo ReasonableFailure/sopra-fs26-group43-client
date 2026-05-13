@@ -1,8 +1,8 @@
 export interface Backroomer {
-  id: number | null;
-  backroomerToken: string;
+  id: number;
+  token: string;
 }
 
 export interface BackroomerPostDTO {
-  userId: number;
+  id: number;
 }
