@@ -82,7 +82,7 @@ export default function CreateScenarioPage() {
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const directorService = useMemo(() => new DirectorService(api), [api]);
-  const { setDirectorId, setDirectorToken } = useDirector(userId);
+  const { setDirectorId, setDirectorToken, directorToken, directorId} = useDirector(userId);
   const { addDirectedScenario } = useDirectedScenarios(userId);
   const { setPlayerRole } = usePlayerRole(userId);
 
@@ -186,7 +186,7 @@ export default function CreateScenarioPage() {
 
       const createdScenario = await scenarioService.createScenario(
         scenarioData,
-        `Bearer ${token}`,
+        `Director ${directorToken}`,
       );
       if (createdScenario) {
         addDirectedScenario(createdScenario.id);
@@ -200,7 +200,7 @@ export default function CreateScenarioPage() {
             name: char.name,
             title: char.title,
             description: char.description,
-            portrait: null,
+            portrait: char.portrait,
             secret: char.secret,
             scenarioId: createdScenario.id,
           };

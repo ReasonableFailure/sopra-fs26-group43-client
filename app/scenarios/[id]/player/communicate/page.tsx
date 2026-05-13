@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import type { Scenario } from "@/types/scenario";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { useCharacter } from "../../../../hooks/useCharacter";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import { DirectiveCategory } from "@/types/directive";
@@ -47,7 +47,7 @@ export default function CommunicationFormPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId, characterToken } = useSelectedCharacter(
+  const { characterId, characterToken } = useCharacter(
     scenarioId,
     userId,
   );

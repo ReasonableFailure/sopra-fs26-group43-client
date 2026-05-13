@@ -22,7 +22,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { useCharacter } from "../../../hooks/useCharacter";
 import { initials } from "@/helpers/helperFunctions";
 
 import { CharacterService } from "@/api/characterService";
@@ -93,7 +93,7 @@ export default function PlayerDashboardPage() {
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
 
-  const { characterId, characterToken } = useSelectedCharacter(
+  const { characterId, characterToken } = useCharacter(
     scenarioId,
     userId,
   );
