@@ -30,7 +30,7 @@ import styles from "@/styles/communicationForm.module.css";
 type CommType = "direct_message" | "directive" | "pronouncement";
 
 export default function CommunicationFormPage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -50,7 +50,7 @@ export default function CommunicationFormPage() {
   const { characterId, characterToken } = useCharacter(
     scenarioId,
   );
-  const playerAuth = characterToken ?? `Bearer ${token}`;
+  const characterAuth = characterToken ? `Role ${characterToken}` : "Wrong";
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +71,7 @@ export default function CommunicationFormPage() {
 
   // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
+    () => scenarioService.getScenarioById(scenarioId, characterAuth),
     5000,
     enabled,
   );
@@ -79,7 +79,7 @@ export default function CommunicationFormPage() {
   const { data: liveCharacter } = usePolling<Character>(
     () =>
       characterId
-        ? characterService.getCharacterById(characterId, token) //TODO: funny business
+        ? characterService.getCharacterById(characterId, characterAuth)
         : Promise.reject(),
     5000,
     enabled && !!characterId,
@@ -95,7 +95,7 @@ export default function CommunicationFormPage() {
     setLoading(true);
     // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
     characterService
-      .getCharactersByScenario(scenarioId, `Bearer ${token}`)
+      .getCharactersByScenario(scenarioId, characterAuth)
       .then((chars) => {
         if (!cancelled) setCharacters(chars);
       })
@@ -106,7 +106,7 @@ export default function CommunicationFormPage() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, scenarioId, token, characterService]);
+  }, [isAuthenticated, scenarioId, characterAuth, characterService]);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -175,7 +175,7 @@ export default function CommunicationFormPage() {
             recipientId: recipientId!,
             scenarioId,
           },
-          playerAuth,
+          characterAuth,
         );
         router.push(
           `/scenarios/${scenarioId}/player/characters/${recipientId}`,
@@ -189,7 +189,7 @@ export default function CommunicationFormPage() {
             scenarioId,
             category: category!,
           },
-          playerAuth,
+          characterAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
@@ -204,7 +204,7 @@ export default function CommunicationFormPage() {
             scenarioId,
             authorId: characterId,
           },
-          playerAuth,
+          characterAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       }

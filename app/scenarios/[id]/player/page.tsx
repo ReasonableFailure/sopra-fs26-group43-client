@@ -82,7 +82,7 @@ function statusLabel(
 }
 
 export default function PlayerDashboardPage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -94,9 +94,9 @@ export default function PlayerDashboardPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
 
   const { characterId, characterToken } = useCharacter(
-    scenarioId
+    scenarioId,
   );
-  const playerAuth = characterToken ?? `Bearer ${token}`;
+  const characterAuth = characterToken ? `Role ${characterToken}` : "wrong";
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [scenario, setScenario] = useState<Scenario | null>(null);
@@ -113,13 +113,13 @@ export default function PlayerDashboardPage() {
   const { data: directives, loading: directivesLoading } = usePolling<
     Directive[]
   >(
-    () => directiveService.getDirectivesByScenario(scenarioId, playerAuth),
+    () => directiveService.getDirectivesByScenario(scenarioId, characterAuth),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, playerAuth),
+    () => newsService.getNewsByScenario(scenarioId, characterAuth),
     5000,
     enabled,
   );
@@ -130,7 +130,7 @@ export default function PlayerDashboardPage() {
         ? characterService.getCharacterPoints(
           scenarioId,
           characterId,
-          playerAuth,
+          characterAuth,
         )
         : Promise.reject(),
     15000,
@@ -139,7 +139,7 @@ export default function PlayerDashboardPage() {
 
   // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
+    () => scenarioService.getScenarioById(scenarioId, characterAuth),
     5000,
     enabled,
   );
@@ -181,9 +181,9 @@ export default function PlayerDashboardPage() {
         const [chars, scen] = await Promise.all([
           characterService.getCharactersByScenario(
             scenarioId,
-            `Bearer ${token}`,
+            characterAuth,
           ),
-          scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
+          scenarioService.getScenarioById(scenarioId, characterAuth),
         ]);
         if (!cancelled) {
           setCharacters(chars);
@@ -200,7 +200,7 @@ export default function PlayerDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [enabled, scenarioId, token, characterService, scenarioService]);
+  }, [enabled, scenarioId, characterAuth, characterService, scenarioService]);
 
   const selectedCharacter = characters.find((c) => c.id === characterId) ??
     null;
@@ -256,7 +256,7 @@ export default function PlayerDashboardPage() {
         updated = await characterService.buyMessage(
           scenarioId,
           characterId,
-          playerAuth,
+          characterAuth,
         );
       }
 

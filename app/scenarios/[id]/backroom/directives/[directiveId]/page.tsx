@@ -41,12 +41,14 @@ function StatusBadge({ status }: { status: CommsStatus | null }) {
 }
 
 export default function BackroomDirectiveDetailPage() {
-  const { token, isAuthenticated, authReady, userId } = useAuth();
+  const {  isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
   const { backroomerToken } = useBackroomer(scenarioId);
-  const backroomerAuth = backroomerToken ?? `Bearer ${token}`;
+  const backroomerAuth = backroomerToken
+    ? `Backroomer ${backroomerToken}`
+    : "Wrong";
   const directiveId = Number(params.directiveId);
 
   const api = useApi();
@@ -70,7 +72,7 @@ export default function BackroomDirectiveDetailPage() {
       // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
       characterService.getCharactersByScenario(
         scenarioId,
-        `Bearer ${token}`,
+        backroomerAuth,
       ),
     ])
       .then(([dir, chars]) => {
@@ -89,7 +91,7 @@ export default function BackroomDirectiveDetailPage() {
     isAuthenticated,
     scenarioId,
     directiveId,
-    token,
+    backroomerAuth,
     directiveService,
     characterService,
   ]);

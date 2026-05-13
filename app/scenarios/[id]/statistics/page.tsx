@@ -23,12 +23,17 @@ import { CharacterService } from "@/api/characterService";
 import type { Character } from "@/types/character";
 
 import styles from "@/styles/playerTable.module.css";
+import { useDirector } from "@/hooks/useDirector";
+import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 export default function PlayerStatisticsPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady, userId } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const { playerRole } = usePlayerRole(userId);
   const scenarioId = Number(params.id);
+  const { directorToken } = useDirector(scenarioId);
+  const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
   const [modal, contextHolder] = Modal.useModal();
 
   const api = useApi();
@@ -48,7 +53,7 @@ export default function PlayerStatisticsPage() {
           await characterService.updateCharacter(
             character.id!,
             { alive: false },
-            token,
+            directorAuth,
           );
           message.success(`${character.name} eliminated`);
         } catch {
@@ -62,17 +67,18 @@ export default function PlayerStatisticsPage() {
 
   // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
   const { data: characters, loading } = usePolling<Character[]>(
-    () =>
-      characterService.getCharactersByScenario(scenarioId, `Bearer ${token}`),
+    () => characterService.getCharactersByScenario(scenarioId, directorAuth),
     5000,
     enabled,
   );
 
   useEffect(() => {
-    if (authReady && !isAuthenticated) {
+    if (authReady && !isAuthenticated || playerRole !== "director") {
+      console.log("The playerRole was not set to director");
+      alert("The playerRole was not set to director");
       router.replace("/login");
     }
-  }, [authReady, isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router, playerRole]);
 
   if (!authReady || !isAuthenticated) return null;
 

@@ -61,7 +61,7 @@ export class CharacterService {
     return this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      token, 
+      token,
     );
   }
 

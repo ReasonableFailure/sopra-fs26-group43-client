@@ -16,7 +16,6 @@ import { ScenarioService } from "@/api/scenarioService";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
 import styles from "@/styles/newsPage.module.css";
-import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 type FilterType = "all" | "news" | "pronouncement";
 
@@ -71,7 +70,7 @@ function FeedCard({ item, authorName }: FeedCardProps) {
 }
 
 export default function NewsPage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth(); //token: Prefix "Bearer" for auth already added
+  const { token, isAuthenticated, authReady } = useAuth(); //token: Prefix "Bearer" for auth already added
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -120,7 +119,7 @@ export default function NewsPage() {
     return () => {
       cancelled = true;
     };
-  }, [
+  }, [ isAuthenticated,
     scenarioId,
     token,
     newsService,

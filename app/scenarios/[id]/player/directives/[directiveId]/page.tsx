@@ -55,12 +55,12 @@ function approvalStatusText(status: CommsStatus | null): string {
 }
 
 export default function DirectiveDetailPage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
   const { characterToken } = useCharacter(scenarioId);
-  const playerAuth = characterToken ?? `Bearer ${token}`;
+  const characterAuth = characterToken ? `Role ${characterToken}` : "Wrong";
   const directiveId = Number(params.directiveId);
 
   const api = useApi();
@@ -86,10 +86,10 @@ export default function DirectiveDetailPage() {
         // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate);
         // getDirectiveById accepts "any" so the role token works.
         const [dir, chars] = await Promise.all([
-          directiveService.getDirectiveById(directiveId, playerAuth),
+          directiveService.getDirectiveById(directiveId, characterAuth),
           characterService.getCharactersByScenario(
             scenarioId,
-            `Bearer ${token}`,
+            characterAuth,
           ),
         ]);
         if (cancelled) return;
@@ -111,7 +111,7 @@ export default function DirectiveDetailPage() {
     scenarioId,
     directiveId,
     characterId,
-    token,
+    characterAuth,
     directiveService,
     characterService,
   ]);

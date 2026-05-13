@@ -29,6 +29,7 @@ import { ScenarioService } from "@/api/scenarioService";
 import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/directorDashboard.module.css";
+import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
   "UNSTARTED": "Not Started",
@@ -73,21 +74,22 @@ const STATUS_CLASS: Record<ScenarioStatus, string> = {
 };
 
 export default function DirectorDashboardPage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
+  const { playerRole } = usePlayerRole(userId);
   const { directorToken } = useDirector(scenarioId);
-  const directorAuth = token ?? `Bearer ${token}`;
+  const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
   const [messageApi, contextHolder] = message.useMessage();
 
   const enabled = isAuthenticated && !!scenarioId;
 
   const { data: scenario, loading, error } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
+    () => scenarioService.getScenarioById(scenarioId, directorAuth),
     5000,
     enabled,
   );
@@ -97,10 +99,12 @@ export default function DirectorDashboardPage() {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (authReady && !isAuthenticated) {
+    if (playerRole !== "director") {
+      console.log("The playerRole was not set to director");
+      alert("The playerRole was not set to director");
       router.replace("/login");
     }
-  }, [authReady, isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router, playerRole]);
 
   if (!authReady || !isAuthenticated) return null;
 

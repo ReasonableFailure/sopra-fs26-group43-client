@@ -25,6 +25,7 @@ import { CommsStatus } from "@/types/directive";
 import type { Message } from "@/types/message";
 import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/backroomDashboard.module.css";
+import { useBackroomer } from "@/hooks/useBackroomer";
 
 function timeAgo(iso: string | null | undefined): string {
   if (!iso) return "";
@@ -60,7 +61,7 @@ function DirectiveBadge({ status }: { status: CommsStatus | null }) {
 }
 
 export default function BackroomDashboardPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -72,6 +73,11 @@ export default function BackroomDashboardPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
+  const { backroomerToken } = useBackroomer(scenarioId);
+  const backroomerAuth = backroomerToken
+    ? `Backroomer ${backroomerToken}`
+    : "Wrong";
+
   const [characters, setCharacters] = useState<Character[]>([]);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [scenario, setScenario] = useState<Scenario | null>(null);
@@ -81,13 +87,13 @@ export default function BackroomDashboardPage() {
   const { data: directives, loading: directivesLoading } = usePolling<
     Directive[]
   >(
-    () => directiveService.getDirectivesByScenario(scenarioId, token),
+    () => directiveService.getDirectivesByScenario(scenarioId, backroomerAuth),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, token),
+    () => newsService.getNewsByScenario(scenarioId, backroomerAuth),
     5000,
     enabled,
   );
@@ -103,7 +109,7 @@ export default function BackroomDashboardPage() {
 
     let cancelled = false;
 
-    scenarioService.getScenarioById(scenarioId, token)
+    scenarioService.getScenarioById(scenarioId, backroomerAuth)
       .then((data) => {
         if (!cancelled) setScenario(data);
       })
@@ -114,7 +120,7 @@ export default function BackroomDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [enabled, scenarioId, token, scenarioService]);
+  }, [enabled, scenarioId, backroomerAuth, scenarioService]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -125,11 +131,15 @@ export default function BackroomDashboardPage() {
       try {
         const pairs = await messageService.getMessagePairsByScenario(
           scenarioId,
-          token,
+          backroomerAuth,
         );
         const arrays = await Promise.all(
           pairs.map((p) =>
-            messageService.getMessagesBetween(p.roleAId, p.roleBId, token)
+            messageService.getMessagesBetween(
+              p.roleAId,
+              p.roleBId,
+              backroomerAuth,
+            )
           ),
         );
         if (!cancelled) setMessages(arrays.flat());
@@ -146,7 +156,7 @@ export default function BackroomDashboardPage() {
       cancelled = true;
       clearInterval(intervalId);
     };
-  }, [enabled, scenarioId, token, messageService]);
+  }, [enabled, scenarioId, backroomerAuth, messageService]);
 
   const loading = directivesLoading || messagesLoading || newsLoading;
 
@@ -185,7 +195,7 @@ export default function BackroomDashboardPage() {
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    characterService.getCharactersByScenario(scenarioId, token)
+    characterService.getCharactersByScenario(scenarioId, backroomerAuth)
       .then((chars) => {
         if (!cancelled) setCharacters(chars);
       })
@@ -195,7 +205,7 @@ export default function BackroomDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [enabled, scenarioId, token, characterService]);
+  }, [enabled, scenarioId, backroomerAuth, characterService]);
 
   if (!authReady || !isAuthenticated) return null;
 
@@ -233,7 +243,7 @@ export default function BackroomDashboardPage() {
     if (messageId === null) return;
     setActionLoading(messageId);
     try {
-      await messageService.updateMessage(messageId, { status }, token);
+      await messageService.updateMessage(messageId, { status }, backroomerAuth);
       setMessages((prev) =>
         prev.map((m) => m.id === messageId ? { ...m, status } : m)
       );

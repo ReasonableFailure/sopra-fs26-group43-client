@@ -31,12 +31,12 @@ function formatDate(iso: string | null): string {
 }
 
 export default function CharacterProfilePage() {
-  const { token, userId, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
   const { characterToken } = useCharacter(scenarioId);
-  const playerAuth = characterToken ?? `Bearer ${token}`;
+  const characterAuth = characterToken ? `Role ${characterToken}` : "Wrong";
   const targetCharId = Number(params.characterId);
 
   const api = useApi();
@@ -58,7 +58,7 @@ export default function CharacterProfilePage() {
 
   // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, `Bearer ${token}`),
+    () => scenarioService.getScenarioById(scenarioId, characterAuth),
     5000,
     enabled,
   );
@@ -66,7 +66,7 @@ export default function CharacterProfilePage() {
   const { data: liveCharacter } = usePolling<Character>(
     () =>
       myCharacterId
-        ? characterService.getCharacterById(myCharacterId, token) //TODO token funny business
+        ? characterService.getCharacterById(myCharacterId, characterAuth)
         : Promise.reject(),
     5000,
     enabled && !!myCharacterId,
@@ -88,10 +88,9 @@ export default function CharacterProfilePage() {
 
     const fetchData = async () => {
       try {
-        // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
         const chars = await characterService.getCharactersByScenario(
           scenarioId,
-          `Bearer ${token}`,
+          characterAuth,
         );
         if (cancelled) return;
         setTargetCharacter(chars.find((c) => c.id === targetCharId) ?? null);
@@ -100,7 +99,7 @@ export default function CharacterProfilePage() {
           ? await messageService.getMessagesBetween(
             myCharacterId,
             targetCharId,
-            playerAuth,
+            characterAuth,
           )
           : [];
         if (cancelled) return;
@@ -126,9 +125,7 @@ export default function CharacterProfilePage() {
     isAuthenticated,
     scenarioId,
     targetCharId,
-    myCharacterId,
-    token,
-    characterService,
+    myCharacterId,characterAuth, characterService,
     messageService,
   ]);
 

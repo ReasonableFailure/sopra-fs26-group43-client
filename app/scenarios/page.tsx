@@ -17,7 +17,6 @@ import {
 import type { MenuProps } from "antd";
 import { MoreOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
-import { useDirector } from "@/hooks/useDirector";
 import { useApi } from "@/hooks/useApi";
 import { useScenarios } from "@/hooks/useScenarios";
 import { useEngagedScenarios } from "@/hooks/useEngagedScenarios";
@@ -164,7 +163,6 @@ export default function ScenariosPage() {
   if (!authReady || !isAuthenticated) return null;
 
   const handleDelete = (scenario: Scenario) => {
-
     Modal.confirm({
       title: `Delete scenario "${scenario.title}"?`,
       content: "This cannot be undone.",
@@ -176,7 +174,7 @@ export default function ScenariosPage() {
         try {
           await scenarioService.deleteScenario(
             scenario.id,
-            token ?? `Director ${token}`,  //TODO: funny business
+            token ?? `Director ${token}`,
           );
           setLocalScenarios((prev) =>
             (prev ?? []).filter((s) => s.id !== scenario.id)
