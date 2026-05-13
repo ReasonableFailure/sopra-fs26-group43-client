@@ -5,11 +5,11 @@ import useLocalStorage from "@/hooks/useLocalStorage";
  * keyed per scenario so different scenarios track independently.
  */
 export function useBackroomer(scenarioId: number) {
-  const { value: backroomerId, set: setBackroomerId } = useLocalStorage<
+  const { value: backroomerId, set: setBackroomerId, ready: readyBackroomerId } = useLocalStorage<
     number | null
   >(`scenario_${scenarioId}_backroomerId`, null);
-  const { value: backroomerToken, set: setBackroomerToken } = useLocalStorage<
+  const { value: backroomerToken, set: setBackroomerToken, ready: readyBackroomerToken} = useLocalStorage<
     string | null
   >(`scenario_${scenarioId}_backroomerToken`, null);
-  return { backroomerId, setBackroomerId, backroomerToken, setBackroomerToken };
+  return { backroomerId, setBackroomerId, backroomerToken, setBackroomerToken, readyBackroomerId, readyBackroomerToken };
 }

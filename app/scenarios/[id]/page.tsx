@@ -81,7 +81,7 @@ export default function DirectorDashboardPage() {
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
-  const { playerRole } = usePlayerRole(userId);
+  const { playerRole, readyPlayerRole } = usePlayerRole(userId);
   const { directorToken } = useDirector(scenarioId);
   const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
   const [messageApi, contextHolder] = message.useMessage();
@@ -99,12 +99,18 @@ export default function DirectorDashboardPage() {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (playerRole !== "director") {
-      console.log("The playerRole was not set to director");
-      alert("The playerRole was not set to director");
+    // 1. Wait until Auth is ready and user is authenticated
+    if (!authReady || !readyPlayerRole) return;
+
+    // 2. Wait until playerRole is actually loaded from localStorage
+    // Since useLocalStorage defaults to 'null', we check if it's strictly not "director"
+    // but only AFTER we are sure the auth layer has provided a userId.
+    if (!isAuthenticated || playerRole !== "director") {
+      console.log("Access Denied: Required 'director', found:", playerRole);
+      alert("You do not have permission to access the Director Dashboard.");
       router.replace("/login");
     }
-  }, [authReady, isAuthenticated, router, playerRole]);
+  }, [authReady, isAuthenticated, playerRole, router, readyPlayerRole]);
 
   if (!authReady || !isAuthenticated) return null;
 

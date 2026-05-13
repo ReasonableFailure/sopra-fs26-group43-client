@@ -19,7 +19,7 @@ export const useEngagedScenarios = (userId: number | null, token: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await userService.getEngagements(userId, token);
+      const data = await userService.getEngagements(userId, `Bearer ${token}`);
       setEngagements(data);
     } catch (err) {
       setError(

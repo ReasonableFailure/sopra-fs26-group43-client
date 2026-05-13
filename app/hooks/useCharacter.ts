@@ -8,11 +8,11 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 export function useCharacter(
   scenarioId: number,
 ) {
-  const { value: characterId, set: setCharacterId } = useLocalStorage<
+  const { value: characterId, set: setCharacterId, ready: readyCharacterId } = useLocalStorage<
     number | null
   >(`scenario_${scenarioId}_characterId`, null);
-  const { value: characterToken, set: setCharacterToken } = useLocalStorage<
+  const { value: characterToken, set: setCharacterToken, ready: readyCharacterToken } = useLocalStorage<
     string | null
   >(`scenario_${scenarioId}_characterToken`, null);
-  return { characterToken, setCharacterToken, characterId, setCharacterId };
+  return { characterToken, setCharacterToken, characterId, setCharacterId, readyCharacterId, readyCharacterToken };
 }
