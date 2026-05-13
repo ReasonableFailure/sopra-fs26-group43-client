@@ -18,18 +18,18 @@ export class CharacterService {
   ): Promise<Character[]> {
     return await this.api.getWithToken<Character[]>(
       `/characters/scenario/${scenarioId}`,
-      token, //TODO funny business
+      token,
     );
   }
 
   public async createCharacter(
     dto: CharacterPostDTO,
-    directorToken: string,
+    token: string,
   ): Promise<Character> {
     return await this.api.postWithToken<Character>(
       "/characters",
       dto,
-      `Director ${directorToken}`, //TODO funny business
+      token,
     );
   }
   public async getCharacterPoints(
@@ -58,12 +58,12 @@ export class CharacterService {
   updateCharacter(
     characterId: number,
     dto: CharacterPutDTO,
-    directorToken: string,
+    token: string,
   ): Promise<void> {
     return this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      `Director ${directorToken}`, //TODO funny business
+      token, 
     );
   }
 
@@ -75,19 +75,19 @@ export class CharacterService {
     return await this.api.putWithToken<Character>(
       `/characters/${characterId}/assignment`,
       dto,
-      `${token}`,
+      token,
     );
   }
 
   public async modifyCharacter(
     dto: CharacterPutDTO,
-    directorToken: string,
+    token: string,
     characterId: number,
   ): Promise<void> {
     return await this.api.putWithToken<void>(
       `/characters/${characterId}`,
       dto,
-      `Director ${directorToken}`, //TODO funny business
+      token,
     );
   }
 
