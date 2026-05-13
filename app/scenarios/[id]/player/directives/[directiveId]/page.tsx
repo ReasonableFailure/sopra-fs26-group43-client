@@ -59,7 +59,7 @@ export default function DirectiveDetailPage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { characterToken } = useCharacter(scenarioId, userId);
+  const { characterToken } = useCharacter(scenarioId);
   const playerAuth = characterToken ?? `Bearer ${token}`;
   const directiveId = Number(params.directiveId);
 
@@ -67,7 +67,7 @@ export default function DirectiveDetailPage() {
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
 
-  const { characterId } = useCharacter(scenarioId, userId);
+  const { characterId } = useCharacter(scenarioId);
   const [myCharacter, setMyCharacter] = useState<Character | null>(null);
   const [directive, setDirective] = useState<Directive | null>(null);
   const [loading, setLoading] = useState(true);

@@ -49,7 +49,6 @@ export default function CommunicationFormPage() {
 
   const { characterId, characterToken } = useCharacter(
     scenarioId,
-    userId,
   );
   const playerAuth = characterToken ?? `Bearer ${token}`;
 

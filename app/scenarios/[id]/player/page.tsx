@@ -94,8 +94,7 @@ export default function PlayerDashboardPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
 
   const { characterId, characterToken } = useCharacter(
-    scenarioId,
-    userId,
+    scenarioId
   );
   const playerAuth = characterToken ?? `Bearer ${token}`;
 

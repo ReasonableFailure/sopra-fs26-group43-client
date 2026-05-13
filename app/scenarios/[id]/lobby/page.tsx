@@ -81,11 +81,9 @@ export default function GameLobbyPage() {
   const backroomerService = useMemo(() => new BackroomerService(api), [api]);
   const { setCharacterId, setCharacterToken } = useCharacter(
     scenarioId,
-    userId,
   );
   const { setBackroomerId, setBackroomerToken } = useBackroomer(
     scenarioId,
-    userId,
   );
   const { engagement, loading: engagementLoading } = useScenarioEngagement(
     scenarioId,

@@ -129,7 +129,7 @@ function EngagementCard({ engagement }: { engagement: Engagement }) {
 
 export default function ScenariosPage() {
   const { token, userId, isAuthenticated, authReady } = useAuth();
-  const { directorToken } = useDirector(userId ?? 0);
+
   const router = useRouter();
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
@@ -164,6 +164,7 @@ export default function ScenariosPage() {
   if (!authReady || !isAuthenticated) return null;
 
   const handleDelete = (scenario: Scenario) => {
+
     Modal.confirm({
       title: `Delete scenario "${scenario.title}"?`,
       content: "This cannot be undone.",
@@ -175,7 +176,7 @@ export default function ScenariosPage() {
         try {
           await scenarioService.deleteScenario(
             scenario.id,
-            token ?? `Director ${token}`,
+            token ?? `Director ${token}`,  //TODO: funny business
           );
           setLocalScenarios((prev) =>
             (prev ?? []).filter((s) => s.id !== scenario.id)

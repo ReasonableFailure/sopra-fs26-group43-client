@@ -31,7 +31,7 @@ export default function BackroomCommunicatePage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const scenarioId = Number(params.id);
-  const { backroomerToken } = useBackroomer(scenarioId, userId ?? 0);
+  const { backroomerToken } = useBackroomer(scenarioId);
   const backroomerAuth = backroomerToken ?? `Bearer ${token}`;
 
   const preselectedType = searchParams.get("type") === "news_story"

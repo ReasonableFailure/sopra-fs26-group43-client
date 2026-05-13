@@ -83,7 +83,7 @@ export default function CreateScenarioPage() {
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const directorService = useMemo(() => new DirectorService(api), [api]);
   const { setDirectorId, setDirectorToken, directorToken } = useDirector(
-    userId,
+    userId
   );
   const { addDirectedScenario } = useDirectedScenarios(userId);
   const { setPlayerRole } = usePlayerRole(userId);

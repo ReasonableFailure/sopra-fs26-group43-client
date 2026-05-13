@@ -45,7 +45,7 @@ export default function BackroomDirectiveDetailPage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { backroomerToken } = useBackroomer(scenarioId, userId ?? 0);
+  const { backroomerToken } = useBackroomer(scenarioId);
   const backroomerAuth = backroomerToken ?? `Bearer ${token}`;
   const directiveId = Number(params.directiveId);
 

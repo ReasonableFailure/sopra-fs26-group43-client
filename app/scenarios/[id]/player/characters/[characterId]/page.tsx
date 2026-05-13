@@ -35,7 +35,7 @@ export default function CharacterProfilePage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { characterToken } = useCharacter(scenarioId, userId);
+  const { characterToken } = useCharacter(scenarioId);
   const playerAuth = characterToken ?? `Bearer ${token}`;
   const targetCharId = Number(params.characterId);
 
@@ -46,7 +46,6 @@ export default function CharacterProfilePage() {
 
   const { characterId: myCharacterId } = useCharacter(
     scenarioId,
-    userId,
   );
 
   const [targetCharacter, setTargetCharacter] = useState<Character | null>(
