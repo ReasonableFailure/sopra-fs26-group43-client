@@ -39,3 +39,14 @@ export interface ScenarioMastodonDTO {
   mastodonBaseUrl: string;
   mastodonAccessToken: string;
 }
+
+/**
+ * Director-controlled, client-side scenario configuration (persisted in
+ * localStorage and scoped per scenarioId). Not sent to the backend.
+ */
+export interface ScenarioClientConfig {
+  /** Maximum number of backroomers allowed to join. */
+  maxBackroomers: number;
+  /** Secret code a backroomer must supply to join (empty disables joining). */
+  backroomerCode: string;
+}
