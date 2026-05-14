@@ -7,7 +7,6 @@ import {
   Avatar,
   Button,
   ConfigProvider,
-  message,
   Modal,
   Spin,
   Table,
@@ -65,11 +64,11 @@ export default function PlayerStatisticsPage() {
           });
         } catch {
           message.error({
-          content: "Failed to eliminate character",
-          style: {
-            color: "#111827",
-          },
-        });
+            content: "Failed to eliminate character",
+            style: {
+              color: "#111827",
+            },
+          });
         }
       },
     });
