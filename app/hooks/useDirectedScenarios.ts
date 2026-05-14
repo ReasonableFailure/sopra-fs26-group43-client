@@ -12,7 +12,9 @@ import useLocalStorage from "@/hooks/useLocalStorage";
  * during the first paint.
  */
 export function useDirectedScenarios(userId: number | null) {
-  const { value: directedIds, set: setDirectedIds, ready } = useLocalStorage<number[]>(
+  const { value: directedIds, set: setDirectedIds, ready } = useLocalStorage<
+    number[]
+  >(
     userId ? `directedScenarios_${userId}` : "directedScenarios_guest",
     [],
   );

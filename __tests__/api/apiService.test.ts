@@ -10,7 +10,7 @@ function mockJsonResponse(body: unknown, status = 200) {
     status,
     statusText: status === 200 ? "OK" : "Error",
     headers: { get: () => "application/json" },
-    json: async () => body,
+    json: async () => await body,
   } as unknown as Response;
 }
 
@@ -20,7 +20,7 @@ function mockTextResponse(status: number, statusText: string, body: unknown) {
     status,
     statusText,
     headers: { get: () => "application/json" },
-    json: async () => body,
+    json: async () => await body,
   } as unknown as Response;
 }
 
@@ -76,7 +76,11 @@ describe("ApiService", () => {
 
   it("postWithToken(): adds Authorization header and JSON body", async () => {
     fetchMock.mockResolvedValueOnce(mockJsonResponse({ id: 9 }));
-    await api.postWithToken<{ id: number }>("/things", { x: 1 }, "Director t-1");
+    await api.postWithToken<{ id: number }>(
+      "/things",
+      { x: 1 },
+      "Director t-1",
+    );
     const call = fetchMock.mock.calls[0];
     expect(call[1].method).toBe("POST");
     expect(call[1].headers).toMatchObject({

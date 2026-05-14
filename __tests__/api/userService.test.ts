@@ -20,7 +20,10 @@ describe("UserService", () => {
     (api.post as jest.Mock).mockResolvedValueOnce({});
     const service = new UserService(api);
     await service.register({ username: "u", password: "p" } as never);
-    expect(api.post).toHaveBeenCalledWith("/users", { username: "u", password: "p" });
+    expect(api.post).toHaveBeenCalledWith("/users", {
+      username: "u",
+      password: "p",
+    });
   });
 
   it("login calls POST /login (no token)", async () => {
@@ -28,7 +31,10 @@ describe("UserService", () => {
     (api.post as jest.Mock).mockResolvedValueOnce({});
     const service = new UserService(api);
     await service.login({ username: "u", password: "p" } as never);
-    expect(api.post).toHaveBeenCalledWith("/login", { username: "u", password: "p" });
+    expect(api.post).toHaveBeenCalledWith("/login", {
+      username: "u",
+      password: "p",
+    });
   });
 
   it("getUser calls GET /users/{id} with Bearer-prefixed token", async () => {

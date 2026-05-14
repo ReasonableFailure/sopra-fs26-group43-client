@@ -1,9 +1,9 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 
 describe("useDirectedScenarios", () => {
   beforeEach(() => {
-    window.localStorage.clear();
+    globalThis.localStorage.clear();
   });
 
   it("starts with an empty director set for a fresh user", () => {
@@ -26,7 +26,7 @@ describe("useDirectedScenarios", () => {
       result.current.addDirectedScenario(7);
       result.current.addDirectedScenario(7);
     });
-    const raw = window.localStorage.getItem("directedScenarios_1");
+    const raw = globalThis.localStorage.getItem("directedScenarios_1");
     expect(raw).not.toBeNull();
     expect(JSON.parse(raw!)).toEqual([7]);
   });
@@ -45,7 +45,7 @@ describe("useDirectedScenarios", () => {
     act(() => {
       result.current.addDirectedScenario(7);
     });
-    expect(window.localStorage.getItem("directedScenarios_guest")).toBe(
+    expect(globalThis.localStorage.getItem("directedScenarios_guest")).toBe(
       JSON.stringify([7]),
     );
   });

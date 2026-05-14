@@ -1,4 +1,5 @@
 import { isProduction } from "@/utils/environment";
+import process from "node:process";
 
 describe("isProduction", () => {
   const originalEnv = process.env.NODE_ENV;
