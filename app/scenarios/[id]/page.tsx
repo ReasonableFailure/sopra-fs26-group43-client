@@ -73,8 +73,11 @@ const STATUS_CLASS: Record<ScenarioStatus, string> = {
   COMPLETED: styles.gray,
 };
 
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve)=> {setTimeout(resolve, ms);});}
+
 export default function DirectorDashboardPage() {
-  const { userId, isAuthenticated, authReady } = useAuth();
+  const { userId, isAuthenticated, authReady, userIdReady} = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -99,6 +102,7 @@ export default function DirectorDashboardPage() {
   const [form] = Form.useForm();
 
   useEffect(() => {
+    sleep(500);
     /*
     // 1. Wait until Auth is ready and user is authenticated
     if (!authReady || !readyPlayerRole) return;
@@ -112,12 +116,13 @@ export default function DirectorDashboardPage() {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-    if (!readyPlayerRole) {
-      console.log("The playerRole is not ready, currently: " + playerRole);
-    } else if (readyPlayerRole && playerRole !== "director") {
-      console.log("Found playerRole " + playerRole);
+    if (!userIdReady) {
+      return;
+    } else if ( userIdReady && globalThis.localStorage[`playerRole_${userId}`] !== '"director"' ) { //this is so hacky... but it works
+      alert( "Only a director may access this view!" );
+      router.replace(`/scenarios/${scenarioId}/lobby`);
     }
-  }, [authReady, isAuthenticated, playerRole, router, readyPlayerRole]);
+  }, [authReady, isAuthenticated, userId, userIdReady, router]);
 
   if (!authReady || !isAuthenticated) return null;
 

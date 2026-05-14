@@ -29,6 +29,8 @@ export default function useLocalStorage<T>(
 
   const set = (newVal: T) => {
     setValue(newVal);
+    const temp = JSON.stringify(newVal);
+    console.log("This is temp " + temp);
     globalThis.localStorage.setItem(key, JSON.stringify(newVal));
   };
 

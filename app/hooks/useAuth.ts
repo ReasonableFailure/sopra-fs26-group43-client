@@ -83,5 +83,6 @@ export const useAuth = () => {
     setUserId,
     clearToken,
     clearUserId,
+    userIdReady,
   };
 };

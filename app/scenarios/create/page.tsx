@@ -34,6 +34,7 @@ import { useDirector } from "@/hooks/useDirector";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { CharacterPostDTO } from "@/types/character";
 import { DirectorPostDTO } from "@/types/director";
+import {PlayerRole} from "@/types/playerRole";
 
 interface ScenarioFormValues {
   title: string;
@@ -193,7 +194,11 @@ export default function CreateScenarioPage() {
       if (createdScenario) {
         addDirectedScenario(createdScenario.id);
       }
-      setPlayerRole("director");
+      const role : PlayerRole = "director";
+      const temp = JSON.stringify(role)
+      console.log("what get's saved is "+ temp);
+      console.log("what get's read is " + JSON.parse(temp));
+      setPlayerRole(role);
 
       if (createdScenario && characters.length > 0) {
         // Loop through drafted characters and create them in the backend
