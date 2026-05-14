@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Select, Spin, theme } from "antd";
+import { Button, ConfigProvider, Select, Spin, theme } from "antd";
 import {
   ClockCircleOutlined,
   FilterOutlined,
@@ -119,7 +119,8 @@ export default function NewsPage() {
     return () => {
       cancelled = true;
     };
-  }, [ isAuthenticated,
+  }, [
+    isAuthenticated,
     scenarioId,
     token,
     newsService,

@@ -41,7 +41,7 @@ function StatusBadge({ status }: { status: CommsStatus | null }) {
 }
 
 export default function BackroomDirectiveDetailPage() {
-  const {  isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);

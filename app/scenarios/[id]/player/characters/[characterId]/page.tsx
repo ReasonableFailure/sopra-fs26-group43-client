@@ -125,7 +125,9 @@ export default function CharacterProfilePage() {
     isAuthenticated,
     scenarioId,
     targetCharId,
-    myCharacterId,characterAuth, characterService,
+    myCharacterId,
+    characterAuth,
+    characterService,
     messageService,
   ]);
 

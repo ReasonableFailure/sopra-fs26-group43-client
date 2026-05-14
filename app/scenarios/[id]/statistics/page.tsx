@@ -73,13 +73,13 @@ export default function PlayerStatisticsPage() {
   );
 
   useEffect(() => {
-    if(authReady && ! isAuthenticated) {
+    if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-    if(!readyPlayerRole){
+    if (!readyPlayerRole) {
       console.log("The playerRole is not ready, currently: " + playerRole);
-    } else if(readyPlayerRole && playerRole !== "director"){
-      console.log("Found playerRole "+playerRole)
+    } else if (readyPlayerRole && playerRole !== "director") {
+      console.log("Found playerRole " + playerRole);
     }
   }, [authReady, isAuthenticated, playerRole, router, readyPlayerRole]);
 

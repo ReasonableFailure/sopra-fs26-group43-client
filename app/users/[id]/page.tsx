@@ -6,7 +6,7 @@ import { useApi } from "@/hooks/useApi";
 import { UserService } from "@/api/userService";
 import { User } from "@/types/user";
 import { Button, Card, Descriptions, Form, Input } from "antd";
-import {useAuth} from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 interface EditFormFields {
   username: string;
@@ -19,7 +19,7 @@ const Profile: React.FC = () => {
   const router = useRouter();
   const api = useApi();
   const userService = useMemo(() => new UserService(api), [api]);
-  const {token, userId, isAuthenticated, authReady} = useAuth();
+  const { token, userId } = useAuth();
 
   const [user, setUser] = useState<User | null>(null);
   const [editing, setEditing] = useState(false);

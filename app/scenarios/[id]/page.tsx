@@ -98,7 +98,8 @@ export default function DirectorDashboardPage() {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {/*
+  useEffect(() => {
+    /*
     // 1. Wait until Auth is ready and user is authenticated
     if (!authReady || !readyPlayerRole) return;
 
@@ -108,13 +109,13 @@ export default function DirectorDashboardPage() {
     if (!isAuthenticated || playerRole !== "director") {
       console.log("Access Denied: Required 'director', found:", playerRole);
       alert("You do not have permission to access the Director Dashboard.");*/
-    if(authReady && ! isAuthenticated) {
+    if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-    if(!readyPlayerRole){
+    if (!readyPlayerRole) {
       console.log("The playerRole is not ready, currently: " + playerRole);
-    } else if(readyPlayerRole && playerRole !== "director"){
-      console.log("Found playerRole "+playerRole)
+    } else if (readyPlayerRole && playerRole !== "director") {
+      console.log("Found playerRole " + playerRole);
     }
   }, [authReady, isAuthenticated, playerRole, router, readyPlayerRole]);
 

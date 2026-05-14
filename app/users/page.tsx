@@ -5,12 +5,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import useLocalStorage from "@/hooks/useLocalStorage";
 import { UserService } from "@/api/userService";
 import { User } from "@/types/user";
 import { Button, Card, Table } from "antd";
 import type { TableProps } from "antd";
-import {useAuth} from "@/hooks/useAuth"; // antd component library allows imports of types
+import { useAuth } from "@/hooks/useAuth"; // antd component library allows imports of types
 // Optionally, you can import a CSS module or file for additional styling:
 // import "@/styles/views/Dashboard.scss";
 
@@ -38,7 +37,7 @@ const Dashboard: React.FC = () => {
   const api = useApi();
   const userService = useMemo(() => new UserService(api), [api]);
   const [users, setUsers] = useState<User[] | null>(null);
-  const {token, userId, clearToken, clearUserId} = useAuth();
+  const { token, userId, clearToken, clearUserId } = useAuth();
 
   const handleLogout = async (): Promise<void> => {
     try {

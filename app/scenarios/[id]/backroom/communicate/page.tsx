@@ -26,7 +26,7 @@ type CommType = "response" | "news_story";
 type Outcome = "approve" | "reject";
 
 export default function BackroomCommunicatePage() {
-  const {  isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -79,7 +79,8 @@ export default function BackroomCommunicatePage() {
       ),
       // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
       characterService.getCharactersByScenario(
-        scenarioId,backroomerAuth,
+        scenarioId,
+        backroomerAuth,
       ),
     ])
       .then(([dirs, chars]) => {
@@ -95,7 +96,13 @@ export default function BackroomCommunicatePage() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, scenarioId, backroomerAuth, directiveService, characterService]);
+  }, [
+    isAuthenticated,
+    scenarioId,
+    backroomerAuth,
+    directiveService,
+    characterService,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
