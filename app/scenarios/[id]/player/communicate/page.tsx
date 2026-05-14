@@ -150,12 +150,11 @@ export default function CommunicationFormPage() {
       messageApi.error("Please select a recipient.");
       return;
     }
-
     if (
       (commType === "direct_message" &&
         (selectedCharacter?.messageCount ?? 0) <= 0)
     ) {
-      messageApi.error("No Messages Available");
+      messageApi.error("No More Messages Available");
       return;
     }
 
@@ -164,7 +163,14 @@ export default function CommunicationFormPage() {
       return;
     }
 
+
     setSubmitting(true);
+
+    if (overLimit && commType ==="pronouncement") {
+      messageApi.error("Pronouncement Must not Exceed 500 Characters");
+      return;
+    }
+
     try {
       if (commType === "direct_message") {
         await messageService.createMessage(
@@ -193,10 +199,6 @@ export default function CommunicationFormPage() {
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
-        if (overLimit) {
-          messageApi.error("Pronouncement Must not Exceed 500 Characters");
-          return;
-        }
         await newsService.createPronouncement(
           {
             title,
