@@ -2,31 +2,35 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Input, message, Select, Spin, theme } from "antd";
+import {
+  Avatar,
+  Button,
+  ConfigProvider,
+  Input,
+  message,
+  Select,
+  Spin,
+  theme,
+} from "antd";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
 import type { Scenario } from "@/types/scenario";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { useCharacter } from "../../../../hooks/useCharacter";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
+import { DirectiveCategory } from "@/types/directive";
 import { MessageService } from "@/api/messageService";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/communicationForm.module.css";
 
 type CommType = "direct_message" | "directive" | "pronouncement";
 
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 export default function CommunicationFormPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -43,58 +47,81 @@ export default function CommunicationFormPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
-  const { characterId } = useSelectedCharacter(scenarioId);
+  const { characterId, characterToken } = useCharacter(
+    scenarioId,
+  );
+  const characterAuth = characterToken ? `Role ${characterToken}` : "Wrong";
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const [commType, setCommType] = useState<CommType>(preselectedType ?? "direct_message");
-  const [recipientId, setRecipientId] = useState<number | null>(preselectedRecipient);
+  const [commType, setCommType] = useState<CommType>(
+    preselectedType ?? "direct_message",
+  );
+  const [recipientId, setRecipientId] = useState<number | null>(
+    preselectedRecipient,
+  );
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState<DirectiveCategory | null>(null);
   const MAX_POST_LENGTH = 500;
 
   const enabled = isAuthenticated && !!scenarioId;
 
+  // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
-    () => scenarioService.getScenarioById(scenarioId, token),
+    () => scenarioService.getScenarioById(scenarioId, characterAuth),
     5000,
-    enabled
+    enabled,
   );
 
-  const isGameActive = liveScenario?.status === "UNFROZEN";
-
+  const { data: liveCharacter } = usePolling<Character>(
+    () =>
+      characterId
+        ? characterService.getCharacterById(characterId, characterAuth)
+        : Promise.reject(),
+    5000,
+    enabled && !!characterId,
+  );
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
     let cancelled = false;
     setLoading(true);
+    // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
     characterService
-      .getCharactersByScenario(scenarioId, token)
-      .then((chars) => { if (!cancelled) setCharacters(chars); })
+      .getCharactersByScenario(scenarioId, characterAuth)
+      .then((chars) => {
+        if (!cancelled) setCharacters(chars);
+      })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, token, characterService]);
-
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, scenarioId, characterAuth, characterService]);
 
   const [messageApi, contextHolder] = message.useMessage();
 
   if (!authReady || !isAuthenticated) return null;
 
-  const selectedCharacter = characters.find((c) => c.id === characterId) ?? null;
+  const selectedCharacter = characters.find((c) => c.id === characterId) ??
+    null;
+  const isGameActive = liveScenario?.status === "UNFROZEN";
+  const isAlive = (liveCharacter?.alive ?? selectedCharacter?.alive) !== false;
 
   const authorName = selectedCharacter?.name ?? "Unknown";
 
-  const totalLength =
-    commType === "pronouncement"
-      ? `${title}: ${content}\n-${authorName}`.length
-      : `${title}: ${content}`.length;
+  const totalLength = commType === "pronouncement"
+    ? `${title}: ${content}\n-${authorName}`.length
+    : `${title}: ${content}`.length;
 
   const overLimit = totalLength > MAX_POST_LENGTH;
 
@@ -110,7 +137,9 @@ export default function CommunicationFormPage() {
 
   const handleSubmit = async () => {
     if (!characterId) {
-      messageApi.error("No character selected. Please go back to the lobby and select a character first.");
+      messageApi.error(
+        "No character selected. Please go back to the lobby and select a character first.",
+      );
       return;
     }
     if (!title.trim() || !content.trim()) {
@@ -121,31 +150,55 @@ export default function CommunicationFormPage() {
       messageApi.error("Please select a recipient.");
       return;
     }
-
-    if (( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0)) {
-      messageApi.error("No Messages Available");
+    if (
+      (commType === "direct_message" &&
+        (selectedCharacter?.messageCount ?? 0) <= 0)
+    ) {
+      messageApi.error("No More Messages Available");
       return;
     }
 
+    if (commType === "directive" && !category) {
+      messageApi.error("Please select a directive category.");
+      return;
+    }
+
+
     setSubmitting(true);
+
+    if (overLimit && commType ==="pronouncement") {
+      messageApi.error("Pronouncement Must not Exceed 500 Characters");
+      return;
+    }
+
     try {
       if (commType === "direct_message") {
         await messageService.createMessage(
-          { title, body: content, creatorId: characterId, recipientId: recipientId!, scenarioId },
-          token,
+          {
+            title,
+            body: content,
+            creatorId: characterId,
+            recipientId: recipientId!,
+            scenarioId,
+          },
+          characterAuth,
         );
-        router.push(`/scenarios/${scenarioId}/player/characters/${recipientId}`);
+        router.push(
+          `/scenarios/${scenarioId}/player/characters/${recipientId}`,
+        );
       } else if (commType === "directive") {
         await directiveService.createDirective(
-          { title, body: content, creatorId: characterId, scenarioId },
-          token,
+          {
+            title,
+            body: content,
+            creatorId: characterId,
+            scenarioId,
+            category: category!,
+          },
+          characterAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       } else {
-        if (overLimit) {
-          messageApi.error("Pronouncement Must not Exceed 500 Characters");
-          return;
-        }
         await newsService.createPronouncement(
           {
             title,
@@ -153,12 +206,14 @@ export default function CommunicationFormPage() {
             scenarioId,
             authorId: characterId,
           },
-          token,
+          characterAuth,
         );
         router.push(`/scenarios/${scenarioId}/player`);
       }
     } catch (err) {
-      const detail = err instanceof Error ? err.message : "Submission failed. Please try again.";
+      const detail = err instanceof Error
+        ? err.message
+        : "Submission failed. Please try again.";
       messageApi.error(detail);
     } finally {
       setSubmitting(false);
@@ -191,8 +246,19 @@ export default function CommunicationFormPage() {
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Scenario Manager</span>
           </div>
-          <Avatar className={styles.navAvatar}>
-            {initials(selectedCharacter?.name ?? null)}
+          {!isAlive && (
+            <div
+              style={{ color: "#ef4444", fontWeight: 600, marginBottom: 12 }}
+            >
+              Your Character has Died.
+            </div>
+          )}
+          <Avatar
+            className={styles.navAvatar}
+            src={selectedCharacter?.portrait ?? undefined}
+          >
+            {!selectedCharacter?.portrait &&
+              initials(selectedCharacter?.name ?? null)}
           </Avatar>
         </nav>
 
@@ -207,7 +273,9 @@ export default function CommunicationFormPage() {
                     Create and submit your directive, pronouncement, or message
                   </p>
                 </div>
-                <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
+                <Button
+                  onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
+                >
                   Back to Dashboard
                 </Button>
               </div>
@@ -219,34 +287,68 @@ export default function CommunicationFormPage() {
                   <Select
                     options={commTypeOptions}
                     value={commType}
-                    onChange={(v) => { setCommType(v as CommType); setRecipientId(null); }}
+                    onChange={(v) => {
+                      setCommType(v as CommType);
+                      setRecipientId(null);
+                      setCategory(null);
+                    }}
                     style={{ width: "100%" }}
                   />
                 </div>
 
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Select Recipient</label>
-                  {commType === "direct_message" ? (
-                    <Select
-                      options={dmRecipientOptions}
-                      value={recipientId ?? undefined}
-                      onChange={(v) => setRecipientId(v)}
-                      placeholder="Select recipient"
-                      style={{ width: "100%" }}
-                    />
-                  ) : (
-                    <Select
-                      value={commType === "directive" ? "backroomer" : "all"}
-                      disabled
-                      options={[
-                        commType === "directive"
-                          ? { value: "backroomer", label: "Backroom" }
-                          : { value: "all", label: "All" },
-                      ]}
-                      style={{ width: "100%" }}
-                    />
-                  )}
+                  {commType === "direct_message"
+                    ? (
+                      <Select
+                        options={dmRecipientOptions}
+                        value={recipientId ?? undefined}
+                        onChange={(v) => setRecipientId(v)}
+                        placeholder="Select recipient"
+                        style={{ width: "100%" }}
+                      />
+                    )
+                    : (
+                      <Select
+                        value={commType === "directive" ? "backroomer" : "all"}
+                        disabled
+                        options={[
+                          commType === "directive"
+                            ? { value: "backroomer", label: "Backroom" }
+                            : { value: "all", label: "All" },
+                        ]}
+                        style={{ width: "100%" }}
+                      />
+                    )}
                 </div>
+
+                {commType === "directive" && (
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Directive Category</label>
+                    <Select
+                      value={category ?? undefined}
+                      onChange={(v) => setCategory(v)}
+                      placeholder="Select category"
+                      style={{ width: "100%" }}
+                      options={[
+                        {
+                          value: DirectiveCategory.MILITARY,
+                          label: "Military",
+                        },
+                        {
+                          value: DirectiveCategory.POLITICAL,
+                          label: "Political",
+                        },
+                        { value: DirectiveCategory.PUBLIC, label: "Public" },
+                        {
+                          value: DirectiveCategory.INTELLIGENCE,
+                          label: "Intelligence",
+                        },
+                        { value: DirectiveCategory.OTHER, label: "Other" },
+                      ]}
+                    />
+                  </div>
+                )}
 
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Title</label>
@@ -266,35 +368,69 @@ export default function CommunicationFormPage() {
                     rows={10}
                     style={{ resize: "none" }}
                   />
+                  {commType === "direct_message" &&
+                    (selectedCharacter?.messageCount ?? 0) <= 0 && (
+                    <p
+                      style={{
+                        marginTop: 6,
+                        color: "#dc2626",
+                        fontSize: 12,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Warning: You have no messages available. Return to the
+                      dashboard and buy more with likes.
+                    </p>
+                  )}
+                  {commType === "direct_message" &&
+                    (selectedCharacter?.messageCount ?? 0) > 0 &&
+                    (selectedCharacter?.messageCount ?? 0) <= 2 && (
+                    <p
+                      style={{
+                        marginTop: 6,
+                        color: "#f59e0b",
+                        fontSize: 12,
+                        fontWeight: 500,
+                      }}
+                    >
+                      Warning: Only {selectedCharacter?.messageCount}{" "}
+                      message{(selectedCharacter?.messageCount ?? 0) === 1
+                        ? ""
+                        : "s"} remaining.
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Footer */}
               <div className={styles.cardFooter}>
-                <div
-                  style={{
-                    marginTop: 6,
-                    textAlign: "right",
-                    fontSize: 12,
-                    color: overLimit ? "#dc2626" : "#6b7280",
-                  }}
+                {commType === "pronouncement" && (
+                  <div
+                    style={{
+                      marginTop: 6,
+                      textAlign: "right",
+                      fontSize: 12,
+                      color: overLimit ? "#dc2626" : "#6b7280",
+                    }}
+                  >
+                    {totalLength} / {MAX_POST_LENGTH}
+                  </div>
+                )}
+                <Button
+                  onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
                 >
-                  {totalLength} / {MAX_POST_LENGTH}
-                </div>
-                <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
                   Cancel
                 </Button>
                 <Button
                   type="primary"
                   loading={submitting}
                   onClick={handleSubmit}
-                  disabled={
-                    submitting ||
+                  disabled={submitting ||
                     !isGameActive ||
-                    ( commType === "direct_message" && (selectedCharacter?.messageCount ?? 0) <= 0) ||
-                    (commType === "pronouncement" && overLimit)
-                  }
-                  style={{ opacity: isGameActive ? 1 : 0.5 }}
+                    !isAlive ||
+                    (commType === "direct_message" &&
+                      (selectedCharacter?.messageCount ?? 0) <= 0) ||
+                    (commType === "pronouncement" && overLimit)}
                 >
                   Submit
                 </Button>

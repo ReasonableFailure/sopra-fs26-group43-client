@@ -1,9 +1,9 @@
-  "use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 
 export function usePolling<T>(
-  fetcher: () => Promise<T>, //TODO: implement
+  fetcher: () => Promise<T>,
   intervalMs: number,
   enabled: boolean = true,
 ): { data: T | null; loading: boolean; error: string | null } {
@@ -27,7 +27,9 @@ export function usePolling<T>(
           setError(null);
         }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to fetch");
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to fetch");
+        }
       } finally {
         if (isFirst && !cancelled) setLoading(false);
       }

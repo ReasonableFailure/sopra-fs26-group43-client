@@ -8,25 +8,18 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
-  InfoCircleOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
-import { useSelectedCharacter } from "@/hooks/useSelectedCharacter";
+import { useCharacter } from "../../../../../hooks/useCharacter";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/directiveDetail.module.css";
-
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -51,7 +44,7 @@ function StatusBadge({ status }: { status: CommsStatus | null }) {
 function approvalStatusText(status: CommsStatus | null): string {
   switch (status) {
     case CommsStatus.ACCEPTED:
-      return "Your directive has been approved by the backroom team and will start to affect the scenario from next round.";
+      return "Your directive has been approved by the backroom team and will start to affect the scenario from the next day.";
     case CommsStatus.REJECTED:
       return "Your directive has been rejected by the backroom team.";
     case CommsStatus.FAILED:
@@ -62,24 +55,26 @@ function approvalStatusText(status: CommsStatus | null): string {
 }
 
 export default function DirectiveDetailPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { characterToken } = useCharacter(scenarioId);
+  const characterAuth = characterToken ? `Role ${characterToken}` : "Wrong";
   const directiveId = Number(params.directiveId);
 
   const api = useApi();
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
 
-  const { characterId } = useSelectedCharacter(scenarioId);
+  const { characterId } = useCharacter(scenarioId);
   const [myCharacter, setMyCharacter] = useState<Character | null>(null);
   const [directive, setDirective] = useState<Directive | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId || !directiveId) return;
@@ -88,9 +83,14 @@ export default function DirectiveDetailPage() {
 
     const fetchData = async () => {
       try {
+        // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate);
+        // getDirectiveById accepts "any" so the role token works.
         const [dir, chars] = await Promise.all([
-          directiveService.getDirectiveById(directiveId, token),
-          characterService.getCharactersByScenario(scenarioId, token),
+          directiveService.getDirectiveById(directiveId, characterAuth),
+          characterService.getCharactersByScenario(
+            scenarioId,
+            characterAuth,
+          ),
         ]);
         if (cancelled) return;
         setDirective(dir);
@@ -103,22 +103,31 @@ export default function DirectiveDetailPage() {
     };
 
     fetchData();
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, directiveId, characterId, token, directiveService, characterService]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isAuthenticated,
+    scenarioId,
+    directiveId,
+    characterId,
+    characterAuth,
+    directiveService,
+    characterService,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
-  const isResolved =
-    directive?.status === CommsStatus.ACCEPTED ||
+  const isResolved = directive?.status === CommsStatus.ACCEPTED ||
     directive?.status === CommsStatus.REJECTED ||
     directive?.status === CommsStatus.FAILED;
 
-  const statusIconClass =
-    directive?.status === CommsStatus.ACCEPTED
-      ? styles.sectionIconGreen
-      : directive?.status === CommsStatus.REJECTED || directive?.status === CommsStatus.FAILED
-      ? styles.sectionIconRed
-      : styles.sectionIconGray;
+  const statusIconClass = directive?.status === CommsStatus.ACCEPTED
+    ? styles.sectionIconGreen
+    : directive?.status === CommsStatus.REJECTED ||
+        directive?.status === CommsStatus.FAILED
+    ? styles.sectionIconRed
+    : styles.sectionIconGray;
 
   return (
     <ConfigProvider
@@ -146,11 +155,17 @@ export default function DirectiveDetailPage() {
             <span className={styles.navTitle}>Player Dashboard</span>
           </div>
           <div className={styles.navRight}>
-            <Button onClick={() => router.push(`/scenarios/${scenarioId}/player`)}>
+            <Button
+              onClick={() => router.push(`/scenarios/${scenarioId}/player`)}
+            >
               Back to Dashboard
             </Button>
-            <Avatar className={styles.navAvatar}>
-              {initials(myCharacter?.name ?? null)}
+            <Avatar
+              className={styles.navAvatar}
+              src={myCharacter?.portrait ?? undefined}
+            >
+              {!myCharacter?.portrait &&
+                initials(myCharacter?.name ?? null)}
             </Avatar>
           </div>
         </nav>
@@ -168,8 +183,9 @@ export default function DirectiveDetailPage() {
               <Button
                 type="primary"
                 onClick={() =>
-                  router.push(`/scenarios/${scenarioId}/player/communicate?type=directive`)
-                }
+                  router.push(
+                    `/scenarios/${scenarioId}/player/communicate?type=directive`,
+                  )}
               >
                 New Directive
               </Button>
@@ -207,14 +223,12 @@ export default function DirectiveDetailPage() {
               {/* Approval Status section */}
               <div className={styles.sectionRow}>
                 <div className={`${styles.sectionIcon} ${statusIconClass}`}>
-                  {directive?.status === CommsStatus.ACCEPTED ? (
-                    <CheckCircleOutlined />
-                  ) : directive?.status === CommsStatus.REJECTED ||
-                    directive?.status === CommsStatus.FAILED ? (
-                    <CloseCircleOutlined />
-                  ) : (
-                    <ClockCircleOutlined />
-                  )}
+                  {directive?.status === CommsStatus.ACCEPTED
+                    ? <CheckCircleOutlined />
+                    : directive?.status === CommsStatus.REJECTED ||
+                        directive?.status === CommsStatus.FAILED
+                    ? <CloseCircleOutlined />
+                    : <ClockCircleOutlined />}
                 </div>
                 <div className={styles.sectionContent}>
                   <p className={styles.sectionTitle}>Approval Status</p>
@@ -223,7 +237,10 @@ export default function DirectiveDetailPage() {
                   </p>
                   {directive?.response && (
                     <>
-                      <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
+                      <p
+                        className={styles.sectionTitle}
+                        style={{ marginTop: 16 }}
+                      >
                         Backroom Notes
                       </p>
                       <p className={styles.sectionText}>{directive.response}</p>

@@ -4,11 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
 import { Scenario } from "@/types/scenario";
+import { useAuth } from "@/hooks/useAuth";
 
-export const useScenarios = (token: string) => {
+export const useScenarios = () => {
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
-
+  const { token } = useAuth();
   const [scenarios, setScenarios] = useState<Scenario[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,14 +26,20 @@ export const useScenarios = (token: string) => {
         const data = await scenarioService.getScenarios(token);
         if (!cancelled) setScenarios(data);
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to fetch scenarios");
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : "Failed to fetch scenarios",
+          );
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
 
     fetch();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [scenarioService, token]);
 
   return { scenarios, loading, error };

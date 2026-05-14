@@ -3,13 +3,16 @@
 import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
+  App,
   Avatar,
   Button,
   ConfigProvider,
+  Modal,
   Spin,
   Table,
   theme,
 } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { UserOutlined } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -20,40 +23,82 @@ import { CharacterService } from "@/api/characterService";
 import type { Character } from "@/types/character";
 
 import styles from "@/styles/playerTable.module.css";
+import { useDirector } from "@/hooks/useDirector";
 
 export default function PlayerStatisticsPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady, userId, userIdReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { directorToken } = useDirector(scenarioId);
+  const { message } = App.useApp();
+  const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
+  const [modal, contextHolder] = Modal.useModal();
 
   const api = useApi();
   const characterService = useMemo(
     () => new CharacterService(api),
-    [api]
+    [api],
   );
+
+  const handleKill = (character: Character) => {
+    modal.confirm({
+      title: `Eliminate ${character.name}?`,
+      content: "This action cannot be undone.",
+      okText: "Kill",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await characterService.updateCharacter(
+            character.id!,
+            { alive: false },
+            directorAuth,
+          );
+          message.success({
+            content: `${character.name} eliminated`,
+            style: {
+              color: "#111827",
+            },
+          });
+        } catch {
+          message.error({
+            content: "Failed to eliminate character",
+            style: {
+              color: "#111827",
+            },
+          });
+        }
+      },
+    });
+  };
 
   const enabled = isAuthenticated && !!scenarioId;
 
+  // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
   const { data: characters, loading } = usePolling<Character[]>(
-    () =>
-      characterService.getCharactersByScenario(
-        scenarioId,
-        token
-      ),
+    () => characterService.getCharactersByScenario(scenarioId, directorAuth),
     5000,
-    enabled
+    enabled,
   );
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [authReady, isAuthenticated, router]);
+    if (!userIdReady) {
+      return;
+    } else if (
+      userIdReady &&
+      globalThis.localStorage[`playerRole_${userId}`] !== '"director"'
+    ) { //this is so hacky... but it works
+      alert("Only a director may access this view!");
+      router.replace(`/scenarios/${scenarioId}/lobby`);
+    }
+  }, [authReady, isAuthenticated, userId, userIdReady, router, scenarioId]);
 
   if (!authReady || !isAuthenticated) return null;
 
-  const columns = [
+  const columns: ColumnsType<Character> = [
     {
       title: "Name",
       dataIndex: "name",
@@ -84,6 +129,25 @@ export default function PlayerStatisticsPage() {
       dataIndex: "totalTextLength",
       key: "totalTextLength",
     },
+    {
+      title: "Kill",
+      key: "kill",
+      render: (_, record) => {
+        if (!record.alive) {
+          return (
+            <span style={{ color: "#6b7280", fontWeight: 500 }}>
+              Dead
+            </span>
+          );
+        }
+
+        return (
+          <Button danger onClick={() => handleKill(record)}>
+            Kill
+          </Button>
+        );
+      },
+    },
   ];
 
   return (
@@ -100,33 +164,30 @@ export default function PlayerStatisticsPage() {
       }}
     >
       <div className={styles.pageRoot}>
+        {contextHolder}
         {/* NAVBAR */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
             <div className={styles.logoMark} />
             <span className={styles.navTitle}>
-              Player Statistics
+              Player Overview
             </span>
           </div>
 
           <div className={styles.navRight}>
             <Button
-              onClick={() =>
-                router.push(`/scenarios/${scenarioId}`)
-              }
+              onClick={() => router.push(`/scenarios/${scenarioId}`)}
             >
               Back to Dashboard
             </Button>
-
             <Avatar icon={<UserOutlined />} />
           </div>
         </nav>
 
-        
         <main className={styles.pageBody}>
           <Spin spinning={loading}>
             <div className={styles.contentWrapper}>
-            {/* TABLE */}
+              {/* TABLE */}
               <div className={styles.card}>
                 <Table
                   dataSource={characters ?? []}

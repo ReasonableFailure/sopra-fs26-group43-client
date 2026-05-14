@@ -11,6 +11,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useBackroomer } from "@/hooks/useBackroomer";
 import { useApi } from "@/hooks/useApi";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
@@ -40,10 +41,14 @@ function StatusBadge({ status }: { status: CommsStatus | null }) {
 }
 
 export default function BackroomDirectiveDetailPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  const { backroomerToken } = useBackroomer(scenarioId);
+  const backroomerAuth = backroomerToken
+    ? `Backroomer ${backroomerToken}`
+    : "Wrong";
   const directiveId = Number(params.directiveId);
 
   const api = useApi();
@@ -56,15 +61,19 @@ export default function BackroomDirectiveDetailPage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId || !directiveId) return;
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      directiveService.getDirectiveById(directiveId, token),
-      characterService.getCharactersByScenario(scenarioId, token),
+      directiveService.getDirectiveById(directiveId, backroomerAuth),
+      // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
+      characterService.getCharactersByScenario(
+        scenarioId,
+        backroomerAuth,
+      ),
     ])
       .then(([dir, chars]) => {
         if (cancelled) return;
@@ -72,35 +81,44 @@ export default function BackroomDirectiveDetailPage() {
         setCharacters(chars);
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, directiveId, token, directiveService, characterService]);
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isAuthenticated,
+    scenarioId,
+    directiveId,
+    backroomerAuth,
+    directiveService,
+    characterService,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
   const creatorName =
     characters.find((c) => c.id === directive?.creatorId)?.name ?? "Unknown";
 
-  const isResolved =
-    directive?.status === CommsStatus.ACCEPTED ||
+  const isResolved = directive?.status === CommsStatus.ACCEPTED ||
     directive?.status === CommsStatus.REJECTED ||
     directive?.status === CommsStatus.FAILED;
 
-  const statusIconClass =
-    directive?.status === CommsStatus.ACCEPTED
-      ? styles.sectionIconGreen
-      : directive?.status === CommsStatus.REJECTED || directive?.status === CommsStatus.FAILED
-      ? styles.sectionIconRed
-      : styles.sectionIconGray;
+  const statusIconClass = directive?.status === CommsStatus.ACCEPTED
+    ? styles.sectionIconGreen
+    : directive?.status === CommsStatus.REJECTED ||
+        directive?.status === CommsStatus.FAILED
+    ? styles.sectionIconRed
+    : styles.sectionIconGray;
 
-  const approvalText =
-    directive?.status === CommsStatus.ACCEPTED
-      ? "This directive has been approved."
-      : directive?.status === CommsStatus.REJECTED
-      ? "This directive has been denied."
-      : directive?.status === CommsStatus.FAILED
-      ? "This directive failed to be processed."
-      : "This directive is awaiting a response.";
+  const approvalText = directive?.status === CommsStatus.ACCEPTED
+    ? "This directive has been approved."
+    : directive?.status === CommsStatus.REJECTED
+    ? "This directive has been denied."
+    : directive?.status === CommsStatus.FAILED
+    ? "This directive failed to be processed."
+    : "This directive is awaiting a response.";
 
   return (
     <ConfigProvider
@@ -127,7 +145,9 @@ export default function BackroomDirectiveDetailPage() {
             <span className={styles.navTitle}>Backroom Dashboard</span>
           </div>
           <div className={styles.navRight}>
-            <Button onClick={() => router.push(`/scenarios/${scenarioId}/backroom`)}>
+            <Button
+              onClick={() => router.push(`/scenarios/${scenarioId}/backroom`)}
+            >
               Back to Dashboard
             </Button>
           </div>
@@ -148,8 +168,7 @@ export default function BackroomDirectiveDetailPage() {
                   onClick={() =>
                     router.push(
                       `/scenarios/${scenarioId}/backroom/communicate?type=response&directiveId=${directiveId}`,
-                    )
-                  }
+                    )}
                 >
                   Respond
                 </Button>
@@ -183,21 +202,22 @@ export default function BackroomDirectiveDetailPage() {
               {/* Approval Status */}
               <div className={styles.sectionRow}>
                 <div className={`${styles.sectionIcon} ${statusIconClass}`}>
-                  {directive?.status === CommsStatus.ACCEPTED ? (
-                    <CheckCircleOutlined />
-                  ) : directive?.status === CommsStatus.REJECTED ||
-                    directive?.status === CommsStatus.FAILED ? (
-                    <CloseCircleOutlined />
-                  ) : (
-                    <ClockCircleOutlined />
-                  )}
+                  {directive?.status === CommsStatus.ACCEPTED
+                    ? <CheckCircleOutlined />
+                    : directive?.status === CommsStatus.REJECTED ||
+                        directive?.status === CommsStatus.FAILED
+                    ? <CloseCircleOutlined />
+                    : <ClockCircleOutlined />}
                 </div>
                 <div className={styles.sectionContent}>
                   <p className={styles.sectionTitle}>Approval Status</p>
                   <p className={styles.sectionText}>{approvalText}</p>
                   {directive?.response && (
                     <>
-                      <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
+                      <p
+                        className={styles.sectionTitle}
+                        style={{ marginTop: 16 }}
+                      >
                         Response Message
                       </p>
                       <p className={styles.sectionText}>{directive.response}</p>

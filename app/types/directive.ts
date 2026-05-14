@@ -5,6 +5,14 @@ export enum CommsStatus {
   FAILED = "FAILED",
 }
 
+export enum DirectiveCategory {
+  MILITARY = "MILITARY",
+  POLITICAL = "POLITICAL",
+  PUBLIC = "PUBLIC",
+  INTELLIGENCE = "INTELLIGENCE",
+  OTHER = "OTHER",
+}
+
 export interface Communication {
   id: number | null;
   title: string | null;
@@ -16,6 +24,7 @@ export interface Directive extends Communication {
   creatorId: number | null;
   status: CommsStatus | null;
   response: string | null;
+  category: DirectiveCategory | null;
 }
 
 /** POST /directives */
@@ -24,6 +33,7 @@ export interface DirectivePostDTO {
   body: string;
   creatorId: number;
   scenarioId: number;
+  category: DirectiveCategory;
 }
 
 /** GET /directives/{id} */
@@ -35,6 +45,7 @@ export interface DirectiveGetDTO {
   creatorId: number;
   status: CommsStatus;
   response: string | null;
+  category: DirectiveCategory;
 }
 
 /** PUT /directives/{id} */

@@ -91,6 +91,13 @@
   margin: 0;
 }
 
+.characterPortrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .directiveList {
   display: flex;
   flex-direction: column;
@@ -210,6 +217,115 @@
   margin: 0 0 6px;
 }
 
+/* News feed items */
+.newsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.newsItem {
+  padding: 18px 24px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.newsItem:last-child {
+  border-bottom: none;
+}
+
+.newsItemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.newsItemTopLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.badgeNews {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.badgePronouncement {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #f3e8ff;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.newsAuthorRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.newsAuthorIcon {
+  font-size: 12px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.newsTimestamp {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #9ca3af;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.newsItemTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px;
+  line-height: 1.4;
+}
+
+.newsItemBody {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.55;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.newsActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
 /* Likes & Messages metrics */
 .metricsRow {
   display: flex;
@@ -247,8 +363,32 @@
 }
 
 .buyButton {
-  margin-top: 20px !important;
+  margin-top: 15px !important;
   border-radius: 20px !important;
+}
+
+.buyInput {
+  margin-top: 15px !important;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.buyInput :global(.ant-input-number-input-wrap) {
+  height: 100%;
+}
+
+.buyInput :global(.ant-input-number-input) {
+  height: 46px;
+  line-height: 46px;
+}
+
+.buyInput :global(.ant-input-number-handler-wrap) {
+  height: 46px;
+}
+
+.tutorialButton {
+  margin-top: 15px !important;
 }
 
 /* ── Right sidebar: Character List ──────────────────── */

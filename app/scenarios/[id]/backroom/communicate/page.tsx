@@ -2,8 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Button, ConfigProvider, Input, message, Select, Spin, theme } from "antd";
+import {
+  Button,
+  ConfigProvider,
+  Input,
+  message,
+  Select,
+  Spin,
+  theme,
+} from "antd";
 import { useAuth } from "@/hooks/useAuth";
+import { useBackroomer } from "@/hooks/useBackroomer";
 import { useApi } from "@/hooks/useApi";
 import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
@@ -17,13 +26,19 @@ type CommType = "response" | "news_story";
 type Outcome = "approve" | "reject";
 
 export default function BackroomCommunicatePage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const scenarioId = Number(params.id);
+  const { backroomerToken } = useBackroomer(scenarioId);
+  const backroomerAuth = backroomerToken
+    ? `Backroomer ${backroomerToken}`
+    : "Wrong";
 
-  const preselectedType = searchParams.get("type") === "news_story" ? "news_story" : "response";
+  const preselectedType = searchParams.get("type") === "news_story"
+    ? "news_story"
+    : "response";
   const preselectedDirectiveId = searchParams.get("directiveId")
     ? Number(searchParams.get("directiveId"))
     : null;
@@ -34,7 +49,9 @@ export default function BackroomCommunicatePage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
 
   const [commType, setCommType] = useState<CommType>(preselectedType);
-  const [selectedDirectiveId, setSelectedDirectiveId] = useState<number | null>(preselectedDirectiveId);
+  const [selectedDirectiveId, setSelectedDirectiveId] = useState<number | null>(
+    preselectedDirectiveId,
+  );
   const [selectedOutcome, setSelectedOutcome] = useState<Outcome | null>(null);
   const [directives, setDirectives] = useState<Directive[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -49,15 +66,22 @@ export default function BackroomCommunicatePage() {
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!isAuthenticated || !scenarioId) return;
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      directiveService.getDirectivesByScenario(scenarioId, token),
-      characterService.getCharactersByScenario(scenarioId, token),
+      directiveService.getDirectivesByScenario(
+        scenarioId,
+        backroomerAuth,
+      ),
+      // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
+      characterService.getCharactersByScenario(
+        scenarioId,
+        backroomerAuth,
+      ),
     ])
       .then(([dirs, chars]) => {
         if (!cancelled) {
@@ -66,13 +90,25 @@ export default function BackroomCommunicatePage() {
         }
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [isAuthenticated, scenarioId, token, directiveService, characterService]);
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isAuthenticated,
+    scenarioId,
+    backroomerAuth,
+    directiveService,
+    characterService,
+  ]);
 
   if (!authReady || !isAuthenticated) return null;
 
-  const pendingDirectives = directives.filter((d) => d.status === CommsStatus.PENDING);
+  const pendingDirectives = directives.filter((d) =>
+    d.status === CommsStatus.PENDING
+  );
 
   const characterName = (id: number | null): string => {
     if (id === null) return "Unknown";
@@ -81,10 +117,13 @@ export default function BackroomCommunicatePage() {
 
   const directiveOptions = pendingDirectives.map((d) => ({
     value: d.id!,
-    label: `${characterName(d.creatorId ?? null)} — ${d.title ?? d.body ?? "Untitled"}`,
+    label: `${characterName(d.creatorId ?? null)} — ${
+      d.title ?? d.body ?? "Untitled"
+    }`,
   }));
 
-  const selectedDirective = directives.find((d) => d.id === selectedDirectiveId) ?? null;
+  const selectedDirective =
+    directives.find((d) => d.id === selectedDirectiveId) ?? null;
 
   const handleRespond = async () => {
     if (!selectedDirectiveId) {
@@ -104,26 +143,28 @@ export default function BackroomCommunicatePage() {
       await directiveService.updateDirective(
         selectedDirectiveId,
         {
-          status: selectedOutcome === "approve" ? CommsStatus.ACCEPTED : CommsStatus.REJECTED,
+          status: selectedOutcome === "approve"
+            ? CommsStatus.ACCEPTED
+            : CommsStatus.REJECTED,
           response: content,
         },
-        token,
+        backroomerAuth,
       );
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
-      messageApi.error(err instanceof Error ? err.message : "Failed to submit response.");
+      messageApi.error(
+        err instanceof Error ? err.message : "Failed to submit response.",
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  const totalLength =
-  commType === "news_story"
+  const totalLength = commType === "news_story"
     ? `${title}: ${content}`.length
     : content.length;
 
-  const overLimit =
-    commType === "news_story" && totalLength > MAX_POST_LENGTH;
+  const overLimit = commType === "news_story" && totalLength > MAX_POST_LENGTH;
 
   const handleNewsStory = async () => {
     if (!title.trim() || !content.trim()) {
@@ -137,13 +178,15 @@ export default function BackroomCommunicatePage() {
     setSubmitting(true);
     try {
       await newsService.createNewsStory({
-              title,
-              body: content,
-              scenarioId,
-            }, token);
+        title,
+        body: content,
+        scenarioId,
+      }, backroomerAuth);
       router.push(`/scenarios/${scenarioId}/backroom`);
     } catch (err) {
-      messageApi.error(err instanceof Error ? err.message : "Failed to create news story.");
+      messageApi.error(
+        err instanceof Error ? err.message : "Failed to create news story.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -187,7 +230,10 @@ export default function BackroomCommunicatePage() {
                     Respond to player directives or publish a news story
                   </p>
                 </div>
-                <Button onClick={() => router.push(`/scenarios/${scenarioId}/backroom`)}>
+                <Button
+                  onClick={() =>
+                    router.push(`/scenarios/${scenarioId}/backroom`)}
+                >
                   Back to Dashboard
                 </Button>
               </div>
@@ -216,35 +262,56 @@ export default function BackroomCommunicatePage() {
                 {/* Recipient */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Recipient</label>
-                  {commType === "response" ? (
-                    <Select
-                      value={selectedDirectiveId ?? undefined}
-                      onChange={(v) => { setSelectedDirectiveId(v); setSelectedOutcome(null); }}
-                      options={directiveOptions}
-                      placeholder="Select a pending directive"
-                      style={{ width: "100%" }}
-                      notFoundContent="No pending directives"
-                    />
-                  ) : (
-                    <Select
-                      value="all"
-                      disabled
-                      options={[{ value: "all", label: "All Players" }]}
-                      style={{ width: "100%" }}
-                    />
-                  )}
+                  {commType === "response"
+                    ? (
+                      <Select
+                        value={selectedDirectiveId ?? undefined}
+                        onChange={(v) => {
+                          setSelectedDirectiveId(v);
+                          setSelectedOutcome(null);
+                        }}
+                        options={directiveOptions}
+                        placeholder="Select a pending directive"
+                        style={{ width: "100%" }}
+                        notFoundContent="No pending directives"
+                      />
+                    )
+                    : (
+                      <Select
+                        value="all"
+                        disabled
+                        options={[{ value: "all", label: "All Players" }]}
+                        style={{ width: "100%" }}
+                      />
+                    )}
                 </div>
 
                 {/* Directive content — borderless, read-only */}
                 {commType === "response" && selectedDirective && (
                   <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Directive Title</label>
+                    <Input.TextArea
+                      value={selectedDirective.title ?? ""}
+                      readOnly
+                      autoSize={{ minRows: 1 }}
+                      variant="borderless"
+                      style={{
+                        resize: "none",
+                        color: "#374151",
+                        padding: "4px 0",
+                      }}
+                    />
                     <label className={styles.label}>Directive Content</label>
                     <Input.TextArea
                       value={selectedDirective.body ?? ""}
                       readOnly
                       autoSize={{ minRows: 1 }}
                       variant="borderless"
-                      style={{ resize: "none", color: "#374151", padding: "4px 0" }}
+                      style={{
+                        resize: "none",
+                        color: "#374151",
+                        padding: "4px 0",
+                      }}
                     />
                   </div>
                 )}
@@ -259,13 +326,18 @@ export default function BackroomCommunicatePage() {
                           flex: 1,
                           height: 44,
                           fontWeight: 600,
-                          background: selectedOutcome === "approve" ? "#059669" : "transparent",
+                          background: selectedOutcome === "approve"
+                            ? "#059669"
+                            : "transparent",
                           borderColor: "#059669",
-                          color: selectedOutcome === "approve" ? "#ffffff" : "#059669",
+                          color: selectedOutcome === "approve"
+                            ? "#ffffff"
+                            : "#059669",
                         }}
                         onClick={() =>
-                          setSelectedOutcome(selectedOutcome === "approve" ? null : "approve")
-                        }
+                          setSelectedOutcome(
+                            selectedOutcome === "approve" ? null : "approve",
+                          )}
                       >
                         Approve
                       </Button>
@@ -274,13 +346,18 @@ export default function BackroomCommunicatePage() {
                           flex: 1,
                           height: 44,
                           fontWeight: 600,
-                          background: selectedOutcome === "reject" ? "#dc2626" : "transparent",
+                          background: selectedOutcome === "reject"
+                            ? "#dc2626"
+                            : "transparent",
                           borderColor: "#dc2626",
-                          color: selectedOutcome === "reject" ? "#ffffff" : "#dc2626",
+                          color: selectedOutcome === "reject"
+                            ? "#ffffff"
+                            : "#dc2626",
                         }}
                         onClick={() =>
-                          setSelectedOutcome(selectedOutcome === "reject" ? null : "reject")
-                        }
+                          setSelectedOutcome(
+                            selectedOutcome === "reject" ? null : "reject",
+                          )}
                       >
                         Reject
                       </Button>
@@ -296,7 +373,8 @@ export default function BackroomCommunicatePage() {
                     </label>
                     <Input
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={(e) =>
+                        setTitle(e.target.value)}
                       placeholder="Enter news story title"
                     />
                   </div>
@@ -305,17 +383,16 @@ export default function BackroomCommunicatePage() {
                 {/* Response message / content */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>
-                    {commType === "response" ? "Response Message" : "Content"}{" "}
+                    {commType === "response" ? "Response Message" : "Content"}
+                    {" "}
                     <span style={{ color: "#ef4444" }}>*</span>
                   </label>
                   <Input.TextArea
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder={
-                      commType === "response"
-                        ? "Write your response to this directive..."
-                        : "Write the news story content..."
-                    }
+                    placeholder={commType === "response"
+                      ? "Write your response to this directive..."
+                      : "Write the news story content..."}
                     rows={8}
                     style={{ resize: "none" }}
                   />
@@ -334,23 +411,32 @@ export default function BackroomCommunicatePage() {
                 >
                   {totalLength} / {MAX_POST_LENGTH}
                 </div>
-                <Button onClick={() => router.push(`/scenarios/${scenarioId}/backroom`)}>
+                <Button
+                  onClick={() =>
+                    router.push(`/scenarios/${scenarioId}/backroom`)}
+                >
                   Cancel
                 </Button>
-                {commType === "response" ? (
-                  <Button
-                    type="primary"
-                    loading={submitting}
-                    onClick={handleRespond}
-                    disabled={submitting || overLimit}
-                  >
-                    Respond
-                  </Button>
-                ) : (
-                  <Button type="primary" loading={submitting} onClick={handleNewsStory}>
-                    Publish News
-                  </Button>
-                )}
+                {commType === "response"
+                  ? (
+                    <Button
+                      type="primary"
+                      loading={submitting}
+                      onClick={handleRespond}
+                      disabled={submitting || overLimit}
+                    >
+                      Respond
+                    </Button>
+                  )
+                  : (
+                    <Button
+                      type="primary"
+                      loading={submitting}
+                      onClick={handleNewsStory}
+                    >
+                      Publish News
+                    </Button>
+                  )}
               </div>
             </div>
           </Spin>

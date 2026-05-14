@@ -1,9 +1,9 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useScenarioConfig } from "@/hooks/useScenarioConfig";
 
 describe("useScenarioConfig", () => {
   beforeEach(() => {
-    window.localStorage.clear();
+    globalThis.localStorage.clear();
   });
 
   it("returns the default config (2 max, empty code) when nothing is stored", () => {

@@ -4,7 +4,7 @@ export enum UserStatus {
 }
 
 export interface User {
-  id: number | null;
+  id: number;
   username: string | null;
   token: string | null;
   status: UserStatus | null;
@@ -31,4 +31,8 @@ export interface UserPutDTO {
   username?: string;
   password?: string;
   bio?: string;
+}
+
+export interface UserAssignDTO {
+  id: number;
 }

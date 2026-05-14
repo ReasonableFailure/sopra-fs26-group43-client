@@ -1,0 +1,19 @@
+import { ApiService } from "@/api/apiService";
+import { Backroomer, BackroomerPostDTO } from "@/types/backroomer";
+
+export class BackroomerService {
+  constructor(private api: ApiService) {
+  }
+
+  createBackroomer(
+    dto: BackroomerPostDTO,
+    scenarioId: number,
+    userToken: string,
+  ): Promise<Backroomer> {
+    return this.api.postWithToken<Backroomer>(
+      `/scenario/${scenarioId}/backroomers`,
+      dto,
+      userToken,
+    );
+  }
+}

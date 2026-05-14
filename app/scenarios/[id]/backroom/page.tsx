@@ -2,8 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
-import { FileTextOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, ConfigProvider, Select, Spin, theme } from "antd";
+import {
+  ClockCircleOutlined,
+  FileTextOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
@@ -16,29 +20,48 @@ import { MessageService } from "@/api/messageService";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
+import { DirectiveCategory } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import type { Message } from "@/types/message";
+import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/backroomDashboard.module.css";
+import { useBackroomer } from "@/hooks/useBackroomer";
 
-function initials(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+function timeAgo(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const diff = Date.now() - new Date(iso).getTime();
+  if (Number.isNaN(diff)) return "";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min${mins === 1 ? "" : "s"} ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hr${hrs === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
 function DirectiveBadge({ status }: { status: CommsStatus | null }) {
   if (status === CommsStatus.ACCEPTED) {
-    return <span className={`${styles.badge} ${styles.badgeResponded}`}>Approved</span>;
+    return (
+      <span className={`${styles.badge} ${styles.badgeResponded}`}>
+        Approved
+      </span>
+    );
   }
   if (status === CommsStatus.REJECTED) {
-    return <span className={`${styles.badge} ${styles.badgeRejected}`}>Rejected</span>;
+    return (
+      <span className={`${styles.badge} ${styles.badgeRejected}`}>
+        Rejected
+      </span>
+    );
   }
-  return <span className={`${styles.badge} ${styles.badgePending}`}>Pending</span>;
+  return (
+    <span className={`${styles.badge} ${styles.badgePending}`}>Pending</span>
+  );
 }
 
 export default function BackroomDashboardPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -50,42 +73,54 @@ export default function BackroomDashboardPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
 
+  const { backroomerToken } = useBackroomer(scenarioId);
+  const backroomerAuth = backroomerToken
+    ? `Backroomer ${backroomerToken}`
+    : "Wrong";
+
   const [characters, setCharacters] = useState<Character[]>([]);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [scenario, setScenario] = useState<Scenario | null>(null);
 
   const enabled = isAuthenticated && !!scenarioId;
 
-  const { data: directives, loading: directivesLoading } = usePolling<Directive[]>(
-    () => directiveService.getDirectivesByScenario(scenarioId, token),
+  const { data: directives, loading: directivesLoading } = usePolling<
+    Directive[]
+  >(
+    () => directiveService.getDirectivesByScenario(scenarioId, backroomerAuth),
     5000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
-    () => newsService.getNewsByScenario(scenarioId, token),
+    () => newsService.getNewsByScenario(scenarioId, backroomerAuth),
     5000,
     enabled,
   );
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<
+    DirectiveCategory | "ALL"
+  >("ALL");
 
   useEffect(() => {
     if (!enabled) return;
 
     let cancelled = false;
 
-    scenarioService.getScenarioById(scenarioId, token)
+    scenarioService.getScenarioById(scenarioId, backroomerAuth)
       .then((data) => {
         if (!cancelled) setScenario(data);
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error(err);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [enabled, scenarioId, token, scenarioService]);
+  }, [enabled, scenarioId, backroomerAuth, scenarioService]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -94,9 +129,18 @@ export default function BackroomDashboardPage() {
     const fetchMessages = async () => {
       setMessagesLoading(true);
       try {
-        const pairs = await messageService.getMessagePairsByScenario(scenarioId, token);
+        const pairs = await messageService.getMessagePairsByScenario(
+          scenarioId,
+          backroomerAuth,
+        );
         const arrays = await Promise.all(
-          pairs.map((p) => messageService.getMessagesBetween(p.roleAId, p.roleBId, token)),
+          pairs.map((p) =>
+            messageService.getMessagesBetween(
+              p.roleAId,
+              p.roleBId,
+              backroomerAuth,
+            )
+          ),
         );
         if (!cancelled) setMessages(arrays.flat());
       } catch {
@@ -112,39 +156,97 @@ export default function BackroomDashboardPage() {
       cancelled = true;
       clearInterval(intervalId);
     };
-  }, [enabled, scenarioId, token, messageService]);
+  }, [enabled, scenarioId, backroomerAuth, messageService]);
 
   const loading = directivesLoading || messagesLoading || newsLoading;
+
+  const CATEGORY_STYLES: Record<
+    DirectiveCategory,
+    { bg: string; border: string }
+  > = {
+    MILITARY: {
+      bg: "#fef3c7",
+      border: "#f59e0b",
+    },
+    POLITICAL: {
+      bg: "#e0f2fe",
+      border: "#0ea5e9",
+    },
+    PUBLIC: {
+      bg: "#dcfce7",
+      border: "#22c55e",
+    },
+    INTELLIGENCE: {
+      bg: "#ede9fe",
+      border: "#8b5cf6",
+    },
+    OTHER: {
+      bg: "#f3f4f6",
+      border: "#9ca3af",
+    },
+  };
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [authReady, isAuthenticated, router]);
 
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    characterService.getCharactersByScenario(scenarioId, token)
-      .then((chars) => { if (!cancelled) setCharacters(chars); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [enabled, scenarioId, token, characterService]);
+    characterService.getCharactersByScenario(scenarioId, backroomerAuth)
+      .then((chars) => {
+        if (!cancelled) setCharacters(chars);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, scenarioId, backroomerAuth, characterService]);
 
   if (!authReady || !isAuthenticated) return null;
 
-  const pendingMessages = (messages ?? []).filter((m) => m.status === CommsStatus.PENDING || m.status === null);
+  const pendingMessages = (messages ?? []).filter((m) =>
+    m.status === CommsStatus.PENDING || m.status === null
+  );
+  const messageHistory = (messages ?? [])
+    .filter((m) =>
+      m.status === CommsStatus.ACCEPTED || m.status === CommsStatus.REJECTED
+    )
+    .sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   const characterName = (id: number | null): string => {
     if (id === null) return "Unknown";
     return characters.find((c) => c.id === id)?.name ?? "Unknown";
   };
 
-  const handleMessageAction = async (messageId: number | null, status: CommsStatus) => {
+  function portraitSrc(character?: Character | null): string | null {
+    if (!character?.portrait) return null;
+
+    if (character.portrait.startsWith("data:")) {
+      return character.portrait;
+    }
+
+    return `data:image/jpeg;base64,${character.portrait}`;
+  }
+
+  const handleMessageAction = async (
+    messageId: number | null,
+    status: CommsStatus,
+  ) => {
     if (messageId === null) return;
     setActionLoading(messageId);
     try {
-      await messageService.updateMessage(messageId, { status }, token);
+      await messageService.updateMessage(messageId, { status }, backroomerAuth);
+      setMessages((prev) =>
+        prev.map((m) => m.id === messageId ? { ...m, status } : m)
+      );
     } catch {
       // silently ignore — message stays in list
     } finally {
@@ -156,21 +258,18 @@ export default function BackroomDashboardPage() {
     return item.authorId !== null && item.authorId !== undefined;
   }
 
-  function renderNewsText(item: NewsGetDTO) {
-    const base = `${item.title}: ${item.body}`;
-
-    if (!isPronouncement(item)) return base;
-
-    return `${base}\n- ${characterName(item.authorId)}`;
-  }
-
   const latestNews = [...(newsItems ?? [])]
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime()
+        new Date(a.createdAt).getTime(),
     )
     .slice(0, 3);
+
+  const filteredDirectives = (directives ?? []).filter((d) => {
+    if (selectedCategory === "ALL") return true;
+    return d.category === selectedCategory;
+  });
 
   return (
     <ConfigProvider
@@ -192,6 +291,9 @@ export default function BackroomDashboardPage() {
           <div className={styles.navLeft}>
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Backroom Dashboard</span>
+            <Button onClick={() => router.push("/scenarios")}>
+              All Scenarios
+            </Button>
           </div>
           <Avatar
             icon={<UserOutlined />}
@@ -200,220 +302,414 @@ export default function BackroomDashboardPage() {
           />
         </nav>
 
-        <Spin spinning={loading} style={{ flex: 1, display: "flex" }}>
-          <div className={styles.body}>
-            {/* ── Left: Directives ── */}
-            <div className={styles.leftPanel}>
-              <div className={styles.panelHeader}>
-                <h2 className={styles.panelTitle}>Directives</h2>
-                <p className={styles.panelSubtitle}>Review and manage player directives</p>
+        <Spin spinning={loading} fullscreen={false} />
+        <div className={styles.body}>
+          {/* ── Left: Directives ── */}
+          <div className={styles.leftPanel}>
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>Directives</h2>
+              <p className={styles.panelSubtitle}>
+                Review and manage player directives
+              </p>
+            </div>
+            <div className={styles.leftPanelContent}>
+              <div style={{ marginBottom: "12px" }}>
+                <Select
+                  value={selectedCategory}
+                  onChange={(v) => setSelectedCategory(v)}
+                  style={{ width: "100%" }}
+                  options={[
+                    {
+                      value: "ALL",
+                      label: "All Categories",
+                    },
+                    ...Object.values(DirectiveCategory).map((cat) => ({
+                      value: cat,
+                      label: (
+                        <div
+                          style={{
+                            background: CATEGORY_STYLES[cat].bg,
+                            padding: "4px 8px",
+                            borderRadius: 4,
+                          }}
+                        >
+                          {cat}
+                        </div>
+                      ),
+                    })),
+                  ]}
+                />
               </div>
 
               <div className={styles.tableHeader}>
-                <div className={`${styles.tableHeaderCell} ${styles.colPlayerName}`}>Player Name</div>
-                <div className={`${styles.tableHeaderCell} ${styles.colDirectiveTitle}`}>Directive Title</div>
-                <div className={`${styles.tableHeaderCell} ${styles.colStatus}`}>Status</div>
+                <div
+                  className={`${styles.tableHeaderCell} ${styles.colPlayerName}`}
+                >
+                  Player Name
+                </div>
+                <div
+                  className={`${styles.tableHeaderCell} ${styles.colDirectiveTitle}`}
+                >
+                  Directive Title
+                </div>
+                <div
+                  className={`${styles.tableHeaderCell} ${styles.colStatus}`}
+                >
+                  Status
+                </div>
               </div>
 
-              {(directives ?? []).length === 0 && !loading && (
-                <p className={styles.emptyState}>No directives submitted yet.</p>
+              {filteredDirectives.length === 0 && !loading && (
+                <p className={styles.emptyState}>
+                  No directives submitted yet.
+                </p>
               )}
+              {filteredDirectives.map((directive) => {
+                const style = directive.category
+                  ? CATEGORY_STYLES[directive.category]
+                  : CATEGORY_STYLES.OTHER;
 
-              {(directives ?? []).map((directive) => (
-                <div
-                  key={directive.id}
-                  className={styles.tableRow}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    if (directive.status === CommsStatus.PENDING || directive.status === null) {
-                      router.push(
-                        `/scenarios/${scenarioId}/backroom/communicate?type=response&directiveId=${directive.id}`,
-                      );
-                    } else {
-                      router.push(`/scenarios/${scenarioId}/backroom/directives/${directive.id}`);
-                    }
-                  }}
-                >
-                  <div className={`${styles.playerCell} ${styles.colPlayerName}`}>
-                    <div className={styles.playerAvatar}>
-                      {initials(characterName(directive.creatorId ?? null))}
-                    </div>
-                    <span className={styles.playerName}>
-                      {characterName(directive.creatorId ?? null)}
-                    </span>
-                  </div>
+                return (
+                  <div
+                    key={directive.id}
+                    className={styles.tableRow}
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor: style.bg,
+                      borderLeft: `4px solid ${style.border}`,
+                    }}
+                    onClick={() => {
+                      if (
+                        directive.status === CommsStatus.PENDING ||
+                        directive.status === null
+                      ) {
+                        router.push(
+                          `/scenarios/${scenarioId}/backroom/communicate?type=response&directiveId=${directive.id}`,
+                        );
+                      } else {
+                        router.push(
+                          `/scenarios/${scenarioId}/backroom/directives/${directive.id}`,
+                        );
+                      }
+                    }}
+                  >
+                    <div
+                      className={`${styles.playerCell} ${styles.colPlayerName}`}
+                    >
+                      {(() => {
+                        const character = characters.find(
+                          (c) => c.id === directive.creatorId,
+                        );
 
-                  <div className={`${styles.directiveCell} ${styles.colDirectiveTitle}`}>
-                    <span className={styles.directiveTitle}>
-                      {directive.title ?? directive.body ?? "Untitled"}
-                    </span>
-                    {directive.createdAt && (
-                      <span className={styles.directiveDay}>
-                        {directive.createdAt.slice(0, 10)}
+                        const portrait = portraitSrc(character);
+
+                        return portrait
+                          ? (
+                            <img
+                              src={portrait}
+                              alt={character?.name ?? "Character"}
+                              className={styles.AvatarImage}
+                            />
+                          )
+                          : (
+                            <div className={styles.playerAvatar}>
+                              {initials(
+                                characterName(directive.creatorId ?? null),
+                              )}
+                            </div>
+                          );
+                      })()}
+                      <span className={styles.playerName}>
+                        {characterName(directive.creatorId ?? null)}
                       </span>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className={styles.statusCell}>
-                    <DirectiveBadge status={directive.status} />
+                    <div
+                      className={`${styles.directiveCell} ${styles.colDirectiveTitle}`}
+                    >
+                      <span className={styles.directiveTitle}>
+                        {directive.title ?? directive.body ?? "Untitled"}
+                      </span>
+                      {directive.createdAt && (
+                        <span className={styles.directiveDay}>
+                          {directive.createdAt.slice(0, 10)}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.statusCell}>
+                      <DirectiveBadge status={directive.status} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-
-            {/* ── Center: News Feed ── */}
-            <div className={styles.centerPanel}>
-              <div className={styles.panelHeader}>
+          </div>
+          {/* ── Center: News Feed ── */}
+          <div className={styles.centerPanel}>
+            <div className={styles.panelHeader}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  width: "100%",
+                  gap: "16px",
+                }}
+              >
+                <div>
+                  <h2 className={styles.panelTitle}>News Feed</h2>
+                  <p className={styles.panelSubtitle}>
+                    Publish stories to all players
+                  </p>
+                </div>
                 <div
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    width: "100%",
-                    gap: "16px",
+                    flexDirection: "column",
+                    gap: "8px",
+                    alignItems: "flex-end",
                   }}
                 >
-                  <div>
-                    <h2 className={styles.panelTitle}>News Feed</h2>
-                    <p className={styles.panelSubtitle}>
-                      Publish stories to all players
-                    </p>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
-                      alignItems: "flex-end",
-                    }}
+                  <Button
+                    type="primary"
+                    onClick={() => router.push(`/scenarios/${scenarioId}/news`)}
                   >
+                    See All News
+                  </Button>
+
+                  {scenario?.mastodonProfileUrl && (
                     <Button
                       type="primary"
-                      onClick={() =>
-                        router.push(`/scenarios/${scenarioId}/news`)
-                      }
+                      href={scenario.mastodonProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      See All News
+                      Go to Mastodon
                     </Button>
-
-                    {scenario?.mastodonProfileUrl && (
-                      <Button
-                        type="primary"
-                        onClick={() =>
-                          window.open(
-                            scenario.mastodonProfileUrl!,
-                            "_blank",
-                            "noopener,noreferrer"
-                          )
-                        }
-                      >
-                        Go to Mastodon
-                      </Button>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
+            </div>
+            <div className={styles.centerPanelContent}>
               <div className={styles.newsFeedBody}>
-                {latestNews.length === 0 ? (
-                  <>
-                    <div className={styles.newsFeedIcon}>
-                      <FileTextOutlined />
+                {latestNews.length === 0
+                  ? (
+                    <div className={styles.newsFeedEmpty}>
+                      <div className={styles.newsFeedIcon}>
+                        <FileTextOutlined />
+                      </div>
+                      <p className={styles.newsFeedTitle}>No news yet</p>
+                      <p className={styles.newsFeedSub}>
+                        Published stories will appear here.
+                      </p>
                     </div>
-                    <p className={styles.newsFeedTitle}>No news yet</p>
-                    <p className={styles.newsFeedSub}>
-                      Published stories will appear here.
-                    </p>
-                  </>
-                ) : (
-                  <div style={{ width: "100%" }}>
-                    {latestNews.map((item, index) => (
-                      <div
-                        key={item.id}
-                        style={{
-                          padding: "14px 0",
-                          textAlign: "center",
-                          color: "#000000",
-                          whiteSpace: "pre-line",
-                          lineHeight: 1.5,
-                          borderBottom:
-                            index < latestNews.length - 1
-                              ? "1px solid #e5e7eb"
-                              : "none",
-                        }}
-                      >
-                        {renderNewsText(item)}
+                  )
+                  : (
+                    <div className={styles.newsList}>
+                      {latestNews.map((item) => {
+                        const pronouncement = isPronouncement(item);
+                        const authorName = pronouncement
+                          ? characterName(item.authorId)
+                          : null;
+                        return (
+                          <article key={item.id} className={styles.newsItem}>
+                            <div className={styles.newsItemTop}>
+                              <div className={styles.newsItemTopLeft}>
+                                <span
+                                  className={pronouncement
+                                    ? styles.badgePronouncement
+                                    : styles.badgeNews}
+                                >
+                                  {pronouncement
+                                    ? "Pronouncement"
+                                    : "New Story"}
+                                </span>
+                                {pronouncement && authorName && (
+                                  <span className={styles.newsAuthorRow}>
+                                    <UserOutlined
+                                      className={styles.newsAuthorIcon}
+                                    />
+                                    {authorName}
+                                  </span>
+                                )}
+                              </div>
+                              <span className={styles.newsTimestamp}>
+                                <ClockCircleOutlined />
+                                {timeAgo(item.createdAt)}
+                              </span>
+                            </div>
+                            <h3 className={styles.newsItemTitle}>
+                              {item.title}
+                            </h3>
+                            <p className={styles.newsItemBody}>{item.body}</p>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
+              </div>
+            </div>
+            <div className={styles.newStoryFooter}>
+              <Button
+                type="primary"
+                className={styles.newStoryBtn}
+                onClick={() => router.push(
+                  `/scenarios/${scenarioId}/backroom/communicate?type=news_story`,
+                )}
+              >
+                Post a New Story
+              </Button>
+            </div>
+          </div>
+
+          {/* ── Right: Messages ── */}
+          <div className={styles.rightPanel}>
+            {/* Pending section */}
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>Pending Messages</h2>
+              <p className={styles.panelSubtitle}>
+                Approve or reject player communications
+              </p>
+            </div>
+
+            <div className={styles.scrollSection}>
+              {pendingMessages.length === 0 && !loading
+                ? <p className={styles.emptyState}>No pending messages.</p>
+                : (
+                  <div className={styles.scrollList}>
+                    {pendingMessages.map((message) => (
+                      <div key={message.id} className={styles.messageCard}>
+                        <div className={styles.messageCardHeader}>
+                          {(() => {
+                            const character = characters.find(
+                              (c) =>
+                                c.id === message.creatorId,
+                            );
+
+                            const portrait = portraitSrc(character);
+
+                            return portrait
+                              ? (
+                                <img
+                                  src={portrait}
+                                  alt={character?.name ?? "Character"}
+                                  className={styles.AvatarImage}
+                                />
+                              )
+                              : (
+                                <div className={styles.senderAvatar}>
+                                  {initials(characterName(message.creatorId))}
+                                </div>
+                              );
+                          })()}
+
+                          <div className={styles.senderInfo}>
+                            <span className={styles.senderName}>
+                              {characterName(message.creatorId)}
+                            </span>
+
+                            <span className={styles.recipientLabel}>
+                              To: {characterName(message.recipientId)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className={styles.messageBody}>
+                          {message.body ?? message.title ?? ""}
+                        </p>
+
+                        <div className={styles.messageActions}>
+                          <Button
+                            className={styles.approveBtn}
+                            loading={actionLoading === message.id}
+                            onClick={() =>
+                              handleMessageAction(
+                                message.id,
+                                CommsStatus.ACCEPTED,
+                              )}
+                          >
+                            Approve
+                          </Button>
+
+                          <Button
+                            className={styles.rejectBtn}
+                            loading={actionLoading === message.id}
+                            onClick={() =>
+                              handleMessageAction(
+                                message.id,
+                                CommsStatus.REJECTED,
+                              )}
+                          >
+                            Reject
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
-              </div>
-              <div className={styles.newStoryFooter}>
-                <Button
-                  type="primary"
-                  className={styles.newStoryBtn}
-                  onClick={() =>
-                    router.push(`/scenarios/${scenarioId}/backroom/communicate?type=news_story`)
-                  }
-                >
-                  Post a New Story
-                </Button>
-              </div>
+            </div>
+            {/* History section */}
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>Message History</h2>
+
+              <p className={styles.panelSubtitle}>
+                Previously approved or rejected messages
+              </p>
             </div>
 
-            {/* ── Right: Pending Messages ── */}
-            <div className={styles.rightPanel}>
-              <div className={styles.panelHeader}>
-                <h2 className={styles.panelTitle}>Pending Messages</h2>
-                <p className={styles.panelSubtitle}>Approve or reject player communications</p>
-              </div>
-
-              {pendingMessages.length === 0 && !loading && (
-                <p className={styles.emptyState}>No pending messages.</p>
-              )}
-
-              <div className={styles.messagesList}>
-                {pendingMessages.map((message) => (
-                  <div key={message.id} className={styles.messageCard}>
-                    <div className={styles.messageCardHeader}>
-                      <div className={styles.senderAvatar}>
-                        {initials(characterName(message.creatorId))}
-                      </div>
-                      <div className={styles.senderInfo}>
-                        <span className={styles.senderName}>
-                          {characterName(message.creatorId)}
-                        </span>
-                        <span className={styles.recipientLabel}>
-                          To: {characterName(message.recipientId)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className={styles.messageBody}>
-                      {message.body ?? message.title ?? ""}
-                    </p>
-
-                    <div className={styles.messageActions}>
-                      <Button
-                        className={styles.approveBtn}
-                        loading={actionLoading === message.id}
-                        onClick={() => handleMessageAction(message.id, CommsStatus.ACCEPTED)}
+            <div className={styles.scrollSection}>
+              {messageHistory.length === 0 && !loading
+                ? <p className={styles.emptyState}>No handled messages yet.</p>
+                : (
+                  <div className={styles.scrollList}>
+                    {messageHistory.map((message) => (
+                      <div
+                        key={`hist-${message.id}`}
+                        className={styles.messageCard}
                       >
-                        Approve
-                      </Button>
-                      <Button
-                        className={styles.rejectBtn}
-                        loading={actionLoading === message.id}
-                        onClick={() => handleMessageAction(message.id, CommsStatus.REJECTED)}
-                      >
-                        Reject
-                      </Button>
-                    </div>
+                        <div className={styles.messageCardHeader}>
+                          <div className={styles.senderAvatar}>
+                            {initials(characterName(message.creatorId))}
+                          </div>
+
+                          <div className={styles.senderInfo}>
+                            <span className={styles.senderName}>
+                              {characterName(message.creatorId)}
+                            </span>
+
+                            <span className={styles.recipientLabel}>
+                              To: {characterName(message.recipientId)}
+                            </span>
+                          </div>
+
+                          <div style={{ marginLeft: "auto" }}>
+                            <DirectiveBadge status={message.status} />
+                          </div>
+                        </div>
+
+                        <p className={styles.messageBody}>
+                          {message.body ?? message.title ?? ""}
+                        </p>
+
+                        {message.createdAt && (
+                          <p
+                            style={{
+                              fontSize: 12,
+                              color: "#6b7280",
+                              margin: 0,
+                            }}
+                          >
+                            {message.createdAt.slice(0, 19).replace("T", " ")}
+                          </p>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
             </div>
           </div>
-        </Spin>
+        </div>
       </div>
     </ConfigProvider>
   );

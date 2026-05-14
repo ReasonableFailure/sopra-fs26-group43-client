@@ -3,10 +3,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import useLocalStorage from "@/hooks/useLocalStorage";
 import { UserService } from "@/api/userService";
 import { User } from "@/types/user";
 import { Button, Card, Descriptions, Form, Input } from "antd";
+import { useAuth } from "@/hooks/useAuth";
 
 interface EditFormFields {
   username: string;
@@ -15,19 +15,17 @@ interface EditFormFields {
 }
 
 const Profile: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const router = useRouter();
   const api = useApi();
   const userService = useMemo(() => new UserService(api), [api]);
-
-  const { value: token } = useLocalStorage<string>("token", "");
-  const { value: userId } = useLocalStorage<string>("userId", "");
+  const { token, userId } = useAuth();
 
   const [user, setUser] = useState<User | null>(null);
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm<EditFormFields>();
 
-  const isOwner = userId === id;
+  const isOwner = userId === Number(id);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -62,18 +60,21 @@ const Profile: React.FC = () => {
         title="User Profile"
         loading={!user}
         className="dashboard-container"
-        extra={
-          isOwner && !editing && (
-            <Button type="default" onClick={() => setEditing(true)}>
-              Edit
-            </Button>
-          )
-        }
+        extra={isOwner && !editing && (
+          <Button
+            type="default"
+            onClick={() => setEditing(true)}
+          >
+            Edit
+          </Button>
+        )}
       >
         {user && !editing && (
           <Descriptions column={1}>
             <Descriptions.Item label="Id">{user.id}</Descriptions.Item>
-            <Descriptions.Item label="Username">{user.username}</Descriptions.Item>
+            <Descriptions.Item label="Username">
+              {user.username}
+            </Descriptions.Item>
             <Descriptions.Item label="Bio">{user.bio}</Descriptions.Item>
             <Descriptions.Item label="Status">{user.status}</Descriptions.Item>
           </Descriptions>
@@ -83,7 +84,10 @@ const Profile: React.FC = () => {
           <Form
             form={form}
             layout="vertical"
-            initialValues={{ username: user.username ?? "", bio: user.bio ?? "" }}
+            initialValues={{
+              username: user.username ?? "",
+              bio: user.bio ?? "",
+            }}
             onFinish={handleEdit}
           >
             <Form.Item
@@ -102,12 +106,19 @@ const Profile: React.FC = () => {
             <Form.Item
               name="password"
               label="New Password"
-              rules={[{ required: true, message: "Please enter a new password" }]}
+              rules={[{
+                required: true,
+                message: "Please enter a new password",
+              }]}
             >
               <Input.Password placeholder="New password" />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ marginRight: 8 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ marginRight: 8 }}
+              >
                 Save
               </Button>
               <Button onClick={() => setEditing(false)}>Cancel</Button>
