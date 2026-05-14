@@ -121,9 +121,9 @@ export default function DirectorDashboardPage() {
   // Render nothing while any gate is still resolving. This is the data-race
   // fix: wait for BOTH auth state AND localStorage hydration before showing
   // the dashboard or deciding to redirect.
-  if (!authReady || !isAuthenticated) return null;
-  if (!directedReady) return null;
-  if (!isThisScenarioDirector) return null;
+  if (
+    !authReady || !isAuthenticated || !directedReady || !isThisScenarioDirector
+  ) return null;
 
   const status = scenario?.status;
 
