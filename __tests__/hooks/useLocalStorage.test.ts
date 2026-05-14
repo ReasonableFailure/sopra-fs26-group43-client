@@ -24,7 +24,9 @@ describe("useLocalStorage", () => {
       result.current.set("Yiru");
     });
     expect(result.current.value).toBe("Yiru");
-    expect(globalThis.localStorage.getItem("name")).toBe(JSON.stringify("Yiru"));
+    expect(globalThis.localStorage.getItem("name")).toBe(
+      JSON.stringify("Yiru"),
+    );
   });
 
   it("clear() resets to the default and removes the key", () => {
