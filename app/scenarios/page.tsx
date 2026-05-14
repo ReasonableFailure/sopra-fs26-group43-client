@@ -162,33 +162,35 @@ export default function ScenariosPage() {
 
   if (!authReady || !isAuthenticated) return null;
 
+  const  handleDeleteOk = async ( scenario: Scenario) => {
+    if (!token) return;
+    setDeletingId(scenario.id);
+    try {
+      await scenarioService.deleteScenario(
+          scenario.id,
+          token ?? `Director ${token}`,
+      );
+      setLocalScenarios((prev) =>
+          (prev ?? []).filter((s) => s.id !== scenario.id)
+      );
+      await refetchEngagements();
+      messageApi.success("Scenario deleted");
+    } catch (err) {
+      messageApi.error(
+          err instanceof Error ? err.message : "Failed to delete scenario",
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   const handleDelete = (scenario: Scenario) => {
     Modal.confirm({
       title: `Delete scenario "${scenario.title}"?`,
       content: "This cannot be undone.",
       okText: "Delete",
       okButtonProps: { danger: true },
-      onOk: async () => {
-        if (!token) return;
-        setDeletingId(scenario.id);
-        try {
-          await scenarioService.deleteScenario(
-            scenario.id,
-            token ?? `Director ${token}`,
-          );
-          setLocalScenarios((prev) =>
-            (prev ?? []).filter((s) => s.id !== scenario.id)
-          );
-          await refetchEngagements();
-          messageApi.success("Scenario deleted");
-        } catch (err) {
-          messageApi.error(
-            err instanceof Error ? err.message : "Failed to delete scenario",
-          );
-        } finally {
-          setDeletingId(null);
-        }
-      },
+      onOk: () => handleDeleteOk(scenario),
     });
   };
 
