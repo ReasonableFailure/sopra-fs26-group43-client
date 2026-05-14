@@ -32,6 +32,7 @@ import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
+import { NewsItem, NewsList } from "@/components/NewsItem";
 import styles from "@/styles/directorDashboard.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 
@@ -464,69 +465,25 @@ export default function DirectorDashboardPage() {
                     if (today.length === 0) {
                       return <p>No activity today yet.</p>;
                     }
-                    return today.map((item) => {
-                      const isPronouncement = item.authorId !== null &&
-                        item.authorId !== undefined;
-                      const authorName = isPronouncement
-                        ? (characters.find((c) => c.id === item.authorId)?.name
-                          ?? "Unknown")
-                        : null;
-                      return (
-                        <article
-                          key={item.id}
-                          style={{
-                            padding: "12px 14px",
-                            borderRadius: 8,
-                            border: "1px solid #e5e7eb",
-                            background: "#fff",
-                            marginBottom: 8,
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              fontSize: 12,
-                              color: "#6b7280",
-                              marginBottom: 4,
-                            }}
-                          >
-                            <span style={{ fontWeight: 600 }}>
-                              {isPronouncement
-                                ? `Pronouncement · ${authorName}`
-                                : "News Story"}
-                            </span>
-                            <span>
-                              {new Date(item.createdAt)
-                                .toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                            </span>
-                          </div>
-                          <h4
-                            style={{
-                              margin: 0,
-                              fontSize: 14,
-                              fontWeight: 600,
-                              color: "#111827",
-                            }}
-                          >
-                            {item.title}
-                          </h4>
-                          <p
-                            style={{
-                              margin: "4px 0 0",
-                              fontSize: 13,
-                              color: "#374151",
-                              whiteSpace: "pre-wrap",
-                            }}
-                          >
-                            {item.body}
-                          </p>
-                        </article>
-                      );
-                    });
+                    return (
+                      <NewsList>
+                        {today.map((item) => {
+                          const authorName = item.authorId !== null &&
+                              item.authorId !== undefined
+                            ? (characters.find((c) =>
+                              c.id === item.authorId
+                            )?.name ?? "Unknown")
+                            : null;
+                          return (
+                            <NewsItem
+                              key={item.id}
+                              item={item}
+                              authorName={authorName}
+                            />
+                          );
+                        })}
+                      </NewsList>
+                    );
                   })()}
                 </div>
               </div>

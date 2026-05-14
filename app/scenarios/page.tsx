@@ -40,6 +40,23 @@ const STATUS_COLORS: Record<ScenarioStatus, string> = {
   [ScenarioStatus.COMPLETED]: "default",
 };
 
+// User-facing progress label. FROZEN is collapsed into "In Progress"
+// because, from a viewer's perspective, the scenario is still actively
+// being played — it's just temporarily paused by the director.
+const STATUS_PROGRESS_LABEL: Record<ScenarioStatus, string> = {
+  [ScenarioStatus.UNSTARTED]: "Preparing",
+  [ScenarioStatus.FROZEN]: "In Progress",
+  [ScenarioStatus.UNFROZEN]: "In Progress",
+  [ScenarioStatus.COMPLETED]: "Completed",
+};
+
+const STATUS_PROGRESS_COLOR: Record<ScenarioStatus, string> = {
+  [ScenarioStatus.UNSTARTED]: "default",
+  [ScenarioStatus.FROZEN]: "processing",
+  [ScenarioStatus.UNFROZEN]: "processing",
+  [ScenarioStatus.COMPLETED]: "success",
+};
+
 function ScenarioCard({
   scenario,
   engagement,
@@ -85,6 +102,11 @@ function ScenarioCard({
             />
           </Dropdown>
         )}
+      </div>
+      <div className={styles.cardMeta}>
+        <Tag color={STATUS_PROGRESS_COLOR[scenario.status]}>
+          {STATUS_PROGRESS_LABEL[scenario.status]}
+        </Tag>
       </div>
       <p className={styles.cardDesc}>
         {scenario.description ?? "No description provided."}
@@ -323,7 +345,7 @@ export default function ScenariosPage() {
               defaultActiveKey="all"
               items={[
                 { key: "all", label: "All Scenarios", children: allTab },
-                { key: "mine", label: "My Engagements", children: myCrisesTab },
+                { key: "mine", label: "My Scenarios", children: myCrisesTab },
               ]}
             />
           </div>

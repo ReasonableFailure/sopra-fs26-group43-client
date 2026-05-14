@@ -13,7 +13,6 @@ import {
 } from "antd";
 import { InputNumber } from "antd";
 import {
-  BellOutlined,
   ClockCircleOutlined,
   QuestionCircleOutlined,
   UserOutlined,
@@ -29,12 +28,14 @@ import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
+import { MessageService } from "@/api/messageService";
 
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import { Scenario } from "@/types/scenario";
 import type { NewsGetDTO } from "@/types/news";
+import type { Message } from "@/types/message";
 
 import styles from "@/styles/playerDashboard.module.css";
 
@@ -92,6 +93,7 @@ export default function PlayerDashboardPage() {
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
+  const messageService = useMemo(() => new MessageService(api), [api]);
 
   const { characterId, characterToken } = useCharacter(
     scenarioId,
@@ -143,6 +145,38 @@ export default function PlayerDashboardPage() {
     5000,
     enabled,
   );
+
+  // Inbox poll: feeds the unread-message indicator on the Character List.
+  // We deliberately use the read-only inbox endpoint (no side effects) so
+  // the badge only clears when the user actually opens the conversation
+  // page (which triggers the seenByRecipient flip via getMessagesBetween).
+  const { data: inbox } = usePolling<Message[]>(
+    () =>
+      characterId
+        ? messageService.getCharacterInbox(
+          characterId,
+          scenarioId,
+          characterAuth,
+        )
+        : Promise.reject(),
+    5000,
+    enabled && !!characterId,
+  );
+
+  const unreadSenderIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const m of inbox ?? []) {
+      if (
+        m.status === CommsStatus.ACCEPTED &&
+        m.seenByRecipient === false &&
+        m.recipientId === characterId &&
+        m.creatorId !== null
+      ) {
+        ids.add(m.creatorId);
+      }
+    }
+    return ids;
+  }, [inbox, characterId]);
 
   const effectiveScenario = liveScenario ?? scenario;
   const isGameActive = effectiveScenario?.status === "UNFROZEN";
@@ -322,11 +356,6 @@ export default function PlayerDashboardPage() {
             </div>
           )}
           <div className={styles.navRight}>
-            <Button
-              icon={<BellOutlined />}
-              shape="circle"
-              className={styles.bellButton}
-            />
             <Avatar
               className={styles.navAvatar}
               src={selectedCharacter?.portrait ?? undefined}
@@ -604,6 +633,8 @@ export default function PlayerDashboardPage() {
                       )
                       .map((char, index) => {
                         const isMe = char.id === characterId;
+                        const hasUnread = char.id !== null &&
+                          unreadSenderIds.has(char.id);
                         return (
                           <div
                             key={char.id ?? char.name}
@@ -633,6 +664,13 @@ export default function PlayerDashboardPage() {
                                 {char.name ?? "Unknown"}
                                 {isMe && (
                                   <span className={styles.youBadge}>You</span>
+                                )}
+                                {!isMe && hasUnread && (
+                                  <span
+                                    className={styles.unreadDot}
+                                    aria-label="Unread messages"
+                                    title="New messages"
+                                  />
                                 )}
                               </p>
                               {char.title && (
