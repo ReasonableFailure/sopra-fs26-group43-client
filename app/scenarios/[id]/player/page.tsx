@@ -312,6 +312,9 @@ export default function PlayerDashboardPage() {
           <div className={styles.navLeft}>
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Character Dashboard</span>
+            <Button onClick={() => router.push("/scenarios")}>
+              All Scenarios
+            </Button>
           </div>
           {!isAlive && (
             <div style={{ color: "#ef4444", fontWeight: 600 }}>
