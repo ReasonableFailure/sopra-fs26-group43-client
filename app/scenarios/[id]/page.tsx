@@ -116,7 +116,7 @@ export default function DirectorDashboardPage() {
       alert("Only a director may access this view!");
       router.replace(`/scenarios/${scenarioId}/lobby`);
     }
-  }, [authReady, isAuthenticated, userId, userIdReady, router]);
+  }, [authReady, isAuthenticated, userId, userIdReady, router, scenarioId]);
 
   // Render nothing while any gate is still resolving. This is the data-race
   // fix: wait for BOTH auth state AND localStorage hydration before showing

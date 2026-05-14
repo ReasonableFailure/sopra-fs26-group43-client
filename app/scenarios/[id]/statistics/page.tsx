@@ -94,7 +94,7 @@ export default function PlayerStatisticsPage() {
       alert("Only a director may access this view!");
       router.replace(`/scenarios/${scenarioId}/lobby`);
     }
-  }, [authReady, isAuthenticated, userId, userIdReady, router]);
+  }, [authReady, isAuthenticated, userId, userIdReady, router, scenarioId]);
 
   if (!authReady || !isAuthenticated) return null;
 
