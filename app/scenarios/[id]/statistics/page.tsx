@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
+  App,
   Avatar,
   Button,
   ConfigProvider,
@@ -33,6 +34,7 @@ export default function PlayerStatisticsPage() {
   const { playerRole, readyPlayerRole } = usePlayerRole(userId);
   const scenarioId = Number(params.id);
   const { directorToken } = useDirector(scenarioId);
+  const { message } = App.useApp();
   const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
   const [modal, contextHolder] = Modal.useModal();
 
@@ -55,9 +57,19 @@ export default function PlayerStatisticsPage() {
             { alive: false },
             directorAuth,
           );
-          message.success(`${character.name} eliminated`);
+          message.success({
+            content: `${character.name} eliminated`,
+            style: {
+              color: "#111827",
+            },
+          });
         } catch {
-          message.error("Failed to eliminate character");
+          message.error({
+          content: "Failed to eliminate character",
+          style: {
+            color: "#111827",
+          },
+        });
         }
       },
     });
@@ -157,7 +169,7 @@ export default function PlayerStatisticsPage() {
           <div className={styles.navLeft}>
             <div className={styles.logoMark} />
             <span className={styles.navTitle}>
-              Player Statistics
+              Player Overview
             </span>
           </div>
 
@@ -167,7 +179,6 @@ export default function PlayerStatisticsPage() {
             >
               Back to Dashboard
             </Button>
-
             <Avatar icon={<UserOutlined />} />
           </div>
         </nav>

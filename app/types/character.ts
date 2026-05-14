@@ -31,7 +31,6 @@ export interface CharacterPutDTO {
   name?: string;
   title?: string;
   description?: string;
-  portrait?: string; // base64 string; backend stores as byte[]
   secret?: string;
   alive?: boolean;
 }
