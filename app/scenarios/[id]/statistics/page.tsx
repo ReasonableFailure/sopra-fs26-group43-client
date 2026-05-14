@@ -27,10 +27,9 @@ import { useDirector } from "@/hooks/useDirector";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 export default function PlayerStatisticsPage() {
-  const { isAuthenticated, authReady, userId, userIdReady} = useAuth();
+  const { isAuthenticated, authReady, userId, userIdReady } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const { playerRole, readyPlayerRole } = usePlayerRole(userId);
   const scenarioId = Number(params.id);
   const { directorToken } = useDirector(scenarioId);
   const { message } = App.useApp();
@@ -83,13 +82,17 @@ export default function PlayerStatisticsPage() {
     enabled,
   );
 
-  useEffect(() => {if (authReady && !isAuthenticated) {
-    router.replace("/login");
-  }
+  useEffect(() => {
+    if (authReady && !isAuthenticated) {
+      router.replace("/login");
+    }
     if (!userIdReady) {
       return;
-    } else if ( userIdReady && globalThis.localStorage[`playerRole_${userId}`] !== '"director"' ) { //this is so hacky... but it works
-      alert( "Only a director may access this view!" );
+    } else if (
+      userIdReady &&
+      globalThis.localStorage[`playerRole_${userId}`] !== '"director"'
+    ) { //this is so hacky... but it works
+      alert("Only a director may access this view!");
       router.replace(`/scenarios/${scenarioId}/lobby`);
     }
   }, [authReady, isAuthenticated, userId, userIdReady, router]);

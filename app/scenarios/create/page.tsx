@@ -34,7 +34,7 @@ import { useDirector } from "@/hooks/useDirector";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { CharacterPostDTO } from "@/types/character";
 import { DirectorPostDTO } from "@/types/director";
-import {PlayerRole} from "@/types/playerRole";
+import { PlayerRole } from "@/types/playerRole";
 
 interface ScenarioFormValues {
   title: string;
@@ -194,9 +194,9 @@ export default function CreateScenarioPage() {
       if (createdScenario) {
         addDirectedScenario(createdScenario.id);
       }
-      const role : PlayerRole = "director";
-      const temp = JSON.stringify(role)
-      console.log("what get's saved is "+ temp);
+      const role: PlayerRole = "director";
+      const temp = JSON.stringify(role);
+      console.log("what get's saved is " + temp);
       console.log("what get's read is " + JSON.parse(temp));
       setPlayerRole(role);
 
