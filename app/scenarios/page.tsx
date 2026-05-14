@@ -69,7 +69,8 @@ function ScenarioCard({
       }
     : undefined;
 
-  const handleView = () => routeForEngagement(engagement, scenario.id, router);
+  const handleView = () =>
+    routeForEngagement(engagement, scenario.id, router, "push", scenario.status);
 
   return (
     <div className={styles.card}>

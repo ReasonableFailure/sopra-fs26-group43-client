@@ -51,8 +51,7 @@ export default function CharacterProfilePage() {
   const [targetCharacter, setTargetCharacter] = useState<Character | null>(
     null,
   );
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [charsLoading, setCharsLoading] = useState(true);
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -72,52 +71,56 @@ export default function CharacterProfilePage() {
     enabled && !!myCharacterId,
   );
 
+  // Poll messages so that incoming approvals/rejections show up without a
+  // manual refresh. Sort oldest→newest so the conversation flows naturally.
+  const { data: rawMessages, loading: messagesLoading } = usePolling<Message[]>(
+    () =>
+      myCharacterId
+        ? messageService.getMessagesBetween(
+          myCharacterId,
+          targetCharId,
+          characterAuth,
+        )
+        : Promise.reject(),
+    5000,
+    enabled && !!myCharacterId && !!targetCharId,
+  );
+  const messages = useMemo(() => {
+    if (!rawMessages) return [];
+    return [...rawMessages].sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+  }, [rawMessages]);
+
   const effectiveScenario = liveScenario ?? null;
   const isGameActive = effectiveScenario?.status === "UNFROZEN";
   const isAlive = liveCharacter?.alive ?? true;
   const isOwnProfile = targetCharId === myCharacterId;
+  const loading = charsLoading || messagesLoading;
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
   }, [authReady, isAuthenticated, router]);
 
+  // One-shot fetch for the target character profile (it doesn't change
+  // mid-session in a way the user needs to see live).
   useEffect(() => {
     if (!isAuthenticated || !scenarioId || !targetCharId) return;
     let cancelled = false;
-    setLoading(true);
-
-    const fetchData = async () => {
-      try {
-        const chars = await characterService.getCharactersByScenario(
-          scenarioId,
-          characterAuth,
-        );
+    setCharsLoading(true);
+    characterService
+      .getCharactersByScenario(scenarioId, characterAuth)
+      .then((chars) => {
         if (cancelled) return;
         setTargetCharacter(chars.find((c) => c.id === targetCharId) ?? null);
-
-        const msgs = myCharacterId
-          ? await messageService.getMessagesBetween(
-            myCharacterId,
-            targetCharId,
-            characterAuth,
-          )
-          : [];
-        if (cancelled) return;
-
-        const sorted = [...msgs].sort((a, b) => {
-          if (!a.createdAt || !b.createdAt) return 0;
-          return new Date(a.createdAt).getTime() -
-            new Date(b.createdAt).getTime();
-        });
-        setMessages(sorted);
-      } catch {
-        // silently degrade
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    fetchData();
+      })
+      .catch(() => {
+        // silently degrade — empty profile shows fallback text
+      })
+      .finally(() => {
+        if (!cancelled) setCharsLoading(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -125,10 +128,8 @@ export default function CharacterProfilePage() {
     isAuthenticated,
     scenarioId,
     targetCharId,
-    myCharacterId,
     characterAuth,
     characterService,
-    messageService,
   ]);
 
   if (!authReady || !isAuthenticated) return null;

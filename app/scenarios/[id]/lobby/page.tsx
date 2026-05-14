@@ -8,11 +8,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useScenarioEngagement } from "../../../hooks/useScenarioEngagement";
 import { CharacterService } from "@/api/characterService";
+import { ScenarioService } from "@/api/scenarioService";
 import { BackroomerService } from "@/api/backroomerService";
 import { useCharacter } from "../../../hooks/useCharacter";
 import { useBackroomer } from "@/hooks/useBackroomer";
 import type { Character } from "@/types/character";
 import type { BackroomerPostDTO } from "@/types/backroomer";
+import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { UserAssignDTO } from "@/types/user";
@@ -79,6 +81,7 @@ export default function GameLobbyPage() {
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const backroomerService = useMemo(() => new BackroomerService(api), [api]);
+  const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const { setCharacterId, setCharacterToken } = useCharacter(
     scenarioId,
   );
@@ -114,6 +117,29 @@ export default function GameLobbyPage() {
       router.replace(`/scenarios/${scenarioId}/player`);
     }
   }, [engagement, router, scenarioId]);
+
+  // Non-engaged viewers of a COMPLETED scenario have nothing to join — drop
+  // them into the news feed. Defense in depth for users who hit /lobby directly.
+  useEffect(() => {
+    if (engagementLoading || engagement || !scenarioId || !token) return;
+    let cancelled = false;
+    scenarioService
+      .getScenarioById(scenarioId, token)
+      .then((scen) => {
+        if (cancelled) return;
+        if (scen.status === ScenarioStatus.COMPLETED) {
+          router.replace(`/scenarios/${scenarioId}/news`);
+        }
+      })
+      .catch(() => {
+        // Silent: leaving the user on the lobby is acceptable if the
+        // status fetch fails. They'll see the regular error path below
+        // if character loading also fails.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [engagement, engagementLoading, scenarioId, token, scenarioService, router]);
 
   useEffect(() => {
     if (!token || !scenarioId) return;

@@ -21,6 +21,8 @@ export interface NewsGetDTO {
   title: string;
   body: string;
   createdAt: string;
+  /** Scenario day this news was created on (frozen at creation time). */
+  dayNumber: number | null;
   authorId: number | null; // null for news stories, set for pronouncements
   likes: number | null;
 }

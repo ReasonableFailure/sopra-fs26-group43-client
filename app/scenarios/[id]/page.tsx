@@ -26,8 +26,12 @@ import { useApi } from "@/hooks/useApi";
 import { useDirector } from "@/hooks/useDirector";
 import { usePolling } from "@/hooks/usePolling";
 import { ScenarioService } from "@/api/scenarioService";
+import { NewsService } from "@/api/newsService";
+import { CharacterService } from "@/api/characterService";
 import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
+import type { NewsGetDTO } from "@/types/news";
+import type { Character } from "@/types/character";
 import styles from "@/styles/directorDashboard.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 
@@ -81,6 +85,8 @@ export default function DirectorDashboardPage() {
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
+  const newsService = useMemo(() => new NewsService(api), [api]);
+  const characterService = useMemo(() => new CharacterService(api), [api]);
   const { playerRole, readyPlayerRole } = usePlayerRole(userId);
   const { directorToken } = useDirector(scenarioId);
   const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
@@ -93,6 +99,29 @@ export default function DirectorDashboardPage() {
     5000,
     enabled,
   );
+
+  const { data: newsItems } = usePolling<NewsGetDTO[]>(
+    () => newsService.getNewsByScenario(scenarioId, directorAuth),
+    5000,
+    enabled,
+  );
+
+  const [characters, setCharacters] = useState<Character[]>([]);
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    characterService
+      .getCharactersByScenario(scenarioId, directorAuth)
+      .then((chars) => {
+        if (!cancelled) setCharacters(chars);
+      })
+      .catch(() => {
+        // Silent: pronouncements without resolved names just render "Unknown".
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, scenarioId, directorAuth, characterService]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -413,7 +442,7 @@ export default function DirectorDashboardPage() {
               <div className={styles.activityCard}>
                 <div className={styles.activityHeader}>
                   <span className={styles.cardTitle}>
-                    Recent Activity
+                    Recent Activity (Day {scenario?.dayNumber ?? 0})
                   </span>
                   <Button
                     type="link"
@@ -424,7 +453,81 @@ export default function DirectorDashboardPage() {
                 </div>
 
                 <div className={styles.activityList}>
-                  <p>No recent activity yet.</p>
+                  {(() => {
+                    if (!scenario) return null;
+                    const today = (newsItems ?? [])
+                      .filter((n) => n.dayNumber === scenario.dayNumber)
+                      .sort((a, b) =>
+                        new Date(b.createdAt).getTime() -
+                        new Date(a.createdAt).getTime()
+                      );
+                    if (today.length === 0) {
+                      return <p>No activity today yet.</p>;
+                    }
+                    return today.map((item) => {
+                      const isPronouncement = item.authorId !== null &&
+                        item.authorId !== undefined;
+                      const authorName = isPronouncement
+                        ? (characters.find((c) => c.id === item.authorId)?.name
+                          ?? "Unknown")
+                        : null;
+                      return (
+                        <article
+                          key={item.id}
+                          style={{
+                            padding: "12px 14px",
+                            borderRadius: 8,
+                            border: "1px solid #e5e7eb",
+                            background: "#fff",
+                            marginBottom: 8,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              fontSize: 12,
+                              color: "#6b7280",
+                              marginBottom: 4,
+                            }}
+                          >
+                            <span style={{ fontWeight: 600 }}>
+                              {isPronouncement
+                                ? `Pronouncement · ${authorName}`
+                                : "News Story"}
+                            </span>
+                            <span>
+                              {new Date(item.createdAt)
+                                .toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                            </span>
+                          </div>
+                          <h4
+                            style={{
+                              margin: 0,
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: "#111827",
+                            }}
+                          >
+                            {item.title}
+                          </h4>
+                          <p
+                            style={{
+                              margin: "4px 0 0",
+                              fontSize: 13,
+                              color: "#374151",
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {item.body}
+                          </p>
+                        </article>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             </div>

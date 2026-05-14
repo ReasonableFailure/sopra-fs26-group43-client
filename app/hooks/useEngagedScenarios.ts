@@ -5,6 +5,41 @@ import { useApi } from "@/hooks/useApi";
 import { UserService } from "@/api/userService";
 import { Engagement } from "@/types/engagement";
 
+/**
+ * Restores per-scenario role tokens to localStorage so the dashboards
+ * find them after a logout/login (when useAuth.logout wipes them).
+ *
+ * Token keys are intentionally the same ones `useDirector`,
+ * `useBackroomer`, `useCharacter` read — writing here is the canonical
+ * way to "rehydrate" a returning user's role context.
+ */
+function persistEngagementTokens(items: Engagement[]) {
+  try {
+    for (const e of items) {
+      if (!e.token) continue;
+      const keys: Record<typeof e.roleType, [string, string]> = {
+        DIRECTOR: [
+          `scenario_${e.scenarioId}_directorToken`,
+          `scenario_${e.scenarioId}_directorId`,
+        ],
+        BACKROOMER: [
+          `scenario_${e.scenarioId}_backroomerToken`,
+          `scenario_${e.scenarioId}_backroomerId`,
+        ],
+        CHARACTER: [
+          `scenario_${e.scenarioId}_characterToken`,
+          `scenario_${e.scenarioId}_characterId`,
+        ],
+      };
+      const [tokenKey, idKey] = keys[e.roleType];
+      globalThis.localStorage.setItem(tokenKey, JSON.stringify(e.token));
+      globalThis.localStorage.setItem(idKey, JSON.stringify(e.playerId));
+    }
+  } catch {
+    // localStorage may be unavailable (SSR / privacy mode)
+  }
+}
+
 //are there any scenarios I have engaged with prior? If so, return them all
 export const useEngagedScenarios = (userId: number | null, token: string) => {
   const api = useApi();
@@ -21,6 +56,7 @@ export const useEngagedScenarios = (userId: number | null, token: string) => {
     try {
       const data = await userService.getEngagements(userId, token);
       setEngagements(data);
+      persistEngagementTokens(data);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch engagements",
