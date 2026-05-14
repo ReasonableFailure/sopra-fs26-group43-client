@@ -23,7 +23,7 @@ export const useScenarios = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await scenarioService.getScenarios(`Bearer ${token}`);
+        const data = await scenarioService.getScenarios(token);
         if (!cancelled) setScenarios(data);
       } catch (err) {
         if (!cancelled) {

@@ -169,7 +169,7 @@ export default function CreateScenarioPage() {
       };
       const createdDirector = await directorService.becomeDirector(
         directorData,
-        `Bearer ${token}`,
+        token,
       );
 
       if (createdDirector.id) {
