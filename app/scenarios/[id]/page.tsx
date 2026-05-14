@@ -29,7 +29,6 @@ import { ScenarioService } from "@/api/scenarioService";
 import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/directorDashboard.module.css";
-import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
   "UNSTARTED": "Not Started",

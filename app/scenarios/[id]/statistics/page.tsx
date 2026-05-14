@@ -24,7 +24,6 @@ import type { Character } from "@/types/character";
 
 import styles from "@/styles/playerTable.module.css";
 import { useDirector } from "@/hooks/useDirector";
-import { usePlayerRole } from "@/hooks/usePlayerRole";
 
 export default function PlayerStatisticsPage() {
   const { isAuthenticated, authReady, userId, userIdReady } = useAuth();
