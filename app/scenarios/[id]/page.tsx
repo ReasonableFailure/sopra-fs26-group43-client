@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useDirector } from "@/hooks/useDirector";
 import { usePolling } from "@/hooks/usePolling";
+import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import { ScenarioService } from "@/api/scenarioService";
 import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
@@ -77,6 +78,11 @@ export default function DirectorDashboardPage() {
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+  // Director gate. `directedReady` lags the first render by one tick because
+  // localStorage can only be read in `useEffect` (it does not exist on the
+  // server). Treat "not ready" as "decision pending", never as "false".
+  const { isDirector, ready: directedReady } = useDirectedScenarios(userId);
+  const isThisScenarioDirector = directedReady && isDirector(scenarioId);
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
@@ -97,18 +103,9 @@ export default function DirectorDashboardPage() {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    /*
-    // 1. Wait until Auth is ready and user is authenticated
-    if (!authReady || !readyPlayerRole) return;
-
-    // 2. Wait until playerRole is actually loaded from localStorage
-    // Since useLocalStorage defaults to 'null', we check if it's strictly not "director"
-    // but only AFTER we are sure the auth layer has provided a userId.
-    if (!isAuthenticated || playerRole !== "director") {
-      console.log("Access Denied: Required 'director', found:", playerRole);
-      alert("You do not have permission to access the Director Dashboard.");*/
     if (authReady && !isAuthenticated) {
       router.replace("/login");
+      return;
     }
     if (!userIdReady) {
       return;
@@ -121,7 +118,12 @@ export default function DirectorDashboardPage() {
     }
   }, [authReady, isAuthenticated, userId, userIdReady, router]);
 
+  // Render nothing while any gate is still resolving. This is the data-race
+  // fix: wait for BOTH auth state AND localStorage hydration before showing
+  // the dashboard or deciding to redirect.
   if (!authReady || !isAuthenticated) return null;
+  if (!directedReady) return null;
+  if (!isThisScenarioDirector) return null;
 
   const status = scenario?.status;
 
@@ -156,7 +158,7 @@ export default function DirectorDashboardPage() {
   const handleFreezeToggle = async () => {
     if (!scenario) return;
 
-    const isFrozen = scenario.status === "FROZEN";
+    const isFrozen = scenario.status === ScenarioStatus.FROZEN;
 
     try {
       await scenarioService.updateScenario(
