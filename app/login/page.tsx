@@ -23,7 +23,7 @@ const Login: React.FC = () => {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const { setToken, setUserId, register, login } = useAuth();
+  const { register, login } = useAuth();
 
   const handleSubmit = async (
     values: LoginFields & Partial<RegisterFields>,
@@ -32,9 +32,7 @@ const Login: React.FC = () => {
 
     try {
       if (mode === "login") {
-        const res = await login(values);
-        if (res.token) setToken(res.token);
-        if (res.id) setUserId(res.id);
+        await login(values);
         router.push("/scenarios");
       } else {
         const data: UserPostDTO = {
@@ -42,9 +40,7 @@ const Login: React.FC = () => {
           password: values.password,
           bio: values.bio,
         };
-        const res = await register(data);
-        if (res.id) setUserId(res.id);
-        if (res.token) setToken(res.token);
+        await register(data);
         router.push("/scenarios");
       }
     } catch (error) {
