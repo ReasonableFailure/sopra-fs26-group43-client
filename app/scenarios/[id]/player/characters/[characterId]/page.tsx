@@ -135,9 +135,12 @@ export default function CharacterProfilePage() {
 
   // Recipient must not see a message until the backroomer approves it.
   // Outgoing messages stay visible (with their existing status badges).
-  /*const visibleMessages = messages.filter(
+  // The backend already filters this for Role tokens, but we also filter
+  // client-side as defense in depth (and to keep UI consistent if the
+  // server response order changes).
+  const visibleMessages = messages.filter(
     (m) => m.creatorId === myCharacterId || m.status === CommsStatus.ACCEPTED,
-  );*/
+  );
 
   return (
     <ConfigProvider
@@ -254,10 +257,10 @@ export default function CharacterProfilePage() {
                 </div>
 
                 <div className={styles.messageList}>
-                  {messages.length === 0
+                  {visibleMessages.length === 0
                     ? <p className={styles.emptyLog}>No messages yet.</p>
                     : (
-                      messages.map((msg) => {
+                      visibleMessages.map((msg) => {
                         const isMine = msg.creatorId === myCharacterId;
                         const senderName = isMine
                           ? "You"

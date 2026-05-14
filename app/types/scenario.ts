@@ -14,7 +14,6 @@ export interface Scenario {
   exchangeRate: number;
   startingMessageCount: number;
   mastodonProfileUrl?: string | null;
-  directorToken?: string | null;
 }
 
 /** POST /scenarios */

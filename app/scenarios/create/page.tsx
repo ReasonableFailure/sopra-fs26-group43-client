@@ -26,11 +26,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
 import { CharacterService } from "@/api/characterService";
-import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import type { ScenarioPostDTO } from "@/types/scenario";
 import styles from "@/styles/createScenario.module.css";
 import { DirectorService } from "@/api/directorService";
-import { useDirector } from "@/hooks/useDirector";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { CharacterPostDTO } from "@/types/character";
 import { DirectorPostDTO } from "@/types/director";
@@ -82,10 +80,6 @@ export default function CreateScenarioPage() {
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const directorService = useMemo(() => new DirectorService(api), [api]);
-  const { setDirectorId, setDirectorToken, directorToken } = useDirector(
-    userId,
-  );
-  const { addDirectedScenario } = useDirectedScenarios(userId);
   const { setPlayerRole } = usePlayerRole(userId);
 
   const [form] = Form.useForm<ScenarioFormValues>();
@@ -172,12 +166,8 @@ export default function CreateScenarioPage() {
         token,
       );
 
-      if (createdDirector.id) {
-        setDirectorId(createdDirector.id);
-      }
-      if (createdDirector.token) {
-        setDirectorToken(createdDirector.token);
-      }
+      const directorAuth = `Director ${createdDirector.token}`;
+
       const scenarioData: ScenarioPostDTO = {
         title: values.title,
         description: values.description ?? null,
@@ -188,10 +178,25 @@ export default function CreateScenarioPage() {
 
       const createdScenario = await scenarioService.createScenario(
         scenarioData,
-        `Director ${directorToken}`,
+        directorAuth,
       );
       if (createdScenario) {
-        addDirectedScenario(createdScenario.id);
+        // Persist the director credentials under the same key the director
+        // dashboard reads via `useDirector(scenarioId)`. Writing directly
+        // (not through useDirector(userId)) avoids the previous keying
+        // mismatch where the dashboard could never find the token.
+        try {
+          globalThis.localStorage.setItem(
+            `scenario_${createdScenario.id}_directorToken`,
+            JSON.stringify(createdDirector.token),
+          );
+          globalThis.localStorage.setItem(
+            `scenario_${createdScenario.id}_directorId`,
+            JSON.stringify(createdDirector.id),
+          );
+        } catch {
+          // localStorage may be unavailable (SSR / privacy mode)
+        }
       }
       setPlayerRole("director");
 
@@ -208,7 +213,7 @@ export default function CreateScenarioPage() {
           };
           await characterService.createCharacter(
             characterData,
-            `Director ${createdDirector.token}`,
+            directorAuth,
           );
         }
       }

@@ -51,16 +51,23 @@ function ScenarioCard({
 }) {
   const router = useRouter();
 
-  const moreMenu: MenuProps = {
-    items: [
-      {
-        key: "delete",
-        label: "Delete",
-        danger: true,
-        onClick: () => onDelete(scenario),
-      },
-    ],
-  };
+  // Only the Director of this scenario can delete it. Surface the option
+  // only when the user has a Director engagement here; the backend also
+  // enforces this and will reject mismatched tokens.
+  const isDirector = engagement?.roleType === "DIRECTOR";
+
+  const moreMenu: MenuProps | undefined = isDirector
+    ? {
+        items: [
+          {
+            key: "delete",
+            label: "Delete",
+            danger: true,
+            onClick: () => onDelete(scenario),
+          },
+        ],
+      }
+    : undefined;
 
   const handleView = () => routeForEngagement(engagement, scenario.id, router);
 
@@ -68,13 +75,15 @@ function ScenarioCard({
     <div className={styles.card}>
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>{scenario.title}</h2>
-        <Dropdown menu={moreMenu} trigger={["click"]}>
-          <Button
-            type="text"
-            icon={<MoreOutlined />}
-            aria-label="More options"
-          />
-        </Dropdown>
+        {moreMenu && (
+          <Dropdown menu={moreMenu} trigger={["click"]}>
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              aria-label="More options"
+            />
+          </Dropdown>
+        )}
       </div>
       <p className={styles.cardDesc}>
         {scenario.description ?? "No description provided."}
@@ -169,12 +178,28 @@ export default function ScenariosPage() {
       okText: "Delete",
       okButtonProps: { danger: true },
       onOk: async () => {
-        if (!token) return;
+        // Backend's DELETE /scenarios/{id} requires a Director token that
+        // matches THIS scenario's director — not the user's bearer token.
+        let directorToken: string | null = null;
+        try {
+          const stored = globalThis.localStorage.getItem(
+            `scenario_${scenario.id}_directorToken`,
+          );
+          directorToken = stored ? (JSON.parse(stored) as string) : null;
+        } catch {
+          directorToken = null;
+        }
+        if (!directorToken) {
+          messageApi.error(
+            "Only the director can delete this scenario.",
+          );
+          return;
+        }
         setDeletingId(scenario.id);
         try {
           await scenarioService.deleteScenario(
             scenario.id,
-            token ?? `Director ${token}`,
+            `Director ${directorToken}`,
           );
           setLocalScenarios((prev) =>
             (prev ?? []).filter((s) => s.id !== scenario.id)
