@@ -11,11 +11,13 @@ import {
   Modal,
   Form,
   Input,
+  InputNumber,
   message,
 } from "antd";
 import {
   CaretRightFilled,
   CloseCircleOutlined,
+  LockOutlined,
   PauseCircleOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -23,8 +25,10 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { usePolling } from "@/hooks/usePolling";
+import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import { ScenarioService } from "@/api/scenarioService";
-import type { Scenario, ScenarioStatus } from "@/types/scenario";
+import type { Scenario } from "@/types/scenario";
+import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/directorDashboard.module.css";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
@@ -70,10 +74,16 @@ const STATUS_CLASS: Record<ScenarioStatus, string> = {
 };
 
 export default function DirectorDashboardPage() {
-  const { token, isAuthenticated, authReady } = useAuth();
+  const { token, userId, isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
+
+  // Director gate. `directedReady` lags the first render by one tick because
+  // localStorage can only be read in `useEffect` (it does not exist on the
+  // server). Treat "not ready" as "decision pending", never as "false".
+  const { isDirector, ready: directedReady } = useDirectedScenarios(userId);
+  const isThisScenarioDirector = directedReady && isDirector(scenarioId);
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
@@ -90,21 +100,39 @@ export default function DirectorDashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
 
+  // Backroom settings modal (max + code) — now persisted on the server.
+  const [isBackroomModalOpen, setIsBackroomModalOpen] = useState(false);
+  const [backroomForm] = Form.useForm();
+
   useEffect(() => {
+    // 1) Auth check first.
     if (authReady && !isAuthenticated) {
       router.replace("/login");
+      return;
     }
-  }, [authReady, isAuthenticated, router]);
+    // 2) Director check, but only AFTER directedReady is true; otherwise
+    //    the first render reads an empty list from localStorage and bounces
+    //    a legitimate director.
+    if (authReady && isAuthenticated && directedReady && !isThisScenarioDirector) {
+      router.replace(`/scenarios/${scenarioId}/lobby`);
+    }
+  }, [authReady, isAuthenticated, directedReady, isThisScenarioDirector, router, scenarioId]);
 
+  // Render nothing while any gate is still resolving.
   if (!authReady || !isAuthenticated) return null;
+  if (!directedReady) return null;
+  if (!isThisScenarioDirector) return null;
 
   const status = scenario?.status;
+  const maxBackroomers = scenario?.maxBackroomers ?? 0;
+  const backroomerCount = scenario?.backroomerCount ?? 0;
+  const hasBackroomerCode = scenario?.hasBackroomerCode ?? false;
 
   const handleStartGame = async () => {
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: "UNFROZEN", dayNumber: 1 },
+        { status: ScenarioStatus.UNFROZEN, dayNumber: 1 },
         token
       );
       messageApi.success("Game started");
@@ -131,12 +159,12 @@ export default function DirectorDashboardPage() {
   const handleFreezeToggle = async () => {
     if (!scenario) return;
 
-    const isFrozen = scenario.status === "FROZEN";
+    const isFrozen = scenario.status === ScenarioStatus.FROZEN;
 
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: isFrozen ? "UNFROZEN" : "FROZEN" },
+        { status: isFrozen ? ScenarioStatus.UNFROZEN : ScenarioStatus.FROZEN },
         token
       );
       messageApi.success(isFrozen ? "Game resumed" : "Game frozen");
@@ -149,7 +177,7 @@ export default function DirectorDashboardPage() {
     try {
       await scenarioService.updateScenario(
         scenarioId,
-        { status: "COMPLETED" },
+        { status: ScenarioStatus.COMPLETED },
         token
       );
       messageApi.success("Game ended");
@@ -173,6 +201,49 @@ export default function DirectorDashboardPage() {
       form.resetFields();
     } catch {
       messageApi.error("Failed to update Mastodon configuration");
+    }
+  };
+
+  const openBackroomModal = () => {
+    backroomForm.setFieldsValue({
+      maxBackroomers: maxBackroomers,
+      // We never receive the current code from the server.
+      // Leave the field empty: empty submit means "no change".
+      backroomerCode: "",
+    });
+    setIsBackroomModalOpen(true);
+  };
+
+  const handleSubmitBackroomConfig = async () => {
+    try {
+      const values = await backroomForm.validateFields();
+      const newMax = Math.max(0, Math.floor(Number(values.maxBackroomers)));
+      const newCode = (values.backroomerCode ?? "").toString();
+
+      // Build a sparse PUT: only include fields the director actually changed.
+      const payload: { maxBackroomers?: number; backroomerCode?: string } = {};
+      if (newMax !== maxBackroomers) payload.maxBackroomers = newMax;
+      // Empty string is a valid value: it clears the code on the server.
+      // We send it only if the director typed something (even empty
+      // intentionally would set the value); to keep it simple we send any
+      // non-undefined string the form returned.
+      if (typeof newCode === "string" && newCode.length > 0) {
+        payload.backroomerCode = newCode.trim();
+      }
+
+      if (Object.keys(payload).length === 0) {
+        messageApi.info("No changes to save");
+        setIsBackroomModalOpen(false);
+        return;
+      }
+
+      await scenarioService.updateScenario(scenarioId, payload, `Director ${token}`);
+      messageApi.success("Backroom settings saved");
+      setIsBackroomModalOpen(false);
+    } catch {
+      // antd's validateFields rejects on invalid input; the form already
+      // surfaces field-level errors. Other failures show a generic toast.
+      messageApi.error("Failed to save backroom settings");
     }
   };
 
@@ -225,7 +296,7 @@ export default function DirectorDashboardPage() {
               <div className={styles.pageHeader}>
                 <div>
                   <h1 className={styles.scenarioTitle}>
-                    {scenario?.title ?? "Loading…"}
+                    {scenario?.title ?? "Loading..."}
                   </h1>
                   <p className={styles.scenarioSubtitle}>
                     Monitor Readiness and Control Game State
@@ -234,33 +305,70 @@ export default function DirectorDashboardPage() {
 
                 <div style={{ display: "flex", gap: 12 }}>
                   {scenario?.mastodonProfileUrl && (
-                    <Button 
-                    type="default" 
-                    size="large" 
-                    href={scenario.mastodonProfileUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    style={{ height: 48, paddingInline: 24, fontWeight: 600, }} >
+                    <Button
+                      type="default"
+                      size="large"
+                      href={scenario.mastodonProfileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ height: 48, paddingInline: 24, fontWeight: 600 }}
+                    >
                       Go to Mastodon
                     </Button>
                   )}
 
-                  <Button 
-                  type="primary" 
-                  size="large" 
-                  onClick={() => setIsModalOpen(true)} 
-                  style={{ 
-                    backgroundColor: "#4f46e5", 
-                    borderColor: "#4f46e5", 
-                    height: 48, 
-                    paddingInline: 24, 
-                    fontWeight: 600, 
-                    }} >
+                  <Button
+                    type="default"
+                    size="large"
+                    icon={<LockOutlined />}
+                    onClick={openBackroomModal}
+                    style={{ height: 48, paddingInline: 24, fontWeight: 600 }}
+                  >
+                    Backroom Settings
+                  </Button>
+
+                  <Button
+                    type="primary"
+                    size="large"
+                    onClick={() => setIsModalOpen(true)}
+                    style={{
+                      backgroundColor: "#4f46e5",
+                      borderColor: "#4f46e5",
+                      height: 48,
+                      paddingInline: 24,
+                      fontWeight: 600,
+                    }}
+                  >
                     {scenario?.mastodonProfileUrl
                       ? "Change Mastodon Account"
                       : "Add Mastodon Account"}
                   </Button>
                 </div>
+              </div>
+
+              {/* BACKROOM STATUS STRIP (server-backed) */}
+              <div
+                style={{
+                  background: "#f8fafc",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  display: "flex",
+                  gap: 24,
+                  alignItems: "center",
+                  fontSize: 13,
+                  color: "#374151",
+                }}
+              >
+                <span>
+                  <b>Backroom slots:</b> {backroomerCount} / {maxBackroomers}
+                </span>
+                <span>
+                  <b>Join code:</b>{" "}
+                  {hasBackroomerCode
+                    ? "set (required to join)"
+                    : "not set (no one can join)"}
+                </span>
               </div>
 
               {/* TOP ROW */}
@@ -370,7 +478,7 @@ export default function DirectorDashboardPage() {
                       router.push(`/scenarios/${scenarioId}/news`)
                     }
                   >
-                    See All News →
+                    See All News
                   </Button>
                 </div>
 
@@ -381,25 +489,75 @@ export default function DirectorDashboardPage() {
             </div>
           </Spin>
         </main>
+
+        {/* Mastodon modal */}
         <Modal
           title="Mastodon Account"
           open={isModalOpen}
           onOk={handleSubmitMastodon}
           onCancel={() => setIsModalOpen(false)}
         >
-          <Form form={form} layout="vertical"> 
-            <Form.Item 
-            label={<span style={{ color: "#111827" }}>Mastodon Base URL</span>} 
-            name="mastodonBaseUrl" 
-            rules={[{ required: true, message: "Please enter the base URL" }]} > 
-            <Input placeholder="https://mastodon.social" /> 
-            </Form.Item> 
-            <Form.Item 
-              label={<span style={{ color: "#111827" }}>Access Token</span>} 
-              name="mastodonAccessToken" 
-              rules={[{ required: true, message: "Please enter the access token" }]} > 
-              <Input placeholder="Your access token" /> 
-            </Form.Item> 
+          <Form form={form} layout="vertical">
+            <Form.Item
+              label={<span style={{ color: "#111827" }}>Mastodon Base URL</span>}
+              name="mastodonBaseUrl"
+              rules={[{ required: true, message: "Please enter the base URL" }]}
+            >
+              <Input placeholder="https://mastodon.social" />
+            </Form.Item>
+            <Form.Item
+              label={<span style={{ color: "#111827" }}>Access Token</span>}
+              name="mastodonAccessToken"
+              rules={[{ required: true, message: "Please enter the access token" }]}
+            >
+              <Input placeholder="Your access token" />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* Backroom Settings modal */}
+        <Modal
+          title="Backroom Settings"
+          open={isBackroomModalOpen}
+          okText="Save"
+          onOk={handleSubmitBackroomConfig}
+          onCancel={() => setIsBackroomModalOpen(false)}
+        >
+          <p style={{ color: "#6b7280", marginTop: 0 }}>
+            Decide how many backroomers are allowed to join this scenario and
+            set a join code. Settings are stored on the server, so they are
+            visible to every director of this scenario and enforced on join.
+            Leave the code blank to keep the existing one.
+          </p>
+          <Form form={backroomForm} layout="vertical">
+            <Form.Item
+              label={<span style={{ color: "#111827" }}>Maximum number of backroomers</span>}
+              name="maxBackroomers"
+              rules={[
+                { required: true, message: "Please enter a maximum" },
+                { type: "number", min: 0, message: "Must be zero or greater" },
+              ]}
+            >
+              <InputNumber min={0} step={1} style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item
+              label={<span style={{ color: "#111827" }}>New join code (optional)</span>}
+              name="backroomerCode"
+              rules={[
+                {
+                  validator: (_, v) => {
+                    const s = (v ?? "").toString().trim();
+                    if (s.length === 0) return Promise.resolve();
+                    if (s.length < 4) {
+                      return Promise.reject(new Error("Code must be at least 4 characters"));
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Input.Password placeholder="Leave empty to keep current code" />
+            </Form.Item>
           </Form>
         </Modal>
       </div>
