@@ -232,7 +232,12 @@ export default function GameLobbyPage() {
             </Button>
           </div>
           <div>
-            <Avatar icon={<UserOutlined />} className={styles.avatar} />
+            <Avatar
+              icon={<UserOutlined />}
+              className={styles.avatar}
+              onClick={() => router.push(`/users/${userId}`)}
+              style={{ cursor: "pointer" }}
+            />
           </div>
         </nav>
 

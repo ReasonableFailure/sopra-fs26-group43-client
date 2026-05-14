@@ -247,9 +247,12 @@ export default function CreateScenarioPage() {
             <div className={styles.logoMark} aria-hidden="true" />
             <span className={styles.navTitle}>Scenario Manager</span>
           </div>
-          <div>
-            <Avatar icon={<UserOutlined />} className={styles.avatar} />
-          </div>
+          <Avatar
+              icon={<UserOutlined />}
+              className={styles.avatar}
+              onClick={() => router.push(`/users/${userId}`)}
+              style={{ cursor: "pointer" }}
+            />
         </nav>
 
         <main className={styles.pageBody}>

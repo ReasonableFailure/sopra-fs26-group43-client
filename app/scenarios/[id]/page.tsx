@@ -231,7 +231,12 @@ export default function DirectorDashboardPage() {
             >
               Player Overview
             </Button>
-            <Avatar icon={<UserOutlined />} />
+            <Avatar
+              icon={<UserOutlined />}
+              className={styles.avatar}
+              onClick={() => router.push(`/users/${userId}`)}
+              style={{ cursor: "pointer" }}
+            />
           </div>
         </nav>
 

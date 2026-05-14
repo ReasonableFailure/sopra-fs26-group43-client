@@ -174,7 +174,6 @@ export default function NewsPage() {
             <Button onClick={() => router.back()}>
               Back to Dashboard
             </Button>
-            <Avatar icon={<UserOutlined />} className={styles.avatar} />
           </div>
         </nav>
 

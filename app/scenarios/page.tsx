@@ -274,7 +274,12 @@ export default function ScenariosPage() {
             >
               Create New Scenario
             </Button>
-            <Avatar icon={<UserOutlined />} className={styles.avatar} />
+            <Avatar
+              icon={<UserOutlined />}
+              className={styles.avatar}
+              onClick={() => router.push(`/users/${userId}`)}
+              style={{ cursor: "pointer" }}
+            />
           </div>
         </nav>
 
