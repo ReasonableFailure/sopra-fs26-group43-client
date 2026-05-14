@@ -30,7 +30,7 @@ export default function PlayerStatisticsPage() {
   const { isAuthenticated, authReady, userId } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const { playerRole } = usePlayerRole(userId);
+  const { playerRole, readyPlayerRole } = usePlayerRole(userId);
   const scenarioId = Number(params.id);
   const { directorToken } = useDirector(scenarioId);
   const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
@@ -73,12 +73,15 @@ export default function PlayerStatisticsPage() {
   );
 
   useEffect(() => {
-    if (authReady && !isAuthenticated || playerRole !== "director") {
-      console.log("The playerRole was not set to director");
-      alert("The playerRole was not set to director");
+    if(authReady && ! isAuthenticated) {
       router.replace("/login");
     }
-  }, [authReady, isAuthenticated, router, playerRole]);
+    if(!readyPlayerRole){
+      console.log("The playerRole is not ready, currently: " + playerRole);
+    } else if(readyPlayerRole && playerRole !== "director"){
+      console.log("Found playerRole "+playerRole)
+    }
+  }, [authReady, isAuthenticated, playerRole, router, readyPlayerRole]);
 
   if (!authReady || !isAuthenticated) return null;
 
