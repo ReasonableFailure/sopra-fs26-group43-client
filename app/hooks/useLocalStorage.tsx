@@ -20,8 +20,9 @@ export default function useLocalStorage<T>(
     try {
       const stored = globalThis.localStorage.getItem(key);
       if (stored !== null) setValue(JSON.parse(stored) as T);
+      console.log(JSON.parse(stored ?? "the thing is null"));
     } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
+      console.log(`Error reading localStorage key "${key}":`, error);
     }
     setReady(true);
   }, [key]);
