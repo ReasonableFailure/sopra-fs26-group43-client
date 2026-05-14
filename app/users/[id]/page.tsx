@@ -7,6 +7,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { UserService } from "@/api/userService";
 import { User } from "@/types/user";
 import { Button, Card, Descriptions, Form, Input } from "antd";
+import {useAuth} from "@/hooks/useAuth";
 
 interface EditFormFields {
   username: string;
@@ -15,19 +16,17 @@ interface EditFormFields {
 }
 
 const Profile: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const router = useRouter();
   const api = useApi();
   const userService = useMemo(() => new UserService(api), [api]);
-
-  const { value: token } = useLocalStorage<string>("token", "");
-  const { value: userId } = useLocalStorage<string>("userId", "");
+  const {token, userId, isAuthenticated, authReady} = useAuth();
 
   const [user, setUser] = useState<User | null>(null);
   const [editing, setEditing] = useState(false);
   const [form] = Form.useForm<EditFormFields>();
 
-  const isOwner = userId === id;
+  const isOwner = userId === Number(id);
 
   useEffect(() => {
     const fetchUser = async () => {
