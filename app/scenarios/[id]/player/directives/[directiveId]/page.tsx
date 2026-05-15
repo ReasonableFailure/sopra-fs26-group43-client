@@ -19,6 +19,7 @@ import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import { initials } from "@/helpers/helperFunctions";
+import { portraitSrc } from "@/utils/portrait";
 import styles from "@/styles/directiveDetail.module.css";
 
 function formatDate(iso: string | null): string {
@@ -162,9 +163,9 @@ export default function DirectiveDetailPage() {
             </Button>
             <Avatar
               className={styles.navAvatar}
-              src={myCharacter?.portrait ?? undefined}
+              src={portraitSrc(myCharacter?.portrait) ?? undefined}
             >
-              {!myCharacter?.portrait &&
+              {!portraitSrc(myCharacter?.portrait) &&
                 initials(myCharacter?.name ?? null)}
             </Avatar>
           </div>

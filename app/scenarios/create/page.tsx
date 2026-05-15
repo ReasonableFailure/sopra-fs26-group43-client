@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Avatar,
   Button,
   ConfigProvider,
   Form,
@@ -20,7 +19,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   UploadOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -30,6 +28,8 @@ import type { ScenarioPostDTO } from "@/types/scenario";
 import styles from "@/styles/createScenario.module.css";
 import { DirectorService } from "@/api/directorService";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
+import { portraitSrc } from "@/utils/portrait";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { CharacterPostDTO } from "@/types/character";
 import { DirectorPostDTO } from "@/types/director";
 
@@ -84,7 +84,12 @@ export default function CreateScenarioPage() {
 
   const [form] = Form.useForm<ScenarioFormValues>();
   const [characterForm] = Form.useForm<CharacterFormValues>();
-  const watchedPortrait = Form.useWatch("portrait", characterForm);
+  // Driving the preview image off a local state (instead of Form.useWatch)
+  // is the only reliable approach across AntD versions — useWatch sometimes
+  // doesn't re-fire after setFieldValue/setFieldsValue, leaving the preview
+  // stale or rendering a broken-image icon when the form holds an empty
+  // string.
+  const [portraitPreview, setPortraitPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [characters, setCharacters] = useState<DraftCharacter[]>([]);
@@ -104,6 +109,7 @@ export default function CreateScenarioPage() {
     if (character) {
       setEditingCharacter(character);
       characterForm.setFieldsValue(character);
+      setPortraitPreview(character.portrait ?? null);
 
       if (character.portrait) {
         setUploadFileList([
@@ -120,6 +126,7 @@ export default function CreateScenarioPage() {
     } else {
       setEditingCharacter(null);
       characterForm.resetFields();
+      setPortraitPreview(null);
       setUploadFileList([]);
     }
 
@@ -250,14 +257,9 @@ export default function CreateScenarioPage() {
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
             <div className={styles.logoMark} aria-hidden="true" />
-            <span className={styles.navTitle}>Scenario Manager</span>
+            <span className={styles.navTitle}>Crisis Manager</span>
           </div>
-          <Avatar
-            icon={<UserOutlined />}
-            className={styles.avatar}
-            onClick={() => router.push(`/users/${userId}`)}
-            style={{ cursor: "pointer" }}
-          />
+          <UserAvatarMenu avatarClassName={styles.avatar} />
         </nav>
 
         <main className={styles.pageBody}>
@@ -316,10 +318,10 @@ export default function CreateScenarioPage() {
                         {characters.map((c) => (
                           <div key={c.key} className={styles.characterRow}>
                             <div className={styles.characterAvatar}>
-                              {c.portrait
+                              {portraitSrc(c.portrait)
                                 ? (
                                   <img
-                                    src={c.portrait}
+                                    src={portraitSrc(c.portrait)!}
                                     alt={c.name}
                                     style={{
                                       width: "100%",
@@ -428,9 +430,9 @@ export default function CreateScenarioPage() {
           onFinish={handleAddCharacter}
           style={{ marginTop: 16 }}
         >
-          {watchedPortrait && (
+          {portraitPreview && (
             <img
-              src={watchedPortrait}
+              src={portraitPreview}
               alt="Portrait preview"
               style={{
                 width: 80,
@@ -459,6 +461,7 @@ export default function CreateScenarioPage() {
                 const base64 = await fileToBase64(file as File);
 
                 characterForm.setFieldValue("portrait", base64);
+                setPortraitPreview(base64);
 
                 setUploadFileList([
                   {
@@ -473,9 +476,10 @@ export default function CreateScenarioPage() {
               }}
               onRemove={() => {
                 characterForm.setFieldValue("portrait", null);
+                setPortraitPreview(null);
                 setUploadFileList([]);
               }}
-              showUploadList
+              showUploadList={{ showPreviewIcon: false }}
             >
               <Button icon={<UploadOutlined />}>
                 Upload Portrait

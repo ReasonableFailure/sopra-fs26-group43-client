@@ -18,6 +18,7 @@ import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { UserAssignDTO } from "@/types/user";
+import { portraitSrc } from "@/utils/portrait";
 
 interface CharacterCardProps {
   character: Character;
@@ -45,10 +46,10 @@ function CharacterCard({ character, onSelect, disabled }: CharacterCardProps) {
         </div>
 
         <div className={styles.characterPortraitWrapper}>
-          {character.portrait
+          {portraitSrc(character.portrait)
             ? (
               <img
-                src={character.portrait}
+                src={portraitSrc(character.portrait)!}
                 alt={character.name ?? "Character portrait"}
                 className={styles.characterPortrait}
               />

@@ -21,6 +21,7 @@ import type { Character } from "@/types/character";
 import type { Message } from "@/types/message";
 import { CommsStatus } from "@/types/directive";
 import { initials } from "@/helpers/helperFunctions";
+import { portraitSrc } from "@/utils/portrait";
 import styles from "@/styles/characterProfile.module.css";
 
 function formatDate(iso: string | null): string {
@@ -197,11 +198,11 @@ export default function CharacterProfilePage() {
               }`}
             >
               <div className={styles.profileCard}>
-                {targetCharacter?.portrait
+                {portraitSrc(targetCharacter?.portrait)
                   ? (
                     <img
-                      src={targetCharacter.portrait}
-                      alt={targetCharacter.name ?? ""}
+                      src={portraitSrc(targetCharacter?.portrait)!}
+                      alt={targetCharacter?.name ?? ""}
                       className={styles.avatarImg}
                     />
                   )

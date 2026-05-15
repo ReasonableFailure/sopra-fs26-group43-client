@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Avatar,
   Button,
   ConfigProvider,
   Dropdown,
@@ -15,7 +14,7 @@ import {
   theme,
 } from "antd";
 import type { MenuProps } from "antd";
-import { MoreOutlined, UserOutlined } from "@ant-design/icons";
+import { MoreOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useScenarios } from "@/hooks/useScenarios";
@@ -25,6 +24,7 @@ import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
 import type { Engagement, RoleType } from "@/types/engagement";
 import { routeForEngagement } from "@/utils/engagementRouting";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import styles from "@/styles/scenarios.module.css";
 
 const ROLE_COLORS: Record<RoleType, string> = {
@@ -313,7 +313,7 @@ export default function ScenariosPage() {
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
             <div className={styles.logoMark} aria-hidden="true" />
-            <span className={styles.navTitle}>Scenario Manager</span>
+            <span className={styles.navTitle}>Crisis Manager</span>
           </div>
           <div className={styles.navRight}>
             <Button
@@ -322,12 +322,7 @@ export default function ScenariosPage() {
             >
               Create New Scenario
             </Button>
-            <Avatar
-              icon={<UserOutlined />}
-              className={styles.avatar}
-              onClick={() => router.push(`/users/${userId}`)}
-              style={{ cursor: "pointer" }}
-            />
+            <UserAvatarMenu avatarClassName={styles.avatar} />
           </div>
         </nav>
 

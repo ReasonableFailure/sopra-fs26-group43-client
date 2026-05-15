@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Avatar,
   Button,
   ConfigProvider,
   Form,
@@ -18,7 +17,6 @@ import {
   CloseCircleOutlined,
   PauseCircleOutlined,
   QuestionCircleOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +31,7 @@ import { ScenarioStatus } from "@/types/scenario";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
 import { NewsItem, NewsList } from "@/components/NewsItem";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import styles from "@/styles/directorDashboard.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 
@@ -242,6 +241,11 @@ export default function DirectorDashboardPage() {
           borderRadius: 8,
           fontSize: 14,
         },
+        // Don't override components.Button here: the root layout sets
+        // Button.colorPrimary to green (#75bd9d), and Start Game / Next
+        // Day on this dashboard depend on that to render green.
+        // The one button we DO want indigo (See All News, to match the
+        // Character Dashboard) is styled explicitly below.
       }}
     >
       {contextHolder}
@@ -257,17 +261,7 @@ export default function DirectorDashboardPage() {
             </Button>
           </div>
           <div className={styles.navRight}>
-            <Button
-              onClick={() => router.push(`/scenarios/${scenarioId}/statistics`)}
-            >
-              Player Overview
-            </Button>
-            <Avatar
-              icon={<UserOutlined />}
-              className={styles.avatar}
-              onClick={() => router.push(`/users/${userId}`)}
-              style={{ cursor: "pointer" }}
-            />
+            <UserAvatarMenu avatarClassName={styles.avatar} />
           </div>
         </nav>
 
@@ -284,7 +278,7 @@ export default function DirectorDashboardPage() {
                     {scenario?.title ?? "Loading…"}
                   </h1>
                   <p className={styles.scenarioSubtitle}>
-                    Monitor Readiness and Control Game State
+                    Setup Mastodon and Control Game Progress
                   </p>
                 </div>
 
@@ -440,32 +434,55 @@ export default function DirectorDashboardPage() {
               </div>
 
               {/* ACTIVITY */}
-              <div className={styles.activityCard}>
-                <div className={styles.activityHeader}>
-                  <span className={styles.cardTitle}>
-                    Recent Activity (Day {scenario?.dayNumber ?? 0})
-                  </span>
-                  <Button
-                    type="link"
-                    onClick={() => router.push(`/scenarios/${scenarioId}/news`)}
-                  >
-                    See All News →
-                  </Button>
+              <div className={styles.activitySection}>
+                <div className={styles.activitySectionHeader}>
+                  <div>
+                    <h2 className={styles.activitySectionTitle}>
+                      Recent Activity
+                    </h2>
+                    <p className={styles.activitySectionSubtitle}>
+                      News stories and pronouncements from Day{" "}
+                      {scenario?.dayNumber ?? 0}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Button
+                      onClick={() =>
+                        router.push(`/scenarios/${scenarioId}/statistics`)}
+                    >
+                      Player Overview
+                    </Button>
+                    <Button
+                      type="primary"
+                      onClick={() =>
+                        router.push(`/scenarios/${scenarioId}/news`)}
+                      style={{
+                        backgroundColor: "#4f46e5",
+                        borderColor: "#4f46e5",
+                      }}
+                    >
+                      See All News
+                    </Button>
+                  </div>
                 </div>
 
-                <div className={styles.activityList}>
-                  {(() => {
-                    if (!scenario) return null;
-                    const today = (newsItems ?? [])
-                      .filter((n) => n.dayNumber === scenario.dayNumber)
-                      .sort((a, b) =>
-                        new Date(b.createdAt).getTime() -
-                        new Date(a.createdAt).getTime()
-                      );
-                    if (today.length === 0) {
-                      return <p>No activity today yet.</p>;
-                    }
+                {(() => {
+                  if (!scenario) return null;
+                  const today = (newsItems ?? [])
+                    .filter((n) => n.dayNumber === scenario.dayNumber)
+                    .sort((a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                    );
+                  if (today.length === 0) {
                     return (
+                      <div className={styles.activityEmptyCard}>
+                        No activity today yet.
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className={styles.activityCard}>
                       <NewsList>
                         {today.map((item) => {
                           const authorName = item.authorId !== null &&
@@ -483,9 +500,9 @@ export default function DirectorDashboardPage() {
                           );
                         })}
                       </NewsList>
-                    );
-                  })()}
-                </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </Spin>

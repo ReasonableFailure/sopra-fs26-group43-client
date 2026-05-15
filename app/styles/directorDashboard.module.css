@@ -68,6 +68,10 @@
   justify-content: space-between;
   align-items: center;
   gap: 24px;
+  /* Same 16px vertical gap below the title block that
+   * .activitySectionHeader uses (padding-bottom 16px), so the title +
+   * subtitle don't crowd the Crisis Status / Game Controls cards. */
+  margin-bottom: 16px;
 }
 
 .scenarioTitle {
@@ -239,19 +243,54 @@
   border-color: #2563eb !important;
 }
 
-/* Recent Activity card */
+/* Recent Activity */
+.activitySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.activitySectionHeader {
+  display: flex;
+  /* Vertically center the action button against the title+subtitle
+   * block — looks balanced when the button is sized larger than a
+   * single line of body text. */
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 16px;
+  gap: 16px;
+}
+
+.activitySectionTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+
+.activitySectionSubtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
 .activityCard {
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 28px;
+  overflow: hidden;
 }
 
-.activityHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
+.activityEmptyCard {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 32px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
 }
 
 .activityList {

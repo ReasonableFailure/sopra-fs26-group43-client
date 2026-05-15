@@ -9,6 +9,9 @@ export interface User {
   token: string | null;
   status: UserStatus | null;
   bio: string | null;
+  name: string | null;
+  /** Profile picture as data URL (or null). */
+  profilePic: string | null;
   playing: boolean | null;
   creationDate: string | null;
 }
@@ -26,11 +29,17 @@ export interface UserLoginDTO {
   password: string;
 }
 
-/** PUT /users/{id} */
+/**
+ * PUT /users/{id} – every field is optional. A field that's omitted
+ * keeps its current value server-side. Sending an empty string clears
+ * the corresponding text field (or pic).
+ */
 export interface UserPutDTO {
   username?: string;
   password?: string;
   bio?: string;
+  name?: string;
+  profilePic?: string | null;
 }
 
 export interface UserAssignDTO {

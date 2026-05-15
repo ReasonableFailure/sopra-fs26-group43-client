@@ -162,7 +162,10 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 12px;
+  /* Anchor the hint + its separator line to the bottom of the card no
+   * matter how short the title/description above is. `margin-top: auto`
+   * works because .characterCard is a flex column. */
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid #f3f4f6;
 }

@@ -25,6 +25,7 @@ import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
 import { initials } from "@/helpers/helperFunctions";
+import { portraitSrc } from "@/utils/portrait";
 import styles from "@/styles/communicationForm.module.css";
 
 type CommType = "direct_message" | "directive" | "pronouncement";
@@ -242,7 +243,7 @@ export default function CommunicationFormPage() {
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
             <div className={styles.logoMark} aria-hidden="true" />
-            <span className={styles.navTitle}>Scenario Manager</span>
+            <span className={styles.navTitle}>Crisis Manager</span>
           </div>
           {!isAlive && (
             <div
@@ -253,9 +254,9 @@ export default function CommunicationFormPage() {
           )}
           <Avatar
             className={styles.navAvatar}
-            src={selectedCharacter?.portrait ?? undefined}
+            src={portraitSrc(selectedCharacter?.portrait) ?? undefined}
           >
-            {!selectedCharacter?.portrait &&
+            {!portraitSrc(selectedCharacter?.portrait) &&
               initials(selectedCharacter?.name ?? null)}
           </Avatar>
         </nav>

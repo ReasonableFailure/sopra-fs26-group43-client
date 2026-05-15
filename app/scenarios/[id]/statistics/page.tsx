@@ -4,7 +4,6 @@ import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   App,
-  Avatar,
   Button,
   ConfigProvider,
   Modal,
@@ -13,7 +12,6 @@ import {
   theme,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { UserOutlined } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -25,6 +23,7 @@ import type { Character } from "@/types/character";
 import styles from "@/styles/playerTable.module.css";
 import { useDirector } from "@/hooks/useDirector";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 
 export default function PlayerStatisticsPage() {
   const { isAuthenticated, authReady, userId } = useAuth();
@@ -178,7 +177,7 @@ export default function PlayerStatisticsPage() {
             >
               Back to Dashboard
             </Button>
-            <Avatar icon={<UserOutlined />} />
+            <UserAvatarMenu />
           </div>
         </nav>
 

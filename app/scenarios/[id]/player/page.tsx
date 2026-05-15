@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Avatar,
   Button,
   ConfigProvider,
   message,
@@ -36,6 +35,9 @@ import { CommsStatus } from "@/types/directive";
 import { Scenario } from "@/types/scenario";
 import type { NewsGetDTO } from "@/types/news";
 import type { Message } from "@/types/message";
+
+import { portraitSrc } from "@/utils/portrait";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 
 import styles from "@/styles/playerDashboard.module.css";
 
@@ -356,13 +358,7 @@ export default function PlayerDashboardPage() {
             </div>
           )}
           <div className={styles.navRight}>
-            <Avatar
-              className={styles.navAvatar}
-              src={selectedCharacter?.portrait ?? undefined}
-            >
-              {!selectedCharacter?.portrait &&
-                initials(selectedCharacter?.name ?? null)}
-            </Avatar>
+            <UserAvatarMenu avatarClassName={styles.navAvatar} />
           </div>
         </nav>
 
@@ -643,16 +639,16 @@ export default function PlayerDashboardPage() {
                             <div
                               className={styles.characterAvatar}
                               style={{
-                                background: char.portrait
+                                background: portraitSrc(char.portrait)
                                   ? "transparent"
                                   : avatarGradient(index),
                               }}
                               aria-label={char.name ?? "Character"}
                             >
-                              {char.portrait
+                              {portraitSrc(char.portrait)
                                 ? (
                                   <img
-                                    src={char.portrait}
+                                    src={portraitSrc(char.portrait)!}
                                     alt={char.name ?? "Character portrait"}
                                     className={styles.characterPortrait}
                                   />
