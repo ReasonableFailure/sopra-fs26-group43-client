@@ -517,13 +517,13 @@ export default function DirectorDashboardPage() {
             </div>
           </Spin>
         </main>
-          <Modal
-            title="Mastodon Account"
-            open={isModalOpen}
-            onOk={handleSubmitMastodon}
-            confirmLoading={savingMastodon}
-            onCancel={() => setIsModalOpen(false)}
-          >
+        <Modal
+          title="Mastodon Account"
+          open={isModalOpen}
+          onOk={handleSubmitMastodon}
+          confirmLoading={savingMastodon}
+          onCancel={() => setIsModalOpen(false)}
+        >
           <Form form={form} layout="vertical">
             <Form.Item
               label={

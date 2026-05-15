@@ -165,6 +165,10 @@ export default function CreateScenarioPage() {
   };
 
   const handleSubmit = async (values: ScenarioFormValues) => {
+    if (characters.length === 0) {
+      message.error("Add at least one character");
+      return;
+    }
     setSubmitting(true);
     try {
       const directorData: DirectorPostDTO = {
