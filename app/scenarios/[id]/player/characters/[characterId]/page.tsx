@@ -23,6 +23,7 @@ import { CommsStatus } from "@/types/directive";
 import { initials } from "@/helpers/helperFunctions";
 import { portraitSrc } from "@/utils/portrait";
 import styles from "@/styles/characterProfile.module.css";
+import { NavLogo } from "@/components/NavLogo";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -166,7 +167,7 @@ export default function CharacterProfilePage() {
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>
               Character Profile &amp; Communication Log
             </span>

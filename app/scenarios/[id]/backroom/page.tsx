@@ -28,6 +28,7 @@ import styles from "@/styles/backroomDashboard.module.css";
 import { useBackroomer } from "@/hooks/useBackroomer";
 import { portraitSrc as portraitSrcUtil } from "@/utils/portrait";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 function timeAgo(iso: string | null | undefined): string {
   if (!iso) return "";
@@ -291,13 +292,15 @@ export default function BackroomDashboardPage() {
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Backroom Dashboard</span>
+          </div>
+          <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
               All Scenarios
             </Button>
+            <UserAvatarMenu avatarClassName={styles.navAvatar} />
           </div>
-          <UserAvatarMenu avatarClassName={styles.navAvatar} />
         </nav>
 
         <Spin spinning={loading} fullscreen={false} />

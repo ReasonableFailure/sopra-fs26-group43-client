@@ -25,6 +25,7 @@ import { ScenarioStatus } from "@/types/scenario";
 import type { Engagement, RoleType } from "@/types/engagement";
 import { routeForEngagement } from "@/utils/engagementRouting";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 import styles from "@/styles/scenarios.module.css";
 
 const ROLE_COLORS: Record<RoleType, string> = {
@@ -312,7 +313,7 @@ export default function ScenariosPage() {
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Crisis Manager</span>
           </div>
           <div className={styles.navRight}>

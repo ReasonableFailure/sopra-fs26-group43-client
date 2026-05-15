@@ -11,8 +11,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 76px;
-  padding: 0 24px;
+  height: 64px;
+  padding: 0 32px;
   background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
@@ -24,33 +24,32 @@
 .navLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logoMark {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .navTitle {
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 600;
   color: #111827;
+  letter-spacing: -0.01em;
 }
 
 .navRight {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .navAvatar {
-  background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
   cursor: pointer;
-  font-weight: 600 !important;
 }
 
 .bellButton {
@@ -413,7 +412,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
+  padding: 10px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.characterRow:hover {
+  background: #f3f4f6;
+}
+
+.characterRow:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
 }
 
 .characterAvatar {
@@ -461,26 +472,19 @@
   flex-shrink: 0;
 }
 
-.unreadDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ef4444;
-  display: inline-block;
-  flex-shrink: 0;
-  margin-left: 6px;
-  box-shadow: 0 0 0 2px #fff;
-}
-
 .unreadBadge {
+  /* Pill on the right edge of the character row showing the count of
+   * unread (ACCEPTED, !seenByRecipient) messages from this sender. */
   font-size: 11px;
   font-weight: 600;
   color: #ffffff;
   background: #ef4444;
   border-radius: 999px;
   padding: 2px 8px;
+  min-width: 22px;
+  text-align: center;
   flex-shrink: 0;
-  margin-left: 6px;
+  margin-left: auto;
 }
 
 .messageBtn {

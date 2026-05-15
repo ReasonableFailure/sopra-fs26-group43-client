@@ -24,6 +24,7 @@ import styles from "@/styles/playerTable.module.css";
 import { useDirector } from "@/hooks/useDirector";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 export default function PlayerStatisticsPage() {
   const { isAuthenticated, authReady, userId } = useAuth();
@@ -165,7 +166,7 @@ export default function PlayerStatisticsPage() {
         {/* NAVBAR */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>
               Player Overview
             </span>

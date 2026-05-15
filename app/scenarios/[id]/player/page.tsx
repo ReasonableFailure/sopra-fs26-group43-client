@@ -38,6 +38,7 @@ import type { Message } from "@/types/message";
 
 import { portraitSrc } from "@/utils/portrait";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 import styles from "@/styles/playerDashboard.module.css";
 
@@ -165,8 +166,11 @@ export default function PlayerDashboardPage() {
     enabled && !!characterId,
   );
 
-  const unreadSenderIds = useMemo(() => {
-    const ids = new Set<number>();
+  // Per-sender count of approved messages I haven't read yet. Stored as
+  // a Map<senderId, count> so the character list can render an exact
+  // unread-count badge rather than just a yes/no dot.
+  const unreadCountBySender = useMemo(() => {
+    const counts = new Map<number, number>();
     for (const m of inbox ?? []) {
       if (
         m.status === CommsStatus.ACCEPTED &&
@@ -174,10 +178,10 @@ export default function PlayerDashboardPage() {
         m.recipientId === characterId &&
         m.creatorId !== null
       ) {
-        ids.add(m.creatorId);
+        counts.set(m.creatorId, (counts.get(m.creatorId) ?? 0) + 1);
       }
     }
-    return ids;
+    return counts;
   }, [inbox, characterId]);
 
   const effectiveScenario = liveScenario ?? scenario;
@@ -346,11 +350,8 @@ export default function PlayerDashboardPage() {
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Character Dashboard</span>
-            <Button onClick={() => router.push("/scenarios")}>
-              All Scenarios
-            </Button>
           </div>
           {!isAlive && (
             <div style={{ color: "#ef4444", fontWeight: 600 }}>
@@ -358,6 +359,9 @@ export default function PlayerDashboardPage() {
             </div>
           )}
           <div className={styles.navRight}>
+            <Button onClick={() => router.push("/scenarios")}>
+              All Scenarios
+            </Button>
             <UserAvatarMenu avatarClassName={styles.navAvatar} />
           </div>
         </nav>
@@ -629,12 +633,29 @@ export default function PlayerDashboardPage() {
                       )
                       .map((char, index) => {
                         const isMe = char.id === characterId;
-                        const hasUnread = char.id !== null &&
-                          unreadSenderIds.has(char.id);
+                        const unreadCount = char.id !== null
+                          ? (unreadCountBySender.get(char.id) ?? 0)
+                          : 0;
+                        const openProfile = () => {
+                          if (char.id !== null && char.id !== undefined) {
+                            router.push(
+                              `/scenarios/${scenarioId}/player/characters/${char.id}`,
+                            );
+                          }
+                        };
                         return (
                           <div
                             key={char.id ?? char.name}
                             className={styles.characterRow}
+                            role="button"
+                            tabIndex={0}
+                            onClick={openProfile}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                openProfile();
+                              }
+                            }}
                           >
                             <div
                               className={styles.characterAvatar}
@@ -661,13 +682,6 @@ export default function PlayerDashboardPage() {
                                 {isMe && (
                                   <span className={styles.youBadge}>You</span>
                                 )}
-                                {!isMe && hasUnread && (
-                                  <span
-                                    className={styles.unreadDot}
-                                    aria-label="Unread messages"
-                                    title="New messages"
-                                  />
-                                )}
                               </p>
                               {char.title && (
                                 <p className={styles.characterMeta}>
@@ -675,16 +689,16 @@ export default function PlayerDashboardPage() {
                                 </p>
                               )}
                             </div>
-                            <Button
-                              type="primary"
-                              className={styles.messageBtn}
-                              onClick={() =>
-                                router.push(
-                                  `/scenarios/${scenarioId}/player/characters/${char.id}`,
-                                )}
-                            >
-                              View
-                            </Button>
+                            {!isMe && unreadCount > 0 && (
+                              <span
+                                className={styles.unreadBadge}
+                                aria-label={`${unreadCount} unread message${
+                                  unreadCount === 1 ? "" : "s"
+                                }`}
+                              >
+                                {unreadCount}
+                              </span>
+                            )}
                           </div>
                         );
                       })

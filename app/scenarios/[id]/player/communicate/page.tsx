@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
-  Avatar,
   Button,
   ConfigProvider,
   Input,
@@ -24,9 +23,9 @@ import { MessageService } from "@/api/messageService";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
-import { initials } from "@/helpers/helperFunctions";
-import { portraitSrc } from "@/utils/portrait";
 import styles from "@/styles/communicationForm.module.css";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 type CommType = "direct_message" | "directive" | "pronouncement";
 
@@ -242,7 +241,7 @@ export default function CommunicationFormPage() {
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Crisis Manager</span>
           </div>
           {!isAlive && (
@@ -252,13 +251,9 @@ export default function CommunicationFormPage() {
               Your Character has Died.
             </div>
           )}
-          <Avatar
-            className={styles.navAvatar}
-            src={portraitSrc(selectedCharacter?.portrait) ?? undefined}
-          >
-            {!portraitSrc(selectedCharacter?.portrait) &&
-              initials(selectedCharacter?.name ?? null)}
-          </Avatar>
+          <div className={styles.navRight}>
+            <UserAvatarMenu avatarClassName={styles.navAvatar} />
+          </div>
         </nav>
 
         <div className={styles.pageBody}>

@@ -32,6 +32,7 @@ import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
 import { NewsItem, NewsList } from "@/components/NewsItem";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 import styles from "@/styles/directorDashboard.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 
@@ -254,13 +255,13 @@ export default function DirectorDashboardPage() {
         {/* NAVBAR */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Director Dashboard</span>
+          </div>
+          <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
               All Scenarios
             </Button>
-          </div>
-          <div className={styles.navRight}>
             <UserAvatarMenu avatarClassName={styles.avatar} />
           </div>
         </nav>

@@ -30,6 +30,7 @@ import { DirectorService } from "@/api/directorService";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { portraitSrc } from "@/utils/portrait";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 import { CharacterPostDTO } from "@/types/character";
 import { DirectorPostDTO } from "@/types/director";
 
@@ -256,7 +257,7 @@ export default function CreateScenarioPage() {
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Crisis Manager</span>
           </div>
           <UserAvatarMenu avatarClassName={styles.avatar} />

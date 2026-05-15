@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
-import { InfoCircleOutlined, UserOutlined } from "@ant-design/icons";
+import { Button, ConfigProvider, message, Spin, theme } from "antd";
+import { InfoCircleOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useScenarioEngagement } from "../../../hooks/useScenarioEngagement";
@@ -19,6 +19,8 @@ import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { UserAssignDTO } from "@/types/user";
 import { portraitSrc } from "@/utils/portrait";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 interface CharacterCardProps {
   character: Character;
@@ -252,19 +254,14 @@ export default function GameLobbyPage() {
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Game Lobby</span>
+          </div>
+          <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
               All Scenarios
             </Button>
-          </div>
-          <div>
-            <Avatar
-              icon={<UserOutlined />}
-              className={styles.avatar}
-              onClick={() => router.push(`/users/${userId}`)}
-              style={{ cursor: "pointer" }}
-            />
+            <UserAvatarMenu avatarClassName={styles.avatar} />
           </div>
         </nav>
 

@@ -16,6 +16,7 @@ import { ScenarioService } from "@/api/scenarioService";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
 import styles from "@/styles/newsPage.module.css";
+import { NavLogo } from "@/components/NavLogo";
 
 type FilterType = "all" | "news" | "pronouncement";
 
@@ -168,7 +169,7 @@ export default function NewsPage() {
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>News &amp; Pronouncements</span>
           </div>
           <div className={styles.navRight}>
