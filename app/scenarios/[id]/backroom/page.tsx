@@ -294,9 +294,6 @@ export default function BackroomDashboardPage() {
           <div className={styles.navLeft}>
             <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Backroom Dashboard</span>
-            <Button onClick={() => router.push("/scenarios")}>
-              All Scenarios
-            </Button>
           </div>
           <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
