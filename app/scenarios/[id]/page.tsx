@@ -23,7 +23,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useDirector } from "@/hooks/useDirector";
 import { usePolling } from "@/hooks/usePolling";
-import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
 import { CharacterService } from "@/api/characterService";
@@ -79,21 +78,23 @@ const STATUS_CLASS: Record<ScenarioStatus, string> = {
 };
 
 export default function DirectorDashboardPage() {
-  const { userId, isAuthenticated, authReady, userIdReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  // Director gate. `directedReady` lags the first render by one tick because
-  // localStorage can only be read in `useEffect` (it does not exist on the
-  // server). Treat "not ready" as "decision pending", never as "false".
-  const { isDirector, ready: directedReady } = useDirectedScenarios(userId);
-  const isThisScenarioDirector = directedReady && isDirector(scenarioId);
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
-  const { directorToken } = useDirector(scenarioId);
+  // Director gate: possession of the per-scenario director token is the
+  // canonical proof the user directs THIS scenario. It is written by the
+  // create-scenario flow and rehydrated on each `useEngagedScenarios`
+  // poll, so any current director has it regardless of which scenario
+  // they last touched. `readyDirectorToken` lags the first render by one
+  // tick (localStorage can only be read in `useEffect`); treat "not
+  // ready" as "decision pending", never as "false".
+  const { directorToken, readyDirectorToken } = useDirector(scenarioId);
   const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -138,22 +139,24 @@ export default function DirectorDashboardPage() {
       router.replace("/login");
       return;
     }
-    if (!userIdReady) {
-      return;
-    } else if (
-      userIdReady &&
-      globalThis.localStorage[`playerRole_${userId}`] !== '"director"'
-    ) { //this is so hacky... but it works
-      alert("Only a director may access this view!");
+    if (!readyDirectorToken) return;
+    if (!directorToken) {
       router.replace(`/scenarios/${scenarioId}/lobby`);
     }
-  }, [authReady, isAuthenticated, userId, userIdReady, router, scenarioId]);
+  }, [
+    authReady,
+    isAuthenticated,
+    readyDirectorToken,
+    directorToken,
+    router,
+    scenarioId,
+  ]);
 
   // Render nothing while any gate is still resolving. This is the data-race
   // fix: wait for BOTH auth state AND localStorage hydration before showing
   // the dashboard or deciding to redirect.
   if (
-    !authReady || !isAuthenticated || !directedReady || !isThisScenarioDirector
+    !authReady || !isAuthenticated || !readyDirectorToken || !directorToken
   ) return null;
 
   const status = scenario?.status;
