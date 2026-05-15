@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Avatar,
   Button,
   ConfigProvider,
   Dropdown,
@@ -15,7 +14,7 @@ import {
   theme,
 } from "antd";
 import type { MenuProps } from "antd";
-import { MoreOutlined, UserOutlined } from "@ant-design/icons";
+import { MoreOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useScenarios } from "@/hooks/useScenarios";
@@ -25,6 +24,8 @@ import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
 import type { Engagement, RoleType } from "@/types/engagement";
 import { routeForEngagement } from "@/utils/engagementRouting";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 import styles from "@/styles/scenarios.module.css";
 
 const ROLE_COLORS: Record<RoleType, string> = {
@@ -40,6 +41,23 @@ const STATUS_COLORS: Record<ScenarioStatus, string> = {
   [ScenarioStatus.COMPLETED]: "default",
 };
 
+// User-facing progress label. FROZEN is collapsed into "In Progress"
+// because, from a viewer's perspective, the scenario is still actively
+// being played — it's just temporarily paused by the director.
+const STATUS_PROGRESS_LABEL: Record<ScenarioStatus, string> = {
+  [ScenarioStatus.UNSTARTED]: "Not Started",
+  [ScenarioStatus.FROZEN]: "In Progress",
+  [ScenarioStatus.UNFROZEN]: "In Progress",
+  [ScenarioStatus.COMPLETED]: "Completed",
+};
+
+const STATUS_PROGRESS_COLOR: Record<ScenarioStatus, string> = {
+  [ScenarioStatus.UNSTARTED]: "default",
+  [ScenarioStatus.FROZEN]: "processing",
+  [ScenarioStatus.UNFROZEN]: "processing",
+  [ScenarioStatus.COMPLETED]: "success",
+};
+
 function ScenarioCard({
   scenario,
   engagement,
@@ -51,30 +69,51 @@ function ScenarioCard({
 }) {
   const router = useRouter();
 
-  const moreMenu: MenuProps = {
-    items: [
-      {
-        key: "delete",
-        label: "Delete",
-        danger: true,
-        onClick: () => onDelete(scenario),
-      },
-    ],
-  };
+  // Only the Director of this scenario can delete it. Surface the option
+  // only when the user has a Director engagement here; the backend also
+  // enforces this and will reject mismatched tokens.
+  const isDirector = engagement?.roleType === "DIRECTOR";
 
-  const handleView = () => routeForEngagement(engagement, scenario.id, router);
+  const moreMenu: MenuProps | undefined = isDirector
+    ? {
+      items: [
+        {
+          key: "delete",
+          label: "Delete",
+          danger: true,
+          onClick: () => onDelete(scenario),
+        },
+      ],
+    }
+    : undefined;
+
+  const handleView = () =>
+    routeForEngagement(
+      engagement,
+      scenario.id,
+      router,
+      "push",
+      scenario.status,
+    );
 
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>{scenario.title}</h2>
-        <Dropdown menu={moreMenu} trigger={["click"]}>
-          <Button
-            type="text"
-            icon={<MoreOutlined />}
-            aria-label="More options"
-          />
-        </Dropdown>
+        {moreMenu && (
+          <Dropdown menu={moreMenu} trigger={["click"]}>
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              aria-label="More options"
+            />
+          </Dropdown>
+        )}
+      </div>
+      <div className={styles.cardMeta}>
+        <Tag color={STATUS_PROGRESS_COLOR[scenario.status]}>
+          {STATUS_PROGRESS_LABEL[scenario.status]}
+        </Tag>
       </div>
       <p className={styles.cardDesc}>
         {scenario.description ?? "No description provided."}
@@ -132,7 +171,8 @@ export default function ScenariosPage() {
   const router = useRouter();
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
-  const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi, messageContextHolder] = message.useMessage();
+  const [modal, modalContextHolder] = Modal.useModal();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const { scenarios, loading, error } = useScenarios();
@@ -162,35 +202,49 @@ export default function ScenariosPage() {
 
   if (!authReady || !isAuthenticated) return null;
 
-  const  handleDeleteOk = async ( scenario: Scenario) => {
-    if (!token) return;
-    setDeletingId(scenario.id);
-    try {
-      await scenarioService.deleteScenario(
-          scenario.id,
-          token ?? `Director ${token}`,
-      );
-      setLocalScenarios((prev) =>
-          (prev ?? []).filter((s) => s.id !== scenario.id)
-      );
-      await refetchEngagements();
-      messageApi.success("Scenario deleted");
-    } catch (err) {
-      messageApi.error(
-          err instanceof Error ? err.message : "Failed to delete scenario",
-      );
-    } finally {
-      setDeletingId(null);
-    }
-  }
-
   const handleDelete = (scenario: Scenario) => {
-    Modal.confirm({
+    modal.confirm({
       title: `Delete scenario "${scenario.title}"?`,
       content: "This cannot be undone.",
       okText: "Delete",
       okButtonProps: { danger: true },
-      onOk: () => handleDeleteOk(scenario),
+      onOk: async () => {
+        // Backend's DELETE /scenarios/{id} requires a Director token that
+        // matches THIS scenario's director — not the user's bearer token.
+        let directorToken: string | null = null;
+        try {
+          const stored = globalThis.localStorage.getItem(
+            `scenario_${scenario.id}_directorToken`,
+          );
+          directorToken = stored ? (JSON.parse(stored) as string) : null;
+        } catch {
+          directorToken = null;
+        }
+        if (!directorToken) {
+          messageApi.error(
+            "Only the director can delete this scenario.",
+          );
+          return;
+        }
+        setDeletingId(scenario.id);
+        try {
+          await scenarioService.deleteScenario(
+            scenario.id,
+            `Director ${directorToken}`,
+          );
+          setLocalScenarios((prev) =>
+            (prev ?? []).filter((s) => s.id !== scenario.id)
+          );
+          await refetchEngagements();
+          messageApi.success("Scenario deleted");
+        } catch (err) {
+          messageApi.error(
+            err instanceof Error ? err.message : "Failed to delete scenario",
+          );
+        } finally {
+          setDeletingId(null);
+        }
+      },
     });
   };
 
@@ -262,12 +316,13 @@ export default function ScenariosPage() {
         },
       }}
     >
-      {contextHolder}
+      {messageContextHolder}
+      {modalContextHolder}
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
-            <span className={styles.navTitle}>Scenario Manager</span>
+            <NavLogo className={styles.logoMark} />
+            <span className={styles.navTitle}>Crisis Manager</span>
           </div>
           <div className={styles.navRight}>
             <Button
@@ -276,12 +331,7 @@ export default function ScenariosPage() {
             >
               Create New Scenario
             </Button>
-            <Avatar
-              icon={<UserOutlined />}
-              className={styles.avatar}
-              onClick={() => router.push(`/users/${userId}`)}
-              style={{ cursor: "pointer" }}
-            />
+            <UserAvatarMenu avatarClassName={styles.avatar} />
           </div>
         </nav>
 
@@ -299,7 +349,7 @@ export default function ScenariosPage() {
               defaultActiveKey="all"
               items={[
                 { key: "all", label: "All Scenarios", children: allTab },
-                { key: "mine", label: "My Engagements", children: myCrisesTab },
+                { key: "mine", label: "My Scenarios", children: myCrisesTab },
               ]}
             />
           </div>

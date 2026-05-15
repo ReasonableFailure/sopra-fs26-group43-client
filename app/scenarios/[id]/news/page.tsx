@@ -10,12 +10,15 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
+import { useEngagedScenarios } from "@/hooks/useEngagedScenarios";
 import { NewsService } from "@/api/newsService";
 import { CharacterService } from "@/api/characterService";
 import { ScenarioService } from "@/api/scenarioService";
 import type { NewsGetDTO } from "@/types/news";
 import type { Character } from "@/types/character";
+import { routeForEngagement } from "@/utils/engagementRouting";
 import styles from "@/styles/newsPage.module.css";
+import { NavLogo } from "@/components/NavLogo";
 
 type FilterType = "all" | "news" | "pronouncement";
 
@@ -70,7 +73,7 @@ function FeedCard({ item, authorName }: FeedCardProps) {
 }
 
 export default function NewsPage() {
-  const { token, isAuthenticated, authReady } = useAuth(); //token: Prefix "Bearer" for auth already added
+  const { token, userId, isAuthenticated, authReady } = useAuth(); //token: Prefix "Bearer" for auth already added
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
@@ -79,6 +82,16 @@ export default function NewsPage() {
   const newsService = useMemo(() => new NewsService(api), [api]);
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
+
+  // Drives the nav button: engaged players go back to their own dashboard
+  // (director / backroomer / character), unengaged viewers — including
+  // anyone reading a completed scenario from /scenarios — get sent to
+  // the scenario list instead. Previously the page rendered an
+  // unconditional `router.back()` button, which broke when there was no
+  // dashboard to return to.
+  const { engagements } = useEngagedScenarios(userId, token);
+  const engagement = engagements?.find((e) => e.scenarioId === scenarioId) ??
+    null;
 
   const [newsItems, setNewsItems] = useState<NewsGetDTO[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -168,13 +181,24 @@ export default function NewsPage() {
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>News &amp; Pronouncements</span>
           </div>
           <div className={styles.navRight}>
-            <Button onClick={() => router.back()}>
-              Back to Dashboard
-            </Button>
+            {engagement
+              ? (
+                <Button
+                  onClick={() =>
+                    routeForEngagement(engagement, scenarioId, router)}
+                >
+                  Back to Dashboard
+                </Button>
+              )
+              : (
+                <Button onClick={() => router.push("/scenarios")}>
+                  All Scenarios
+                </Button>
+              )}
           </div>
         </nav>
 

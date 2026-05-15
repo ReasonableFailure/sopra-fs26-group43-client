@@ -2,18 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Avatar,
-  Button,
-  ConfigProvider,
-  message,
-  Modal,
-  Spin,
-  theme,
-} from "antd";
+import { Button, ConfigProvider, message, Modal, Spin, theme } from "antd";
 import { InputNumber } from "antd";
 import {
-  BellOutlined,
   ClockCircleOutlined,
   QuestionCircleOutlined,
   UserOutlined,
@@ -29,12 +20,18 @@ import { CharacterService } from "@/api/characterService";
 import { DirectiveService } from "@/api/directiveService";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
+import { MessageService } from "@/api/messageService";
 
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import { Scenario } from "@/types/scenario";
 import type { NewsGetDTO } from "@/types/news";
+import type { Message } from "@/types/message";
+
+import { portraitSrc } from "@/utils/portrait";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 import styles from "@/styles/playerDashboard.module.css";
 
@@ -92,6 +89,7 @@ export default function PlayerDashboardPage() {
   const directiveService = useMemo(() => new DirectiveService(api), [api]);
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const newsService = useMemo(() => new NewsService(api), [api]);
+  const messageService = useMemo(() => new MessageService(api), [api]);
 
   const { characterId, characterToken } = useCharacter(
     scenarioId,
@@ -143,6 +141,41 @@ export default function PlayerDashboardPage() {
     5000,
     enabled,
   );
+
+  // Inbox poll: feeds the unread-message indicator on the Character List.
+  // We deliberately use the read-only inbox endpoint (no side effects) so
+  // the badge only clears when the user actually opens the conversation
+  // page (which triggers the seenByRecipient flip via getMessagesBetween).
+  const { data: inbox } = usePolling<Message[]>(
+    () =>
+      characterId
+        ? messageService.getCharacterInbox(
+          characterId,
+          scenarioId,
+          characterAuth,
+        )
+        : Promise.reject(),
+    5000,
+    enabled && !!characterId,
+  );
+
+  // Per-sender count of approved messages I haven't read yet. Stored as
+  // a Map<senderId, count> so the character list can render an exact
+  // unread-count badge rather than just a yes/no dot.
+  const unreadCountBySender = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const m of inbox ?? []) {
+      if (
+        m.status === CommsStatus.ACCEPTED &&
+        m.seenByRecipient === false &&
+        m.recipientId === characterId &&
+        m.creatorId !== null
+      ) {
+        counts.set(m.creatorId, (counts.get(m.creatorId) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [inbox, characterId]);
 
   const effectiveScenario = liveScenario ?? scenario;
   const isGameActive = effectiveScenario?.status === "UNFROZEN";
@@ -310,11 +343,8 @@ export default function PlayerDashboardPage() {
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Character Dashboard</span>
-            <Button onClick={() => router.push("/scenarios")}>
-              All Scenarios
-            </Button>
           </div>
           {!isAlive && (
             <div style={{ color: "#ef4444", fontWeight: 600 }}>
@@ -322,18 +352,10 @@ export default function PlayerDashboardPage() {
             </div>
           )}
           <div className={styles.navRight}>
-            <Button
-              icon={<BellOutlined />}
-              shape="circle"
-              className={styles.bellButton}
-            />
-            <Avatar
-              className={styles.navAvatar}
-              src={selectedCharacter?.portrait ?? undefined}
-            >
-              {!selectedCharacter?.portrait &&
-                initials(selectedCharacter?.name ?? null)}
-            </Avatar>
+            <Button onClick={() => router.push("/scenarios")}>
+              All Scenarios
+            </Button>
+            <UserAvatarMenu avatarClassName={styles.navAvatar} />
           </div>
         </nav>
 
@@ -604,24 +626,43 @@ export default function PlayerDashboardPage() {
                       )
                       .map((char, index) => {
                         const isMe = char.id === characterId;
+                        const unreadCount = char.id !== null
+                          ? (unreadCountBySender.get(char.id) ?? 0)
+                          : 0;
+                        const openProfile = () => {
+                          if (char.id !== null && char.id !== undefined) {
+                            router.push(
+                              `/scenarios/${scenarioId}/player/characters/${char.id}`,
+                            );
+                          }
+                        };
                         return (
                           <div
                             key={char.id ?? char.name}
                             className={styles.characterRow}
+                            role="button"
+                            tabIndex={0}
+                            onClick={openProfile}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                openProfile();
+                              }
+                            }}
                           >
                             <div
                               className={styles.characterAvatar}
                               style={{
-                                background: char.portrait
+                                background: portraitSrc(char.portrait)
                                   ? "transparent"
                                   : avatarGradient(index),
                               }}
                               aria-label={char.name ?? "Character"}
                             >
-                              {char.portrait
+                              {portraitSrc(char.portrait)
                                 ? (
                                   <img
-                                    src={char.portrait}
+                                    src={portraitSrc(char.portrait)!}
                                     alt={char.name ?? "Character portrait"}
                                     className={styles.characterPortrait}
                                   />
@@ -641,16 +682,16 @@ export default function PlayerDashboardPage() {
                                 </p>
                               )}
                             </div>
-                            <Button
-                              type="primary"
-                              className={styles.messageBtn}
-                              onClick={() =>
-                                router.push(
-                                  `/scenarios/${scenarioId}/player/characters/${char.id}`,
-                                )}
-                            >
-                              View
-                            </Button>
+                            {!isMe && unreadCount > 0 && (
+                              <span
+                                className={styles.unreadBadge}
+                                aria-label={`${unreadCount} unread message${
+                                  unreadCount === 1 ? "" : "s"
+                                }`}
+                              >
+                                {unreadCount}
+                              </span>
+                            )}
                           </div>
                         );
                       })

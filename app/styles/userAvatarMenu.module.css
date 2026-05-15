@@ -1,0 +1,63 @@
+/*
+ * Hover/edit affordances for the UserAvatarMenu popover.
+ *
+ * Because the popover lets users *click directly on a field* to edit
+ * it (no "Edit" button), each editable element needs to broadcast
+ * "you can click me" on hover. Inline styles can't express :hover,
+ * hence this module.
+ */
+
+/* Display-mode text fields (name, bio). */
+.editable {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+  position: relative;
+}
+
+.editable:hover {
+  background: #f3f4f6;
+}
+
+/* The avatar circle is editable too — overlay a soft darkening on
+ * hover to telegraph that clicking does something. */
+.avatarEditable {
+  position: relative;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.avatarEditable::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  border-radius: 50%;
+  transition: background 0.15s ease;
+  pointer-events: none;
+}
+
+.avatarEditable:hover::after {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.avatarHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.avatarEditable:hover .avatarHint {
+  opacity: 1;
+}

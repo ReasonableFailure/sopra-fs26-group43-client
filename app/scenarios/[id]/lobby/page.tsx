@@ -2,20 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, message, Spin, theme } from "antd";
-import { InfoCircleOutlined, UserOutlined } from "@ant-design/icons";
+import { Button, ConfigProvider, message, Spin, theme } from "antd";
+import { InfoCircleOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useScenarioEngagement } from "../../../hooks/useScenarioEngagement";
 import { CharacterService } from "@/api/characterService";
+import { ScenarioService } from "@/api/scenarioService";
 import { BackroomerService } from "@/api/backroomerService";
 import { useCharacter } from "../../../hooks/useCharacter";
 import { useBackroomer } from "@/hooks/useBackroomer";
 import type { Character } from "@/types/character";
 import type { BackroomerPostDTO } from "@/types/backroomer";
+import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { UserAssignDTO } from "@/types/user";
+import { portraitSrc } from "@/utils/portrait";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 interface CharacterCardProps {
   character: Character;
@@ -43,10 +48,10 @@ function CharacterCard({ character, onSelect, disabled }: CharacterCardProps) {
         </div>
 
         <div className={styles.characterPortraitWrapper}>
-          {character.portrait
+          {portraitSrc(character.portrait)
             ? (
               <img
-                src={character.portrait}
+                src={portraitSrc(character.portrait)!}
                 alt={character.name ?? "Character portrait"}
                 className={styles.characterPortrait}
               />
@@ -79,6 +84,7 @@ export default function GameLobbyPage() {
 
   const characterService = useMemo(() => new CharacterService(api), [api]);
   const backroomerService = useMemo(() => new BackroomerService(api), [api]);
+  const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const { setCharacterId, setCharacterToken } = useCharacter(
     scenarioId,
   );
@@ -114,6 +120,36 @@ export default function GameLobbyPage() {
       router.replace(`/scenarios/${scenarioId}/player`);
     }
   }, [engagement, router, scenarioId]);
+
+  // Non-engaged viewers of a COMPLETED scenario have nothing to join — drop
+  // them into the news feed. Defense in depth for users who hit /lobby directly.
+  useEffect(() => {
+    if (engagementLoading || engagement || !scenarioId || !token) return;
+    let cancelled = false;
+    scenarioService
+      .getScenarioById(scenarioId, token)
+      .then((scen) => {
+        if (cancelled) return;
+        if (scen.status === ScenarioStatus.COMPLETED) {
+          router.replace(`/scenarios/${scenarioId}/news`);
+        }
+      })
+      .catch(() => {
+        // Silent: leaving the user on the lobby is acceptable if the
+        // status fetch fails. They'll see the regular error path below
+        // if character loading also fails.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    engagement,
+    engagementLoading,
+    scenarioId,
+    token,
+    scenarioService,
+    router,
+  ]);
 
   useEffect(() => {
     if (!token || !scenarioId) return;
@@ -225,19 +261,14 @@ export default function GameLobbyPage() {
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Game Lobby</span>
+          </div>
+          <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
               All Scenarios
             </Button>
-          </div>
-          <div>
-            <Avatar
-              icon={<UserOutlined />}
-              className={styles.avatar}
-              onClick={() => router.push(`/users/${userId}`)}
-              style={{ cursor: "pointer" }}
-            />
+            <UserAvatarMenu avatarClassName={styles.avatar} />
           </div>
         </nav>
 

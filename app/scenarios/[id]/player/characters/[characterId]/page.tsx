@@ -21,7 +21,9 @@ import type { Character } from "@/types/character";
 import type { Message } from "@/types/message";
 import { CommsStatus } from "@/types/directive";
 import { initials } from "@/helpers/helperFunctions";
+import { portraitSrc } from "@/utils/portrait";
 import styles from "@/styles/characterProfile.module.css";
+import { NavLogo } from "@/components/NavLogo";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -51,8 +53,7 @@ export default function CharacterProfilePage() {
   const [targetCharacter, setTargetCharacter] = useState<Character | null>(
     null,
   );
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [charsLoading, setCharsLoading] = useState(true);
 
   const enabled = isAuthenticated && !!scenarioId;
 
@@ -72,52 +73,56 @@ export default function CharacterProfilePage() {
     enabled && !!myCharacterId,
   );
 
+  // Poll messages so that incoming approvals/rejections show up without a
+  // manual refresh. Sort oldest→newest so the conversation flows naturally.
+  const { data: rawMessages, loading: messagesLoading } = usePolling<Message[]>(
+    () =>
+      myCharacterId
+        ? messageService.getMessagesBetween(
+          myCharacterId,
+          targetCharId,
+          characterAuth,
+        )
+        : Promise.reject(),
+    5000,
+    enabled && !!myCharacterId && !!targetCharId,
+  );
+  const messages = useMemo(() => {
+    if (!rawMessages) return [];
+    return [...rawMessages].sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+  }, [rawMessages]);
+
   const effectiveScenario = liveScenario ?? null;
   const isGameActive = effectiveScenario?.status === "UNFROZEN";
   const isAlive = liveCharacter?.alive ?? true;
   const isOwnProfile = targetCharId === myCharacterId;
+  const loading = charsLoading || messagesLoading;
 
   useEffect(() => {
     if (authReady && !isAuthenticated) router.replace("/login");
   }, [authReady, isAuthenticated, router]);
 
+  // One-shot fetch for the target character profile (it doesn't change
+  // mid-session in a way the user needs to see live).
   useEffect(() => {
     if (!isAuthenticated || !scenarioId || !targetCharId) return;
     let cancelled = false;
-    setLoading(true);
-
-    const fetchData = async () => {
-      try {
-        const chars = await characterService.getCharactersByScenario(
-          scenarioId,
-          characterAuth,
-        );
+    setCharsLoading(true);
+    characterService
+      .getCharactersByScenario(scenarioId, characterAuth)
+      .then((chars) => {
         if (cancelled) return;
         setTargetCharacter(chars.find((c) => c.id === targetCharId) ?? null);
-
-        const msgs = myCharacterId
-          ? await messageService.getMessagesBetween(
-            myCharacterId,
-            targetCharId,
-            characterAuth,
-          )
-          : [];
-        if (cancelled) return;
-
-        const sorted = [...msgs].sort((a, b) => {
-          if (!a.createdAt || !b.createdAt) return 0;
-          return new Date(a.createdAt).getTime() -
-            new Date(b.createdAt).getTime();
-        });
-        setMessages(sorted);
-      } catch {
-        // silently degrade
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    fetchData();
+      })
+      .catch(() => {
+        // silently degrade — empty profile shows fallback text
+      })
+      .finally(() => {
+        if (!cancelled) setCharsLoading(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -125,19 +130,20 @@ export default function CharacterProfilePage() {
     isAuthenticated,
     scenarioId,
     targetCharId,
-    myCharacterId,
     characterAuth,
     characterService,
-    messageService,
   ]);
 
   if (!authReady || !isAuthenticated) return null;
 
   // Recipient must not see a message until the backroomer approves it.
   // Outgoing messages stay visible (with their existing status badges).
-  /*const visibleMessages = messages.filter(
+  // The backend already filters this for Role tokens, but we also filter
+  // client-side as defense in depth (and to keep UI consistent if the
+  // server response order changes).
+  const visibleMessages = messages.filter(
     (m) => m.creatorId === myCharacterId || m.status === CommsStatus.ACCEPTED,
-  );*/
+  );
 
   return (
     <ConfigProvider
@@ -161,7 +167,7 @@ export default function CharacterProfilePage() {
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>
               Character Profile &amp; Communication Log
             </span>
@@ -193,11 +199,11 @@ export default function CharacterProfilePage() {
               }`}
             >
               <div className={styles.profileCard}>
-                {targetCharacter?.portrait
+                {portraitSrc(targetCharacter?.portrait)
                   ? (
                     <img
-                      src={targetCharacter.portrait}
-                      alt={targetCharacter.name ?? ""}
+                      src={portraitSrc(targetCharacter?.portrait)!}
+                      alt={targetCharacter?.name ?? ""}
                       className={styles.avatarImg}
                     />
                   )
@@ -254,10 +260,10 @@ export default function CharacterProfilePage() {
                 </div>
 
                 <div className={styles.messageList}>
-                  {messages.length === 0
+                  {visibleMessages.length === 0
                     ? <p className={styles.emptyLog}>No messages yet.</p>
                     : (
-                      messages.map((msg) => {
+                      visibleMessages.map((msg) => {
                         const isMine = msg.creatorId === myCharacterId;
                         const senderName = isMine
                           ? "You"

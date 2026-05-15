@@ -2,18 +2,8 @@
 
 import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  App,
-  Avatar,
-  Button,
-  ConfigProvider,
-  Modal,
-  Spin,
-  Table,
-  theme,
-} from "antd";
+import { App, Button, ConfigProvider, Modal, Spin, Table, theme } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { UserOutlined } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -24,6 +14,8 @@ import type { Character } from "@/types/character";
 
 import styles from "@/styles/playerTable.module.css";
 import { useDirector } from "@/hooks/useDirector";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 export default function PlayerStatisticsPage() {
   const { isAuthenticated, authReady, userId, userIdReady } = useAuth();
@@ -168,7 +160,7 @@ export default function PlayerStatisticsPage() {
         {/* NAVBAR */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>
               Player Overview
             </span>
@@ -180,7 +172,7 @@ export default function PlayerStatisticsPage() {
             >
               Back to Dashboard
             </Button>
-            <Avatar icon={<UserOutlined />} />
+            <UserAvatarMenu />
           </div>
         </nav>
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Spin, theme } from "antd";
+import { Button, ConfigProvider, Spin, theme } from "antd";
 import {
   CalendarOutlined,
   CheckCircleOutlined,
@@ -18,8 +18,9 @@ import { DirectiveService } from "@/api/directiveService";
 import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
-import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/directiveDetail.module.css";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -151,7 +152,7 @@ export default function DirectiveDetailPage() {
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Player Dashboard</span>
           </div>
           <div className={styles.navRight}>
@@ -160,13 +161,7 @@ export default function DirectiveDetailPage() {
             >
               Back to Dashboard
             </Button>
-            <Avatar
-              className={styles.navAvatar}
-              src={myCharacter?.portrait ?? undefined}
-            >
-              {!myCharacter?.portrait &&
-                initials(myCharacter?.name ?? null)}
-            </Avatar>
+            <UserAvatarMenu avatarClassName={styles.navAvatar} />
           </div>
         </nav>
 

@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Avatar,
   Button,
   ConfigProvider,
   Form,
@@ -18,17 +17,22 @@ import {
   CloseCircleOutlined,
   PauseCircleOutlined,
   QuestionCircleOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { useDirector } from "@/hooks/useDirector";
 import { usePolling } from "@/hooks/usePolling";
-import { useDirectedScenarios } from "@/hooks/useDirectedScenarios";
 import { ScenarioService } from "@/api/scenarioService";
+import { NewsService } from "@/api/newsService";
+import { CharacterService } from "@/api/characterService";
 import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
+import type { NewsGetDTO } from "@/types/news";
+import type { Character } from "@/types/character";
+import { NewsItem, NewsList } from "@/components/NewsItem";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 import styles from "@/styles/directorDashboard.module.css";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
@@ -74,19 +78,23 @@ const STATUS_CLASS: Record<ScenarioStatus, string> = {
 };
 
 export default function DirectorDashboardPage() {
-  const { userId, isAuthenticated, authReady, userIdReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  // Director gate. `directedReady` lags the first render by one tick because
-  // localStorage can only be read in `useEffect` (it does not exist on the
-  // server). Treat "not ready" as "decision pending", never as "false".
-  const { isDirector, ready: directedReady } = useDirectedScenarios(userId);
-  const isThisScenarioDirector = directedReady && isDirector(scenarioId);
 
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
-  const { directorToken } = useDirector(scenarioId);
+  const newsService = useMemo(() => new NewsService(api), [api]);
+  const characterService = useMemo(() => new CharacterService(api), [api]);
+  // Director gate: possession of the per-scenario director token is the
+  // canonical proof the user directs THIS scenario. It is written by the
+  // create-scenario flow and rehydrated on each `useEngagedScenarios`
+  // poll, so any current director has it regardless of which scenario
+  // they last touched. `readyDirectorToken` lags the first render by one
+  // tick (localStorage can only be read in `useEffect`); treat "not
+  // ready" as "decision pending", never as "false".
+  const { directorToken, readyDirectorToken } = useDirector(scenarioId);
   const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -98,31 +106,57 @@ export default function DirectorDashboardPage() {
     enabled,
   );
 
+  const { data: newsItems } = usePolling<NewsGetDTO[]>(
+    () => newsService.getNewsByScenario(scenarioId, directorAuth),
+    5000,
+    enabled,
+  );
+
+  const [characters, setCharacters] = useState<Character[]>([]);
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    characterService
+      .getCharactersByScenario(scenarioId, directorAuth)
+      .then((chars) => {
+        if (!cancelled) setCharacters(chars);
+      })
+      .catch(() => {
+        // Silent: pronouncements without resolved names just render "Unknown".
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, scenarioId, directorAuth, characterService]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [form] = Form.useForm();
+  const [savingMastodon, setSavingMastodon] = useState(false);
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
       return;
     }
-    if (!userIdReady) {
-      return;
-    } else if (
-      userIdReady &&
-      globalThis.localStorage[`playerRole_${userId}`] !== '"director"'
-    ) { //this is so hacky... but it works
-      alert("Only a director may access this view!");
+    if (!readyDirectorToken) return;
+    if (!directorToken) {
       router.replace(`/scenarios/${scenarioId}/lobby`);
     }
-  }, [authReady, isAuthenticated, userId, userIdReady, router, scenarioId]);
+  }, [
+    authReady,
+    isAuthenticated,
+    readyDirectorToken,
+    directorToken,
+    router,
+    scenarioId,
+  ]);
 
   // Render nothing while any gate is still resolving. This is the data-race
   // fix: wait for BOTH auth state AND localStorage hydration before showing
   // the dashboard or deciding to redirect.
   if (
-    !authReady || !isAuthenticated || !directedReady || !isThisScenarioDirector
+    !authReady || !isAuthenticated || !readyDirectorToken || !directorToken
   ) return null;
 
   const status = scenario?.status;
@@ -186,6 +220,10 @@ export default function DirectorDashboardPage() {
   };
 
   const handleSubmitMastodon = async () => {
+    if (savingMastodon) return;
+
+    setSavingMastodon(true);
+
     try {
       const values = await form.validateFields();
 
@@ -200,6 +238,8 @@ export default function DirectorDashboardPage() {
       form.resetFields();
     } catch {
       messageApi.error("Failed to update Mastodon configuration");
+    } finally {
+      setSavingMastodon(false);
     }
   };
 
@@ -216,6 +256,11 @@ export default function DirectorDashboardPage() {
           borderRadius: 8,
           fontSize: 14,
         },
+        // Don't override components.Button here: the root layout sets
+        // Button.colorPrimary to green (#75bd9d), and Start Game / Next
+        // Day on this dashboard depend on that to render green.
+        // The one button we DO want indigo (See All News, to match the
+        // Character Dashboard) is styled explicitly below.
       }}
     >
       {contextHolder}
@@ -224,24 +269,14 @@ export default function DirectorDashboardPage() {
         {/* NAVBAR */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Director Dashboard</span>
+          </div>
+          <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
               All Scenarios
             </Button>
-          </div>
-          <div className={styles.navRight}>
-            <Button
-              onClick={() => router.push(`/scenarios/${scenarioId}/statistics`)}
-            >
-              Player Overview
-            </Button>
-            <Avatar
-              icon={<UserOutlined />}
-              className={styles.avatar}
-              onClick={() => router.push(`/users/${userId}`)}
-              style={{ cursor: "pointer" }}
-            />
+            <UserAvatarMenu avatarClassName={styles.avatar} />
           </div>
         </nav>
 
@@ -258,7 +293,7 @@ export default function DirectorDashboardPage() {
                     {scenario?.title ?? "Loading…"}
                   </h1>
                   <p className={styles.scenarioSubtitle}>
-                    Monitor Readiness and Control Game State
+                    Setup Mastodon and Control Game Progress
                   </p>
                 </div>
 
@@ -414,22 +449,73 @@ export default function DirectorDashboardPage() {
               </div>
 
               {/* ACTIVITY */}
-              <div className={styles.activityCard}>
-                <div className={styles.activityHeader}>
-                  <span className={styles.cardTitle}>
-                    Recent Activity
-                  </span>
-                  <Button
-                    type="link"
-                    onClick={() => router.push(`/scenarios/${scenarioId}/news`)}
-                  >
-                    See All News →
-                  </Button>
+              <div className={styles.activitySection}>
+                <div className={styles.activitySectionHeader}>
+                  <div>
+                    <h2 className={styles.activitySectionTitle}>
+                      Recent Activity
+                    </h2>
+                    <p className={styles.activitySectionSubtitle}>
+                      News stories and pronouncements from Day{" "}
+                      {scenario?.dayNumber ?? 0}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Button
+                      onClick={() =>
+                        router.push(`/scenarios/${scenarioId}/statistics`)}
+                    >
+                      Player Overview
+                    </Button>
+                    <Button
+                      type="primary"
+                      onClick={() =>
+                        router.push(`/scenarios/${scenarioId}/news`)}
+                      style={{
+                        backgroundColor: "#4f46e5",
+                        borderColor: "#4f46e5",
+                      }}
+                    >
+                      See All News
+                    </Button>
+                  </div>
                 </div>
 
-                <div className={styles.activityList}>
-                  <p>No recent activity yet.</p>
-                </div>
+                {(() => {
+                  if (!scenario) return null;
+                  const today = (newsItems ?? [])
+                    .filter((n) => n.dayNumber === scenario.dayNumber)
+                    .sort((a, b) => new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                    );
+                  if (today.length === 0) {
+                    return (
+                      <div className={styles.activityEmptyCard}>
+                        No activity today yet.
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className={styles.activityCard}>
+                      <NewsList>
+                        {today.map((item) => {
+                          const authorName = item.authorId !== null &&
+                              item.authorId !== undefined
+                            ? (characters.find((c) => c.id === item.authorId)
+                              ?.name ?? "Unknown")
+                            : null;
+                          return (
+                            <NewsItem
+                              key={item.id}
+                              item={item}
+                              authorName={authorName}
+                            />
+                          );
+                        })}
+                      </NewsList>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </Spin>
@@ -438,6 +524,7 @@ export default function DirectorDashboardPage() {
           title="Mastodon Account"
           open={isModalOpen}
           onOk={handleSubmitMastodon}
+          confirmLoading={savingMastodon}
           onCancel={() => setIsModalOpen(false)}
         >
           <Form form={form} layout="vertical">

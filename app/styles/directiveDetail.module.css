@@ -11,8 +11,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 76px;
-  padding: 0 24px;
+  height: 64px;
+  padding: 0 32px;
   background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
@@ -24,32 +24,32 @@
 .navLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logoMark {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .navTitle {
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 600;
   color: #111827;
+  letter-spacing: -0.01em;
 }
 
 .navRight {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .navAvatar {
-  background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
-  font-weight: 600 !important;
+  cursor: pointer;
 }
 
 /* ── Page body ────────────────────────────────────────── */

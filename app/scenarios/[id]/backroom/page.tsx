@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Avatar, Button, ConfigProvider, Select, Spin, theme } from "antd";
+import { Button, ConfigProvider, Select, Spin, theme } from "antd";
 import {
   ClockCircleOutlined,
   FileTextOutlined,
@@ -26,6 +26,9 @@ import type { Message } from "@/types/message";
 import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/backroomDashboard.module.css";
 import { useBackroomer } from "@/hooks/useBackroomer";
+import { portraitSrc as portraitSrcUtil } from "@/utils/portrait";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 function timeAgo(iso: string | null | undefined): string {
   if (!iso) return "";
@@ -226,14 +229,10 @@ export default function BackroomDashboardPage() {
     return characters.find((c) => c.id === id)?.name ?? "Unknown";
   };
 
+  // Thin wrapper around the shared utility so the rest of the component
+  // can keep passing a Character object instead of digging out .portrait.
   function portraitSrc(character?: Character | null): string | null {
-    if (!character?.portrait) return null;
-
-    if (character.portrait.startsWith("data:")) {
-      return character.portrait;
-    }
-
-    return `data:image/jpeg;base64,${character.portrait}`;
+    return portraitSrcUtil(character?.portrait);
   }
 
   const handleMessageAction = async (
@@ -284,22 +283,24 @@ export default function BackroomDashboardPage() {
           borderRadius: 8,
           fontSize: 14,
         },
+        // Inherit the root layout's green Button.colorPrimary so the
+        // existing button palette on this page stays unchanged. The one
+        // button we want indigo (See All News, matching the Character
+        // Dashboard) is styled explicitly below.
       }}
     >
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Backroom Dashboard</span>
+          </div>
+          <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
               All Scenarios
             </Button>
+            <UserAvatarMenu avatarClassName={styles.navAvatar} />
           </div>
-          <Avatar
-            icon={<UserOutlined />}
-            className={styles.navAvatar}
-            aria-label="User avatar"
-          />
         </nav>
 
         <Spin spinning={loading} fullscreen={false} />
@@ -474,6 +475,10 @@ export default function BackroomDashboardPage() {
                   <Button
                     type="primary"
                     onClick={() => router.push(`/scenarios/${scenarioId}/news`)}
+                    style={{
+                      backgroundColor: "#4f46e5",
+                      borderColor: "#4f46e5",
+                    }}
                   >
                     See All News
                   </Button>

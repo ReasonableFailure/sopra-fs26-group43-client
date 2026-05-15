@@ -21,6 +21,7 @@ import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import styles from "@/styles/communicationForm.module.css";
+import { NavLogo } from "@/components/NavLogo";
 
 type CommType = "response" | "news_story";
 type Outcome = "approve" | "reject";
@@ -215,7 +216,7 @@ export default function BackroomCommunicatePage() {
 
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Backroom</span>
           </div>
         </nav>

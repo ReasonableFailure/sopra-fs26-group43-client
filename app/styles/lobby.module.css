@@ -35,8 +35,8 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .navTitle {
@@ -46,8 +46,13 @@
   letter-spacing: -0.01em;
 }
 
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .avatar {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -162,7 +167,10 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 12px;
+  /* Anchor the hint + its separator line to the bottom of the card no
+   * matter how short the title/description above is. `margin-top: auto`
+   * works because .characterCard is a flex column. */
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid #f3f4f6;
 }

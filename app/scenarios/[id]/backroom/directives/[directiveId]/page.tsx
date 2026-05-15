@@ -19,6 +19,7 @@ import type { Character } from "@/types/character";
 import type { Directive } from "@/types/directive";
 import { CommsStatus } from "@/types/directive";
 import styles from "@/styles/directiveDetail.module.css";
+import { NavLogo } from "@/components/NavLogo";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -141,7 +142,7 @@ export default function BackroomDirectiveDetailPage() {
       <div className={styles.pageRoot}>
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
+            <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Backroom Dashboard</span>
           </div>
           <div className={styles.navRight}>
