@@ -90,8 +90,8 @@ export default function NewsPage() {
   // unconditional `router.back()` button, which broke when there was no
   // dashboard to return to.
   const { engagements } = useEngagedScenarios(userId, token);
-  const engagement =
-    engagements?.find((e) => e.scenarioId === scenarioId) ?? null;
+  const engagement = engagements?.find((e) => e.scenarioId === scenarioId) ??
+    null;
 
   const [newsItems, setNewsItems] = useState<NewsGetDTO[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
