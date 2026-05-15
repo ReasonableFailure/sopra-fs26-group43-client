@@ -54,12 +54,31 @@ export const useAuth = () => {
         "selectedCharacter_",
         "backroomer_",
         "director_scenarios_",
-        "directedScenarios_",
+      ];
+      // Per-scenario role tokens live under keys like
+      // `scenario_${scenarioId}_directorToken/Id`,
+      // `scenario_${scenarioId}_backroomerToken/Id`,
+      // `scenario_${scenarioId}_characterToken/Id`.
+      // We must wipe these on logout so the next user on this browser
+      // doesn't inherit the previous user's per-scenario credentials.
+      const SESSION_SUFFIXES = [
+        "_directorToken",
+        "_directorId",
+        "_backroomerToken",
+        "_backroomerId",
+        "_characterToken",
+        "_characterId",
       ];
       const toRemove: string[] = [];
       for (let i = 0; i < globalThis.localStorage.length; i++) {
         const k = globalThis.localStorage.key(i);
-        if (k && SESSION_PREFIXES.some((p) => k.startsWith(p))) {
+        if (!k) continue;
+        if (SESSION_PREFIXES.some((p) => k.startsWith(p))) {
+          toRemove.push(k);
+        } else if (
+          k.startsWith("scenario_") &&
+          SESSION_SUFFIXES.some((s) => k.endsWith(s))
+        ) {
           toRemove.push(k);
         }
       }

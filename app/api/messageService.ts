@@ -23,6 +23,23 @@ export class MessageService {
     );
   }
 
+  /**
+   * Read-only inbox for a Role within a scenario. Returns every message
+   * addressed to that character (any status). Used by the Character
+   * Dashboard to compute the unread-message indicator. Does NOT mark
+   * messages as seen — `getMessagesBetween` does that side effect.
+   */
+  async getCharacterInbox(
+    characterId: number,
+    scenarioId: number,
+    token: string,
+  ): Promise<Message[]> {
+    return await this.api.getWithToken<Message[]>(
+      `/messages/character/${characterId}/inbox?scenarioId=${scenarioId}`,
+      token,
+    );
+  }
+
   getMessagesBetween(
     charAId: number,
     charBId: number,

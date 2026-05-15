@@ -8,6 +8,12 @@ export interface Message {
   status: CommsStatus | null;
   creatorId: number | null;
   recipientId: number | null;
+  /**
+   * True once the recipient has fetched the conversation containing this
+   * message (server-side flag — see MessageService.getMessagesBetween).
+   * False on creation and until the recipient role opens the conversation.
+   */
+  seenByRecipient: boolean;
 }
 
 /** POST /messages */

@@ -1,46 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useApi } from "@/hooks/useApi";
 import { ScenarioService } from "@/api/scenarioService";
 import { Scenario } from "@/types/scenario";
 import { useAuth } from "@/hooks/useAuth";
+import { usePolling } from "@/hooks/usePolling";
 
+/**
+ * Polls GET /scenarios so newly-created scenarios show up on the All
+ * Scenarios tab without a manual refresh. 5s cadence matches the rest
+ * of the app's polling.
+ */
 export const useScenarios = () => {
   const api = useApi();
   const scenarioService = useMemo(() => new ScenarioService(api), [api]);
   const { token } = useAuth();
-  const [scenarios, setScenarios] = useState<Scenario[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!token) return;
+  const { data, loading, error } = usePolling<Scenario[]>(
+    () => scenarioService.getScenarios(token),
+    5000,
+    !!token,
+  );
 
-    let cancelled = false;
-
-    const fetch = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await scenarioService.getScenarios(token);
-        if (!cancelled) setScenarios(data);
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to fetch scenarios",
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    fetch();
-    return () => {
-      cancelled = true;
-    };
-  }, [scenarioService, token]);
-
-  return { scenarios, loading, error };
+  return { scenarios: data, loading, error };
 };

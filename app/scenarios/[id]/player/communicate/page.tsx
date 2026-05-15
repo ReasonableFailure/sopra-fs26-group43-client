@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
-  Avatar,
   Button,
   ConfigProvider,
   Input,
@@ -24,8 +23,9 @@ import { MessageService } from "@/api/messageService";
 import { ScenarioService } from "@/api/scenarioService";
 import { NewsService } from "@/api/newsService";
 import type { Character } from "@/types/character";
-import { initials } from "@/helpers/helperFunctions";
 import styles from "@/styles/communicationForm.module.css";
+import { UserAvatarMenu } from "@/components/UserAvatarMenu";
+import { NavLogo } from "@/components/NavLogo";
 
 type CommType = "direct_message" | "directive" | "pronouncement";
 
@@ -163,10 +163,9 @@ export default function CommunicationFormPage() {
       return;
     }
 
-
     setSubmitting(true);
 
-    if (overLimit && commType ==="pronouncement") {
+    if (overLimit && commType === "pronouncement") {
       messageApi.error("Pronouncement Must not Exceed 500 Characters");
       return;
     }
@@ -243,8 +242,8 @@ export default function CommunicationFormPage() {
         {/* Navbar */}
         <nav className={styles.navbar}>
           <div className={styles.navLeft}>
-            <div className={styles.logoMark} aria-hidden="true" />
-            <span className={styles.navTitle}>Scenario Manager</span>
+            <NavLogo className={styles.logoMark} />
+            <span className={styles.navTitle}>Crisis Manager</span>
           </div>
           {!isAlive && (
             <div
@@ -253,13 +252,9 @@ export default function CommunicationFormPage() {
               Your Character has Died.
             </div>
           )}
-          <Avatar
-            className={styles.navAvatar}
-            src={selectedCharacter?.portrait ?? undefined}
-          >
-            {!selectedCharacter?.portrait &&
-              initials(selectedCharacter?.name ?? null)}
-          </Avatar>
+          <div className={styles.navRight}>
+            <UserAvatarMenu avatarClassName={styles.navAvatar} />
+          </div>
         </nav>
 
         <div className={styles.pageBody}>

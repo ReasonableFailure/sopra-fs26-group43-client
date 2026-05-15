@@ -91,7 +91,7 @@ export class CharacterService {
 
   getCharacterById(characterId: number, token: string): Promise<Character> {
     return this.api.getWithToken<Character>(
-      `/characters/${characterId}`,
+      `/characters/${characterId}/detail`,
       token,
     );
   }
