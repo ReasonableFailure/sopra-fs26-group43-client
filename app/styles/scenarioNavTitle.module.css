@@ -7,10 +7,13 @@
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: -0.005em;
+  /* Mirror the sibling ".navTitle" styling on each dashboard (e.g.
+   * "Director Dashboard"), so the role label and the scenario title
+   * read as one typographic unit separated only by the divider. */
+  color: #111827;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   font-family: inherit;
   cursor: pointer;
   transition:
@@ -23,7 +26,6 @@
 .titleButton:hover:not(:disabled) {
   background: #f9fafb;
   border-color: #e5e7eb;
-  color: #111827;
 }
 
 .titleButton:focus-visible {
