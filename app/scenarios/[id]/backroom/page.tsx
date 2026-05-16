@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button, ConfigProvider, Select, Spin, theme } from "antd";
+import { Button, ConfigProvider, Select, theme } from "antd";
 import {
   ClockCircleOutlined,
   FileTextOutlined,
@@ -130,8 +130,8 @@ export default function BackroomDashboardPage() {
     if (!enabled) return;
     let cancelled = false;
 
-    const fetchMessages = async () => {
-      setMessagesLoading(true);
+    const fetchMessages = async (isFirst: boolean) => {
+      if (isFirst) setMessagesLoading(true);
       try {
         const pairs = await messageService.getMessagePairsByScenario(
           scenarioId,
@@ -150,12 +150,12 @@ export default function BackroomDashboardPage() {
       } catch {
         // silently ignore
       } finally {
-        if (!cancelled) setMessagesLoading(false);
+        if (isFirst && !cancelled) setMessagesLoading(false);
       }
     };
 
-    fetchMessages();
-    const intervalId = setInterval(fetchMessages, 5000);
+    fetchMessages(true);
+    const intervalId = setInterval(() => fetchMessages(false), 5000);
     return () => {
       cancelled = true;
       clearInterval(intervalId);
@@ -306,7 +306,6 @@ export default function BackroomDashboardPage() {
           </div>
         </nav>
 
-        <Spin spinning={loading} fullscreen={false} />
         <div className={styles.body}>
           {/* ── Left: Directives ── */}
           <div className={styles.leftPanel}>
