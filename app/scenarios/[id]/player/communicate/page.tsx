@@ -119,9 +119,13 @@ export default function CommunicationFormPage() {
 
   const authorName = selectedCharacter?.name ?? "Unknown";
 
+  const titleApplies = commType !== "direct_message";
+
   const totalLength = commType === "pronouncement"
     ? `${title}: ${content}\n-${authorName}`.length
-    : `${title}: ${content}`.length;
+    : titleApplies
+    ? `${title}: ${content}`.length
+    : content.length;
 
   const overLimit = totalLength > MAX_POST_LENGTH;
 
@@ -142,8 +146,12 @@ export default function CommunicationFormPage() {
       );
       return;
     }
-    if (!title.trim() || !content.trim()) {
-      messageApi.error("Title and message content are required.");
+    if (!content.trim()) {
+      messageApi.error("Message content is required.");
+      return;
+    }
+    if (titleApplies && !title.trim()) {
+      messageApi.error("Title is required.");
       return;
     }
     if (commType === "direct_message" && !recipientId) {
@@ -174,7 +182,7 @@ export default function CommunicationFormPage() {
       if (commType === "direct_message") {
         await messageService.createMessage(
           {
-            title,
+            title: "",
             body: content,
             creatorId: characterId,
             recipientId: recipientId!,
@@ -345,14 +353,16 @@ export default function CommunicationFormPage() {
                   </div>
                 )}
 
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Title</label>
-                  <Input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter title"
-                  />
-                </div>
+                {titleApplies && (
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Title</label>
+                    <Input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter title"
+                    />
+                  </div>
+                )}
 
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>Message Content</label>
