@@ -66,6 +66,147 @@
 }
 
 /* ──────────────────────────────────────
+   Scenario Brief
+────────────────────────────────────── */
+.scenarioBrief {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 32px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.scenarioBrief::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #4f46e5;
+}
+
+.scenarioBriefEyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4f46e5;
+  margin: 0 0 8px 0;
+}
+
+.scenarioBriefTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.scenarioBriefDescription {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+/* ──────────────────────────────────────
+   Character Detail Modal — mirrors the scenario detail modal:
+   indigo top accent, black title, indigo eyebrow labels on
+   each field separated by hairlines.
+────────────────────────────────────── */
+
+/* Indigo top accent on the modal surface. :global() is required to
+ * reach antd's internal class — CSS-module hashes would never match. */
+.popoverOverlay :global(.ant-modal-content) {
+  border-top: 3px solid #4f46e5;
+  overflow: hidden;
+  padding-top: 18px;
+}
+
+.popoverHeader {
+  color: #111827;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.characterModalBody {
+  display: flex;
+  flex-direction: column;
+  padding-top: 4px;
+}
+
+.characterModalPortraitWrap {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 14px;
+}
+
+.characterModalPortrait,
+.characterModalPortraitFallback {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.characterModalPortraitFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #4f46e5;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 32px;
+}
+
+.popoverField {
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.popoverField:first-of-type {
+  padding-top: 0;
+}
+
+.popoverField + .popoverField {
+  border-top: 1px solid #e5e7eb;
+}
+
+.popoverLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4f46e5;
+}
+
+.popoverValue {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #374151;
+  white-space: pre-wrap;
+}
+
+.characterModalActions {
+  padding-top: 18px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+
+/* ──────────────────────────────────────
    Become Backroomer
 ────────────────────────────────────── */
 .backroomerButton {

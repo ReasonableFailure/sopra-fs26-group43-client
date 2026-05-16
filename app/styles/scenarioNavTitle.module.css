@@ -1,0 +1,129 @@
+.titleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  /* Mirror the sibling ".navTitle" styling on each dashboard (e.g.
+   * "Director Dashboard"), so the role label and the scenario title
+   * read as one typographic unit separated only by the divider. */
+  color: #111827;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+  max-width: 360px;
+}
+
+.titleButton:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.titleButton:focus-visible {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.titleButton:disabled {
+  cursor: default;
+  color: #9ca3af;
+}
+
+.titleText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.infoIcon {
+  font-size: 12px;
+  color: #9ca3af;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.titleButton:hover:not(:disabled) .infoIcon {
+  color: #4f46e5;
+}
+
+/* ──────────────────────────────────────
+   Modal — indigo theme, fields separated by lines
+────────────────────────────────────── */
+
+/* Indigo top accent on the modal as a whole, so the popup reads as
+ * a branded surface rather than a neutral antd shell. The :global
+ * selector reaches antd's inner content node (otherwise the CSS
+ * module hash would never match it). */
+.modalRoot :global(.ant-modal-content) {
+  border-top: 3px solid #4f46e5;
+  overflow: hidden;
+  padding-top: 18px;
+}
+
+.modalTitle {
+  color: #111827;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  padding-top: 4px;
+}
+
+.field {
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field:first-child {
+  padding-top: 0;
+}
+
+.field:last-child {
+  padding-bottom: 0;
+}
+
+.field + .field {
+  border-top: 1px solid #e5e7eb;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4f46e5;
+}
+
+.fieldTag {
+  align-self: flex-start;
+  margin: 0;
+}
+
+.fieldValue {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.description {
+  margin: 0;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}

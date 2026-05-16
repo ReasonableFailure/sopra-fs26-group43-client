@@ -29,6 +29,7 @@ import { useBackroomer } from "@/hooks/useBackroomer";
 import { portraitSrc as portraitSrcUtil } from "@/utils/portrait";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLogo } from "@/components/NavLogo";
+import { ScenarioNavTitle } from "@/components/ScenarioNavTitle";
 
 function timeAgo(iso: string | null | undefined): string {
   if (!iso) return "";
@@ -294,6 +295,8 @@ export default function BackroomDashboardPage() {
           <div className={styles.navLeft}>
             <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Backroom Dashboard</span>
+            <span className={styles.navDivider} aria-hidden="true" />
+            <ScenarioNavTitle scenario={scenario} />
           </div>
           <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>

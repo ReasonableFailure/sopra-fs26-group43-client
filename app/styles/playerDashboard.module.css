@@ -42,6 +42,13 @@
   letter-spacing: -0.01em;
 }
 
+.navDivider {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  margin: 0 2px;
+}
+
 .navRight {
   display: flex;
   align-items: center;
