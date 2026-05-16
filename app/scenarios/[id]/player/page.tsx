@@ -735,7 +735,8 @@ export default function PlayerDashboardPage() {
             </li>
             <li>
               After the initial free messages are used up, you can purchase one
-              additional message for {buyAmount} Likes.
+              additional message for <strong>{exchangeRate}</strong>{" "}
+              Like{exchangeRate === 1 ? "" : "s"}.
             </li>
           </ol>
         </Modal>
