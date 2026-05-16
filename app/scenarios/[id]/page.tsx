@@ -374,7 +374,7 @@ export default function DirectorDashboardPage() {
                       </div>
 
                       <p className={styles.dayText}>
-                        Day {scenario?.dayNumber ?? 0}
+                        on Day {scenario?.dayNumber ?? 0}
                       </p>
 
                       <div className={styles.statusFooter}>

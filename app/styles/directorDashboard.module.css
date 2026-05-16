@@ -127,21 +127,32 @@
 
 .completedText {
   font-size: 40px;
-  color: #000000;
+  color: #111827;
   margin-top: 4px;
   font-weight: 700;
 }
 
 .dayText {
-  font-size: 13px;
-  color: #000000;
-  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #6b7280;
+ 
+  margin-top: 10px;
+
+  padding-right: 80px;
 }
 
 /* Game Status card */
 .statusCard {
   display: flex;
   flex-direction: column;
+}
+
+/* Reserve right-side space on the eyebrow label too, so "Crisis Status"
+ * never overlaps the absolutely-positioned status icon at narrow widths. */
+.statusCard .cardLabel {
+  padding-right: 80px;
 }
 
 .statusFooter {
@@ -163,14 +174,18 @@
 .statusValue {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  /* Same icon-clearance reserve as .dayText / .cardLabel. Without this,
+   * a long status label like "Not Started" can slide under the absolute
+   * .statusIconBox in narrow viewports. */
+  padding-right: 80px;
 }
 
 .statusText {
-  color: #000000;
+  color: #111827;
   font-size: 36px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .statusText.stopped,
