@@ -26,6 +26,7 @@ import type { Engagement, RoleType } from "@/types/engagement";
 import { routeForEngagement } from "@/utils/engagementRouting";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLogo } from "@/components/NavLogo";
+import { ExpandableText } from "@/components/ExpandableText";
 import styles from "@/styles/scenarios.module.css";
 
 const ROLE_COLORS: Record<RoleType, string> = {
@@ -115,9 +116,11 @@ function ScenarioCard({
           {STATUS_PROGRESS_LABEL[scenario.status]}
         </Tag>
       </div>
-      <p className={styles.cardDesc}>
-        {scenario.description ?? "No description provided."}
-      </p>
+      <ExpandableText
+        text={scenario.description ?? "No description provided."}
+        lines={3}
+        className={styles.cardDesc}
+      />
       <div className={styles.cardFooter}>
         <Button type="link" onClick={handleView}>
           {engagement ? "Resume" : "View"}
