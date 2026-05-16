@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button, ConfigProvider, message, Spin, theme } from "antd";
+import { Button, ConfigProvider, message, Modal, Spin, theme } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useApi } from "@/hooks/useApi";
@@ -14,6 +14,7 @@ import { useCharacter } from "../../../hooks/useCharacter";
 import { useBackroomer } from "@/hooks/useBackroomer";
 import type { Character } from "@/types/character";
 import type { BackroomerPostDTO } from "@/types/backroomer";
+import type { Scenario } from "@/types/scenario";
 import { ScenarioStatus } from "@/types/scenario";
 import styles from "@/styles/lobby.module.css";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
@@ -29,48 +30,124 @@ interface CharacterCardProps {
 }
 
 function CharacterCard({ character, onSelect, disabled }: CharacterCardProps) {
+  const [open, setOpen] = useState(false);
+  const description = character.description?.trim();
+  const portrait = portraitSrc(character.portrait);
+  const initialsFallback = (character.name ?? "?").slice(0, 2).toUpperCase();
+
+  const handleSelect = () => {
+    setOpen(false);
+    onSelect();
+  };
+
   return (
-    <div
-      className={styles.characterCard}
-      onClick={onSelect}
-      role="button"
-      tabIndex={0}
-    >
-      <div className={styles.cardHeader}>
-        <div className={styles.cardText}>
-          <h3 className={styles.characterName}>
-            {character.name}
-          </h3>
+    <>
+      <div
+        className={styles.characterCard}
+        onClick={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen(true);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <div className={styles.cardHeader}>
+          <div className={styles.cardText}>
+            <h3 className={styles.characterName}>
+              {character.name}
+            </h3>
 
-          <p className={styles.characterTitle}>
-            {character.title ?? "No title provided."}
-          </p>
+            <p className={styles.characterTitle}>
+              {character.title ?? "No title provided."}
+            </p>
+          </div>
+
+          <div className={styles.characterPortraitWrapper}>
+            {portrait
+              ? (
+                <img
+                  src={portrait}
+                  alt={character.name ?? "Character portrait"}
+                  className={styles.characterPortrait}
+                />
+              )
+              : (
+                <div className={styles.characterPortraitFallback}>
+                  {initialsFallback}
+                </div>
+              )}
+          </div>
         </div>
 
-        <div className={styles.characterPortraitWrapper}>
-          {portraitSrc(character.portrait)
-            ? (
-              <img
-                src={portraitSrc(character.portrait)!}
-                alt={character.name ?? "Character portrait"}
-                className={styles.characterPortrait}
-              />
-            )
-            : (
-              <div className={styles.characterPortraitFallback}>
-                {(character.name ?? "?").slice(0, 2).toUpperCase()}
-              </div>
-            )}
+        <div className={styles.selectHint}>
+          <InfoCircleOutlined className={styles.hintIcon} />
+          <span className={styles.hintText}>
+            {disabled ? "Submitting…" : "Click to view details"}
+          </span>
         </div>
       </div>
 
-      <div className={styles.selectHint}>
-        <InfoCircleOutlined className={styles.hintIcon} />
-        <span className={styles.hintText}>
-          {disabled ? "Submitting…" : "Click to select"}
-        </span>
-      </div>
-    </div>
+      <Modal
+        title={
+          <span className={styles.popoverHeader}>
+            {character.name ?? "Character"}
+          </span>
+        }
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
+        width={520}
+        className={styles.popoverOverlay}
+        destroyOnHidden
+      >
+        <div className={styles.characterModalBody}>
+          <div className={styles.characterModalPortraitWrap}>
+            {portrait
+              ? (
+                <img
+                  src={portrait}
+                  alt={character.name ?? "Character portrait"}
+                  className={styles.characterModalPortrait}
+                />
+              )
+              : (
+                <div className={styles.characterModalPortraitFallback}>
+                  {initialsFallback}
+                </div>
+              )}
+          </div>
+
+          {character.title && (
+            <div className={styles.popoverField}>
+              <span className={styles.popoverLabel}>Title</span>
+              <p className={styles.popoverValue}>{character.title}</p>
+            </div>
+          )}
+
+          <div className={styles.popoverField}>
+            <span className={styles.popoverLabel}>Description</span>
+            <p className={styles.popoverValue}>
+              {description ?? "No description provided."}
+            </p>
+          </div>
+
+          <div className={styles.characterModalActions}>
+            <Button
+              type="primary"
+              size="large"
+              block
+              loading={disabled}
+              onClick={handleSelect}
+            >
+              Select this character
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
 
@@ -99,6 +176,7 @@ export default function GameLobbyPage() {
   const [messageApi, contextHolder] = message.useMessage();
 
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [scenario, setScenario] = useState<Scenario | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -121,8 +199,10 @@ export default function GameLobbyPage() {
     }
   }, [engagement, router, scenarioId]);
 
-  // Non-engaged viewers of a COMPLETED scenario have nothing to join — drop
-  // them into the news feed. Defense in depth for users who hit /lobby directly.
+  // Fetch the scenario so the lobby can show its title/description AND
+  // (for non-engaged viewers) redirect away from a COMPLETED scenario.
+  // Combined into one fetch because both needs are satisfied by the
+  // same GET; keeping them separate would double the request.
   useEffect(() => {
     if (engagementLoading || engagement || !scenarioId || !token) return;
     let cancelled = false;
@@ -130,6 +210,7 @@ export default function GameLobbyPage() {
       .getScenarioById(scenarioId, token)
       .then((scen) => {
         if (cancelled) return;
+        setScenario(scen);
         if (scen.status === ScenarioStatus.COMPLETED) {
           router.replace(`/scenarios/${scenarioId}/news`);
         }
@@ -273,6 +354,18 @@ export default function GameLobbyPage() {
         </nav>
 
         <main className={styles.pageBody}>
+          {scenario && (
+            <section className={styles.scenarioBrief}>
+              <p className={styles.scenarioBriefEyebrow}>Scenario Brief</p>
+              <h1 className={styles.scenarioBriefTitle}>{scenario.title}</h1>
+              <p className={styles.scenarioBriefDescription}>
+                {scenario.description?.trim()
+                  ? scenario.description
+                  : "No description provided for this scenario."}
+              </p>
+            </section>
+          )}
+
           <Button
             type="primary"
             className={styles.backroomerButton}
@@ -281,7 +374,7 @@ export default function GameLobbyPage() {
             Become Backroomer
           </Button>
 
-          <h1 className={styles.sectionHeading}>Select Your Character</h1>
+          <h2 className={styles.sectionHeading}>Select Your Character</h2>
           <p className={styles.sectionSubheading}>
             Choose a character to begin your journey
           </p>
