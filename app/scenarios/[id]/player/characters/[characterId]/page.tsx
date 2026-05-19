@@ -60,7 +60,7 @@ export default function CharacterProfilePage() {
   // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, characterAuth),
-    5000,
+    60000,
     enabled,
   );
 
@@ -69,7 +69,7 @@ export default function CharacterProfilePage() {
       myCharacterId
         ? characterService.getCharacterById(myCharacterId, characterAuth)
         : Promise.reject(),
-    5000,
+    60000,
     enabled && !!myCharacterId,
   );
 
@@ -84,7 +84,7 @@ export default function CharacterProfilePage() {
           characterAuth,
         )
         : Promise.reject(),
-    5000,
+    60000,
     enabled && !!myCharacterId && !!targetCharId,
   );
   const messages = useMemo(() => {

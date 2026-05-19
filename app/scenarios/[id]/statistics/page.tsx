@@ -76,7 +76,7 @@ export default function PlayerStatisticsPage() {
   // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
   const { data: characters, loading } = usePolling<Character[]>(
     () => characterService.getCharactersByScenario(scenarioId, directorAuth),
-    5000,
+    60000,
     enabled,
   );
 

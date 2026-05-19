@@ -92,13 +92,13 @@ export default function BackroomDashboardPage() {
     Directive[]
   >(
     () => directiveService.getDirectivesByScenario(scenarioId, backroomerAuth),
-    5000,
+    60000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
     () => newsService.getNewsByScenario(scenarioId, backroomerAuth),
-    5000,
+    60000,
     enabled,
   );
 

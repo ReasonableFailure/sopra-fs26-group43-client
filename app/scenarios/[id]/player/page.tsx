@@ -113,13 +113,13 @@ export default function PlayerDashboardPage() {
     Directive[]
   >(
     () => directiveService.getDirectivesByScenario(scenarioId, characterAuth),
-    5000,
+    60000,
     enabled,
   );
 
   const { data: newsItems, loading: newsLoading } = usePolling<NewsGetDTO[]>(
     () => newsService.getNewsByScenario(scenarioId, characterAuth),
-    5000,
+    60000,
     enabled,
   );
 
@@ -132,14 +132,14 @@ export default function PlayerDashboardPage() {
           characterAuth,
         )
         : Promise.reject(),
-    15000,
+    60000,
     enabled && !!characterId,
   );
 
   // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, characterAuth),
-    5000,
+    60000,
     enabled,
   );
 
@@ -156,7 +156,7 @@ export default function PlayerDashboardPage() {
           characterAuth,
         )
         : Promise.reject(),
-    5000,
+    60000,
     enabled && !!characterId,
   );
 
