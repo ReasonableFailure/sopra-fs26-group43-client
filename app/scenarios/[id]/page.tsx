@@ -33,6 +33,7 @@ import type { Character } from "@/types/character";
 import { NewsItem, NewsList } from "@/components/NewsItem";
 import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLogo } from "@/components/NavLogo";
+import { ScenarioNavTitle } from "@/components/ScenarioNavTitle";
 import styles from "@/styles/directorDashboard.module.css";
 
 const STATUS_LABEL: Record<ScenarioStatus, string> = {
@@ -271,6 +272,8 @@ export default function DirectorDashboardPage() {
           <div className={styles.navLeft}>
             <NavLogo className={styles.logoMark} />
             <span className={styles.navTitle}>Director Dashboard</span>
+            <span className={styles.navDivider} aria-hidden="true" />
+            <ScenarioNavTitle scenario={scenario} />
           </div>
           <div className={styles.navRight}>
             <Button onClick={() => router.push("/scenarios")}>
@@ -371,7 +374,7 @@ export default function DirectorDashboardPage() {
                       </div>
 
                       <p className={styles.dayText}>
-                        Day {scenario?.dayNumber ?? 0}
+                        on Day {scenario?.dayNumber ?? 0}
                       </p>
 
                       <div className={styles.statusFooter}>
