@@ -18,11 +18,18 @@ import { UserAvatarMenu } from "@/components/UserAvatarMenu";
 import { NavLogo } from "@/components/NavLogo";
 
 export default function PlayerStatisticsPage() {
-  const { isAuthenticated, authReady, userId, userIdReady } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
   const router = useRouter();
   const params = useParams();
   const scenarioId = Number(params.id);
-  const { directorToken } = useDirector(scenarioId);
+  // Director gate: possession of the per-scenario director token is the
+  // canonical proof the user directs THIS scenario (see DirectorDashboardPage).
+  // It is written by the create-scenario flow and rehydrated on each
+  // `useEngagedScenarios` poll, so a returning director regains it after
+  // logout/login. Gating on a separate `playerRole_${userId}` localStorage
+  // flag — as this page did previously — broke on re-login because that key
+  // is wiped on logout and never restored.
+  const { directorToken, readyDirectorToken } = useDirector(scenarioId);
   const { message } = App.useApp();
   const directorAuth = directorToken ? `Director ${directorToken}` : "Wrong";
   const [modal, contextHolder] = Modal.useModal();
@@ -69,26 +76,34 @@ export default function PlayerStatisticsPage() {
   // GET /characters/{scenarioId} requires Bearer (see PlayerService.validate).
   const { data: characters, loading } = usePolling<Character[]>(
     () => characterService.getCharactersByScenario(scenarioId, directorAuth),
-    5000,
+    60000,
     enabled,
   );
 
   useEffect(() => {
     if (authReady && !isAuthenticated) {
       router.replace("/login");
-    }
-    if (!userIdReady) {
       return;
-    } else if (
-      userIdReady &&
-      globalThis.localStorage[`playerRole_${userId}`] !== '"director"'
-    ) { //this is so hacky... but it works
-      alert("Only a director may access this view!");
+    }
+    // Wait for localStorage hydration before deciding — `readyDirectorToken`
+    // lags first render by one tick. Treating "not ready" as "false" would
+    // bounce a legitimate director on every refresh.
+    if (!readyDirectorToken) return;
+    if (!directorToken) {
       router.replace(`/scenarios/${scenarioId}/lobby`);
     }
-  }, [authReady, isAuthenticated, userId, userIdReady, router, scenarioId]);
+  }, [
+    authReady,
+    isAuthenticated,
+    readyDirectorToken,
+    directorToken,
+    router,
+    scenarioId,
+  ]);
 
-  if (!authReady || !isAuthenticated) return null;
+  if (
+    !authReady || !isAuthenticated || !readyDirectorToken || !directorToken
+  ) return null;
 
   const columns: ColumnsType<Character> = [
     {

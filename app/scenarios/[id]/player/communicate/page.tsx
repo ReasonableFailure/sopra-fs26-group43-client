@@ -72,7 +72,7 @@ export default function CommunicationFormPage() {
   // GET /scenarios/{id} requires Bearer (see PlayerService.validate).
   const { data: liveScenario } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, characterAuth),
-    5000,
+    60000,
     enabled,
   );
 
@@ -81,7 +81,7 @@ export default function CommunicationFormPage() {
       characterId
         ? characterService.getCharacterById(characterId, characterAuth)
         : Promise.reject(),
-    5000,
+    60000,
     enabled && !!characterId,
   );
 

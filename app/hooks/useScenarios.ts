@@ -19,7 +19,7 @@ export const useScenarios = () => {
 
   const { data, loading, error } = usePolling<Scenario[]>(
     () => scenarioService.getScenarios(token),
-    5000,
+    60000,
     !!token,
   );
 
