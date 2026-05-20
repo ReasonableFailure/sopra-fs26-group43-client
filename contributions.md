@@ -147,6 +147,10 @@ reason).
 | **[zeyuwang-uzh]**                                                                                        | 07.05.2026                         | (https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/9ce8c1704f3b2b034e5b9cbf6d86bba28e911052) | Beautify content display retrieved from Mastodon on backroomer and player dashboards and per scenario news page, and more                                                                                                                                     | UI fixes and BE calling fix that enables players to view news easier|
 | **[zeyuwang-uzh]**                                                                                        | 12.05.2026                         | (https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b71863a25e9592d3a0de62500e90723b37742f78) | Add a tab for user's involved scenarios, make parrallel changes on BE|Allows users to quickyly access games they involved with.|
 
+| **[zeyuwang-uzh]**                                                                                        | 07.05.2026                         | [Commit 1](https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/9ce8c1704f3b2b034e5b9cbf6d86bba28e911052) | Beautify content display retrieved from Mastodon on backroomer and player dashboards and per scenario news page, and more                                                                                                                                     | UI fixes and BE calling fix that enables players to view news easier|
+
+| **[zeyuwang-uzh]**                                                                                        | 12.05.2026                         | [Commit 1](https://github.com/ReasonableFailure/sopra-fs26-group43-client/commit/b71863a25e9592d3a0de62500e90723b37742f78) | Add a tab for user's involved scenarios, make parrallel changes on BE|Allows users to quickyly access games they involved with.|
+
 ---
 
 ## Contributions Week 8 - 14-May-2026 to 20-May-2026
