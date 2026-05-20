@@ -85,7 +85,7 @@ To fully test the features of the Crisis Manager, you will need to simulate a mu
 **3. Join the Scenario (Users B & C's)**
 * As User B, browse the Scenarios list, open the newly created scenario, and click the **Become Backroomer** button.
 * As User C1 & C2, open the same scenario and click on an available Character card in the Game Lobby to claim it.
-* Try navigating back to All Scenarios and resume roles from **My Scenarios**
+* Try navigating back to All Scenarios and resume roles from **My Scenarios**.
 
 **4. Gameplay Loop - Character Actions**
 * As User C1, navigate to your Character Dashboard.
@@ -131,15 +131,15 @@ There are several possible modifications which would improve the functionality o
 This codebase was created by:\
 Faye Dinh\
 E-Mail: feliciafaye.dinh@uzh.ch\
-Github: reasonablefailure\
+Github: reasonablefailure
 
 Kai Schärer\
 E-Mail: kai.schaerer@uzh.ch\
-Github: HalaiRhea\
+Github: HalaiRhea
 
 Zeyu Wang\
 E-Mail: zeyu.wang2@uzh.ch\
-Github: zeyuwang-uzh\
+Github: zeyuwang-uzh
 
 Yiru Yang\
 E-Mail: yiru.yang@uzh.ch\
