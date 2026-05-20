@@ -103,13 +103,13 @@ export default function DirectorDashboardPage() {
 
   const { data: scenario, loading, error } = usePolling<Scenario>(
     () => scenarioService.getScenarioById(scenarioId, directorAuth),
-    60000,
+    10000,
     enabled,
   );
 
   const { data: newsItems } = usePolling<NewsGetDTO[]>(
     () => newsService.getNewsByScenario(scenarioId, directorAuth),
-    60000,
+    10000,
     enabled,
   );
 
