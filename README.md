@@ -108,15 +108,29 @@ To fully test the features of the Crisis Manager, you will need to simulate a mu
 * Test game states: Click **Freeze** to temporarily stop character actions, click **Next Day** to advance time, and finally **End Game** to conclude the scenario.
 
 ## Launch and Deployment
-
+### Launching Locally
 To initiate the frontend client locally:
+After cloning navigate to the root of the repository and execute
+```bash
+sudo sh setup
+```
+Install any missing dependencies.
 
-1. Ensure the Backend Server is running (defaults to `http://localhost:8080`).
-2. Install dependencies.
-3. ```bash
+To start the client in dev mode:
+Ensure the Backend Server is running (defaults to `http://localhost:8080`).
+```bash
    npm run dev
    ```
-   The application will be available at `http://localhost:3000`.
+The application will be available at `http://localhost:3000`.
+
+### Deployment
+The client is hosted in Vercel.
+Contributing your changes via pull request triggers the GitHub Actions that comprise the CI/CD pipeline.
+The actions are configured here: `verceldeployment.yml`
+
+### Deployment in Docker
+Your contributions are also pushed to DockerHub. It can be found [here.](/https://hub.docker.com/repository/docker/reasonablefailure/sopra-fs26-group43-client/general)
+
 
 ## Roadmap
 
@@ -127,25 +141,13 @@ There are several possible modifications which would improve the functionality o
 - Allowing Directors to also perform the tasks of a backroomer.
 
 ## Authors and Acknowledgement
+This repo is created and maintained by:
+- Faye Dinh: [reasonablefailure](/https://github.com/ReasonableFailure/)
+- Kai Schärer: [HalaiRhea](/https://github.com/HalaiRhea/)
+- Zeyu Wang: [zeyuwang-uzh](/https://github.com/zeyuwang-uzh/)
+- Yiru Yang: [yiruyang2025](/https://github.com/yiruyang2025/)
 
-This codebase was created by:\
-Faye Dinh\
-E-Mail: feliciafaye.dinh@uzh.ch\
-Github: reasonablefailure
-
-Kai Schärer\
-E-Mail: kai.schaerer@uzh.ch\
-Github: HalaiRhea
-
-Zeyu Wang\
-E-Mail: zeyu.wang2@uzh.ch\
-Github: zeyuwang-uzh
-
-Yiru Yang\
-E-Mail: yiru.yang@uzh.ch\
-Github: yiruyang2025
-
-We would additionally like to give thanks to Ceyhun Emre Açikmese for his invaluable guidance.
+We would additionally like to thank Ceyhun Emre Açikmese and Adelaide Zhang for their invaluable guidance.
 
 ## License
 
