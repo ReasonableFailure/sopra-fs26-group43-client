@@ -37,27 +37,27 @@ describe("UserService", () => {
     });
   });
 
-  it("getUser calls GET /users/{id} with Bearer-prefixed token", async () => {
+  it("getUser calls GET /users/{id} with the provided token", async () => {
     const api = makeMockApi();
     (api.getWithToken as jest.Mock).mockResolvedValueOnce({});
     const service = new UserService(api);
-    await service.getUser(5, "abc");
+    await service.getUser(5, "Bearer abc");
     expect(api.getWithToken).toHaveBeenCalledWith("/users/5", "Bearer abc");
   });
 
-  it("getAllUsers calls GET /users with Bearer-prefixed token", async () => {
+  it("getAllUsers calls GET /users with the provided token", async () => {
     const api = makeMockApi();
     (api.getWithToken as jest.Mock).mockResolvedValueOnce([]);
     const service = new UserService(api);
-    await service.getAllUsers("abc");
+    await service.getAllUsers("Bearer abc");
     expect(api.getWithToken).toHaveBeenCalledWith("/users", "Bearer abc");
   });
 
-  it("updateUser calls PUT /users/{id} with Bearer-prefixed token", async () => {
+  it("updateUser calls PUT /users/{id} with the provided token", async () => {
     const api = makeMockApi();
     (api.putWithToken as jest.Mock).mockResolvedValueOnce(undefined);
     const service = new UserService(api);
-    await service.updateUser(5, { username: "new" } as never, "abc");
+    await service.updateUser(5, { username: "new" } as never, "Bearer abc");
     expect(api.putWithToken).toHaveBeenCalledWith(
       "/users/5",
       { username: "new" },
@@ -65,11 +65,11 @@ describe("UserService", () => {
     );
   });
 
-  it("logout calls POST /logout/{id} with Bearer-prefixed token and empty body", async () => {
+  it("logout calls POST /logout/{id} with the provided token and empty body", async () => {
     const api = makeMockApi();
     (api.postWithToken as jest.Mock).mockResolvedValueOnce(undefined);
     const service = new UserService(api);
-    await service.logout(5, "abc");
+    await service.logout(5, "Bearer abc");
     expect(api.postWithToken).toHaveBeenCalledWith(
       "/logout/5",
       {},

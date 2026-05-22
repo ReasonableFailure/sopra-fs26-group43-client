@@ -15,15 +15,18 @@ function makeMockApi() {
 }
 
 describe("CharacterService", () => {
-  it("getCharactersByScenario calls GET /characters/{scenarioId}", async () => {
+  it("getCharactersByScenario calls GET /characters/scenario/{scenarioId}", async () => {
     const api = makeMockApi();
     (api.getWithToken as jest.Mock).mockResolvedValueOnce([]);
     const service = new CharacterService(api);
     await service.getCharactersByScenario(3, "tok");
-    expect(api.getWithToken).toHaveBeenCalledWith("/characters/3", "tok");
+    expect(api.getWithToken).toHaveBeenCalledWith(
+      "/characters/scenario/3",
+      "tok",
+    );
   });
 
-  it("createCharacter calls POST /characters with a Director-prefixed token", async () => {
+  it("createCharacter calls POST /characters with the provided token", async () => {
     const api = makeMockApi();
     (api.postWithToken as jest.Mock).mockResolvedValueOnce({});
     const service = new CharacterService(api);
@@ -35,7 +38,7 @@ describe("CharacterService", () => {
       secret: null,
       scenarioId: 1,
     };
-    await service.createCharacter(dto, "director-tok");
+    await service.createCharacter(dto, "Director director-tok");
     expect(api.postWithToken).toHaveBeenCalledWith(
       "/characters",
       dto,
@@ -54,13 +57,13 @@ describe("CharacterService", () => {
     );
   });
 
-  it("buyMessage calls POST /characters/{s}/{c}/buy-message with empty body", async () => {
+  it("buyMessage calls POST /scenarios/{s}/characters/{c}/messages with empty body", async () => {
     const api = makeMockApi();
     (api.postWithToken as jest.Mock).mockResolvedValueOnce({});
     const service = new CharacterService(api);
     await service.buyMessage(1, 2, "tok");
     expect(api.postWithToken).toHaveBeenCalledWith(
-      "/characters/1/2/buy-message",
+      "/scenarios/1/characters/2/messages",
       {},
       "tok",
     );
